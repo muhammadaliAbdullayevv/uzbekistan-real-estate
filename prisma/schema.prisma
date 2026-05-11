@@ -1,0 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Currency {
+  UZS
+  USD
+}
+
+enum PropertyType {
+  flat
+  house
+  room
+}
+
+enum RentType {
+  monthly
+  daily
+}
+
+enum ListingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ListingAvailabilityStatus {
+  ACTIVE
+  RENTED
+  SOLD
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum AuthSessionKind {
+  USER
+  ADMIN_ENV
+}
+
+enum UserTokenType {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+model User {
+  id                    String           @id @default(cuid())
+  email                 String           @unique
+  emailVerifiedAt       DateTime?
+  name                  String?
+  /// Legacy column; access control uses OWNER_EMAIL env, not ADMIN role.
+  role                  UserRole         @default(USER)
+  /// Banned accounts use BLOCKED (equivalent to blocked = true).
+  status                UserStatus       @default(ACTIVE)
+  passwordHash          String?
+  phone                 String?
+  telegramUsername      String?
+  preferredRegion       String?
+  preferredDistrict     String?
+  preferredPropertyType PropertyType?
+  preferredRentType     RentType?
+  preferredMinPrice     Int?
+  preferredMaxPrice     Int?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  listings              Listing[]
+  favorites             FavoriteListing[]
+  sessions              AuthSession[]
+  tokens                UserToken[]
+  views                 ListingView[]
+}
+
+model Listing {
+  id               String        @id @default(cuid())
+  title            String
+  description      String
+  price            Int
+  listingType      String        @default("rent")
+  currency         Currency
+  region           String         @default("Tashkent Region")
+  district         String
+  city             String?
+  address          String
+  rooms            Int
+  area             Int
+  propertyType     PropertyType
+  rentType         RentType?      @default(monthly)
+  availabilityStatus ListingAvailabilityStatus @default(ACTIVE)
+  phone            String
+  telegramUsername String?
+  status           ListingStatus @default(PENDING)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  userId           String?
+  user             User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  images           ListingImage[]
+  favorites        FavoriteListing[]
+  views            ListingView[]
+
+  @@index([status, createdAt])
+  @@index([region])
+  @@index([district])
+  @@index([city])
+  @@index([region, district])
+  @@index([price])
+  @@index([listingType])
+  @@index([availabilityStatus])
+  @@index([propertyType])
+}
+
+model ListingImage {
+  id        String  @id @default(cuid())
+  url       String
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+}
+
+model FavoriteListing {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+  @@index([userId, createdAt])
+  @@index([listingId])
+}
+
+model ListingView {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String
+  viewedAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([userId, viewedAt])
+  @@index([listingId, viewedAt])
+}
+
+model AuthSession {
+  id        String          @id @default(cuid())
+  tokenHash String          @unique
+  kind      AuthSessionKind
+  email     String?
+  userId    String?
+  user      User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([kind, expiresAt])
+  @@index([userId, expiresAt])
+}
+
+model UserToken {
+  id         String        @id @default(cuid())
+  tokenHash  String        @unique
+  type       UserTokenType
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime      @default(now())
+
+  @@index([userId, type])
+  @@index([type, expiresAt])
+}
+
+model LoginAttempt {
+  key         String   @id       // "ip::email"
+  failures    Int      @default(0)
+  windowStart DateTime
+  updatedAt   DateTime @updatedAt
+}

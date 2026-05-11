@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  * {
+    @apply border-line;
+  }
+
+  body {
+    @apply min-h-screen bg-white text-ink antialiased;
+  }
+
+  a {
+    @apply transition-colors;
+  }
+}
+
+@layer components {
+  .shell {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .panel {
+    @apply rounded-[28px] border bg-white shadow-soft;
+  }
+
+  .pill {
+    @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink/70;
+  }
+
+  .input {
+    @apply h-12 w-full rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15;
+  }
+
+  .select {
+    @apply h-12 w-full rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15;
+  }
+
+  .textarea {
+    @apply min-h-[140px] w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border border-line bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink hover:text-ink;
+  }
+
+  .auth-stage {
+    @apply relative overflow-hidden rounded-[36px] border border-line/70 p-4 shadow-soft sm:p-6 lg:p-8;
+    background:
+      radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 34%),
+      radial-gradient(circle at bottom right, rgba(234, 179, 8, 0.16), transparent 30%),
+      linear-gradient(135deg, #f7fbfc 0%, #ffffff 48%, #eef6f5 100%);
+  }
+
+  .auth-showcase {
+    @apply relative overflow-hidden rounded-[32px] px-6 py-7 text-white sm:px-8 sm:py-9;
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 28%),
+      linear-gradient(155deg, #12202f 0%, #0f766e 100%);
+  }
+
+  .auth-card {
+    @apply relative rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-soft backdrop-blur-sm sm:p-8;
+  }
+
+  .auth-orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(38px);
+    opacity: 0.55;
+    animation: auth-float 14s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .auth-orb-a {
+    top: -3rem;
+    right: -2rem;
+    height: 10rem;
+    width: 10rem;
+    background: rgba(15, 118, 110, 0.18);
+  }
+
+  .auth-orb-b {
+    bottom: -3rem;
+    left: -2rem;
+    height: 11rem;
+    width: 11rem;
+    background: rgba(234, 179, 8, 0.18);
+    animation-delay: -7s;
+  }
+
+  .auth-raise {
+    animation: auth-rise 0.7s ease-out both;
+  }
+
+  .auth-raise-delayed {
+    animation: auth-rise 0.7s ease-out 0.08s both;
+  }
+}
+
+@keyframes auth-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(0, -18px, 0) scale(1.06);
+  }
+}
+
+@keyframes auth-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
