@@ -59,6 +59,7 @@ model User {
   id                    String           @id @default(cuid())
   email                 String           @unique
   emailVerifiedAt       DateTime?
+  googleId              String?          @unique
   name                  String?
   /// Legacy column; access control uses OWNER_EMAIL env, not ADMIN role.
   role                  UserRole         @default(USER)

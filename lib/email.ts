@@ -166,6 +166,39 @@ export async function sendEmail(input: SendEmailInput) {
   });
 }
 
+export async function sendVerificationEmail(email: string, token: string, locale: Locale) {
+  const t = getTranslations(locale).auth;
+  const verifyUrl = getAbsoluteUrl(
+    `/api/auth/verify-email?token=${encodeURIComponent(token)}&locale=${encodeURIComponent(locale)}`
+  );
+  const subject = t.verifyEmailSubject;
+  const text = [
+    t.verifyEmailIntro,
+    "",
+    t.verifyEmailAction + ":",
+    verifyUrl,
+    "",
+    t.verifyEmailNote
+  ].join("\n");
+
+  await sendEmail({
+    to: email,
+    subject,
+    html: buildEmailLayout({
+      eyebrow: t.verifyEmailEyebrow,
+      title: t.verifyEmailTitle,
+      intro: t.verifyEmailIntro,
+      actionLabel: t.verifyEmailAction,
+      actionUrl: verifyUrl,
+      note: t.verifyEmailNote,
+      footer: t.passwordResetEmailFooter,
+      fallbackTitle: t.emailFallbackTitle,
+      fallbackCopy: t.emailFallbackCopy
+    }),
+    text
+  });
+}
+
 export async function sendPasswordResetEmail(email: string, token: string, locale: Locale) {
   const t = getTranslations(locale).auth;
   const resetUrl = getAbsoluteUrl(

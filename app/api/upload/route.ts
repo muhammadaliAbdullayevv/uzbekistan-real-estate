@@ -5,6 +5,7 @@ import {
   uploadImageToCloudinary
 } from "@/lib/cloudinary-upload";
 import { getLocale, getTranslations } from "@/lib/i18n";
+import { sniffImageType } from "@/lib/image-validation";
 import { saveUploadedImageLocally } from "@/lib/local-upload";
 import {
   hasSupabaseStorageConfig,
@@ -60,6 +61,19 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error: t.api.imageTooLarge
+        },
+        {
+          status: 400
+        }
+      );
+    }
+
+    const sniffedType = sniffImageType(Buffer.from(await file.arrayBuffer()));
+
+    if (!sniffedType || sniffedType !== file.type) {
+      return NextResponse.json(
+        {
+          error: t.api.onlyImagesAllowed
         },
         {
           status: 400

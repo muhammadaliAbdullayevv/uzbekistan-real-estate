@@ -34,6 +34,11 @@ export default async function AccountPage() {
             {displayName}
           </h1>
           <p className="text-base leading-7 text-ink/70">{t.account.intro}</p>
+          {!user.emailVerifiedAt ? (
+            <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+              {t.account.emailNotVerified}
+            </div>
+          ) : null}
           <div className="space-y-3 rounded-[24px] bg-mist p-5 text-sm leading-7 text-ink/70">
             <p>
               {t.account.loggedInAs} <strong className="text-ink">{user.email}</strong>

@@ -178,6 +178,8 @@ const translations = {
       createOne: "Ro‘yxatdan o‘tish",
       blocked: "Hisobingiz bloklangan.",
       invalidLogin: "Email yoki parol noto‘g‘ri.",
+      continueWithGoogle: "Google orqali davom etish",
+      orDivider: "yoki",
       verifyEmail: "Email manzilingizni tasdiqlang, keyin kiring.",
       verifiedSuccess: "Email muvaffaqiyatli tasdiqlandi. Endi kirishingiz mumkin.",
       registeredSuccess: "Hisob yaratildi. Endi kirishingiz mumkin.",
@@ -238,6 +240,13 @@ const translations = {
         "Ushbu havola 60 daqiqa davomida amal qiladi va faqat bir marta ishlatiladi. Agar siz parolni tiklashni so‘ramagan bo‘lsangiz, bu xatni e’tiborsiz qoldirishingiz mumkin.",
       passwordResetEmailFooter:
         "Bu xat Uzbekistan Rentals akkauntingiz uchun parolni tiklash so‘rovi yuborilgani sababli jo‘natildi.",
+      verifyEmailSubject: "Uzbekistan Rentals: emailingizni tasdiqlang",
+      verifyEmailEyebrow: "Emailni tasdiqlash",
+      verifyEmailIntro:
+        "Uzbekistan Rentals'da ro'yxatdan o'tganingiz uchun rahmat. Hisobingizni faollashtirish uchun quyidagi tugmani bosing.",
+      verifyEmailAction: "Emailni tasdiqlash",
+      verifyEmailNote:
+        "Ushbu havola 24 soat davomida amal qiladi. Agar siz ro'yxatdan o'tmagan bo'lsangiz, bu xatni e’tiborsiz qoldirishingiz mumkin.",
       emailFallbackTitle: "Tugma ishlamasa-chi?",
       emailFallbackCopy: "Quyidagi havolani nusxalab brauzeringizda oching:",
       verifyEmailTitle: "Emailni tasdiqlang",
@@ -257,6 +266,8 @@ const translations = {
       intro:
         "E’lonlaringiz, saqlangan uy-joylaringiz va hisob xavfsizligini bir joyda boshqaring.",
       loggedInAs: "Kirish qilingan email",
+      emailNotVerified:
+        "Email manzilingiz hali tasdiqlanmagan. Ro'yxatdan o'tganda yuborilgan havolani oching.",
       quickActions: "Tezkor amallar",
       security: "Xavfsizlik",
       securityTitle: "Hisob xavfsizligi",
@@ -636,6 +647,8 @@ const translations = {
       createOne: "Зарегистрироваться",
       blocked: "Ваш аккаунт заблокирован.",
       invalidLogin: "Неверный email или пароль.",
+      continueWithGoogle: "Продолжить с Google",
+      orDivider: "или",
       verifyEmail: "Подтвердите email, затем войдите.",
       verifiedSuccess: "Email подтвержден. Теперь можно войти.",
       registeredSuccess: "Аккаунт создан. Теперь можно войти.",
@@ -696,6 +709,13 @@ const translations = {
         "Эта ссылка действует 60 минут и может быть использована только один раз. Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо.",
       passwordResetEmailFooter:
         "Вы получили это письмо, потому что для вашего аккаунта Uzbekistan Rentals был запрошен сброс пароля.",
+      verifyEmailSubject: "Uzbekistan Rentals: подтвердите email",
+      verifyEmailEyebrow: "Подтверждение email",
+      verifyEmailIntro:
+        "Спасибо за регистрацию в Uzbekistan Rentals. Нажмите кнопку ниже, чтобы активировать аккаунт.",
+      verifyEmailAction: "Подтвердить email",
+      verifyEmailNote:
+        "Эта ссылка действует 24 часа. Если вы не регистрировались, просто проигнорируйте это письмо.",
       emailFallbackTitle: "Если кнопка не работает",
       emailFallbackCopy: "Скопируйте и откройте эту ссылку в браузере:",
       verifyEmailTitle: "Подтвердите email",
@@ -715,6 +735,8 @@ const translations = {
       intro:
         "Управляйте своими объявлениями, сохранённым жильём и безопасностью аккаунта в одном месте.",
       loggedInAs: "Вы вошли как",
+      emailNotVerified:
+        "Ваш email еще не подтвержден. Откройте ссылку, отправленную при регистрации.",
       quickActions: "Быстрые действия",
       security: "Безопасность",
       securityTitle: "Безопасность аккаунта",

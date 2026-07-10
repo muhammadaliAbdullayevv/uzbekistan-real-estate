@@ -7,6 +7,7 @@ import {
   registerRateLimitKey
 } from "@/lib/login-rate-limit";
 import { registerUser } from "@/lib/auth";
+import { getLocale } from "@/lib/i18n";
 import { resolvePostAuthPath } from "@/lib/owner";
 import {
   createUserSession,
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
   await recordRegisterAttempt(rateKey);
 
   try {
-    const sessionPayload = await registerUser(parsed.data);
+    const sessionPayload = await registerUser({ ...parsed.data, locale: getLocale() });
     const token = await createUserSession(sessionPayload);
     const destination = resolvePostAuthPath(sessionPayload, safeNextPath);
     const response = NextResponse.redirect(new URL(destination, request.url), {

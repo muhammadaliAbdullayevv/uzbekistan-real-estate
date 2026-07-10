@@ -9,7 +9,8 @@ Real estate marketplace for Uzbekistan. Built with Next.js App Router, TypeScrip
 - Photo-first cards with price-first emphasis
 - Listing detail pages with gallery and protected owner contact
 - Login-required contact access, favorites, image upload, and listing submission
-- Email verification and password reset flows
+- Email/password login and registration, with optional "Continue with Google" sign-in
+- Real email verification (link sent on registration) and password reset flows
 - Owner-only moderation dashboard for pending listings and user blocking
 - User listing management with edit, delete, and active/rented/sold controls
 - PostgreSQL-backed user sessions
@@ -37,6 +38,7 @@ Required variables:
 - `SITE_URL`: public base URL, for example `https://rentals.example.com`
 - `PUBLIC_CONTACT_EMAIL`: footer/contact page email
 - `OWNER_EMAIL`: the single owner account email
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: optional, enables the "Continue with Google" button (see below)
 - `SUPABASE_URL`: Supabase project URL, used for storage uploads
 - `SUPABASE_SECRET_KEY`: Supabase secret key for server-side storage uploads
 - `SUPABASE_STORAGE_BUCKET`: public Storage bucket name, for example `listing-images`
@@ -63,6 +65,18 @@ Important:
 - SMTP is used first for outgoing email when configured.
 - If SMTP is not configured, Resend is used when configured.
 - If no email provider is configured, password reset emails are logged to the server console.
+
+## Google Sign-In setup (optional)
+
+"Continue with Google" is hidden automatically unless both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set. To enable it:
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and create (or select) a project.
+2. Under **APIs & Services → OAuth consent screen**, configure the consent screen (External is fine for most cases) and add your support email.
+3. Under **APIs & Services → Credentials**, click **Create Credentials → OAuth client ID**, choose **Web application**.
+4. Add an **Authorized redirect URI**: `${SITE_URL}/api/auth/google/callback` (for local dev: `http://localhost:3000/api/auth/google/callback`).
+5. Copy the generated **Client ID** and **Client secret** into `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env`.
+
+Signing in with Google auto-verifies the account's email and links to an existing email/password account with the same address if one exists (no duplicate accounts).
 
 ## Local setup
 
@@ -113,6 +127,8 @@ npm run dev
   - uploading listing images
   - submitting new listings
   - using favorites and account pages
+- Registering with email/password sends a verification link; the account works immediately either way, but `/account` shows a reminder banner until it's verified. Verification email delivery never blocks registration (best effort, logged on failure).
+- Signing in with Google marks the email as verified automatically and links to a matching email/password account by email if one exists.
 - Users can request password reset links from `/forgot-password`.
 - If the logged-in email matches `OWNER_EMAIL`, the same normal login flow redirects that account to the owner dashboard.
 - Normal users are redirected to `/account` after a direct login or register with no special next path.

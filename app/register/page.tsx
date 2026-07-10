@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AuthShell } from "@/components/auth-shell";
+import { GoogleSignInButton } from "@/components/google-signin-button";
 import { PasswordInput } from "@/components/password-input";
 import { AuthSubmitForm } from "@/components/auth-submit-form";
 export { privatePageMetadata as metadata } from "@/lib/site";
@@ -74,7 +75,15 @@ export default async function RegisterPage({ searchParams = {} }: RegisterPagePr
         <p className="mt-3 text-sm leading-6 text-ink/62">{t.auth.registerDescription}</p>
       </div>
 
-      <AuthSubmitForm action="/api/auth/register" method="post" className="mt-8 space-y-5">
+      <div className="mt-8">
+        <GoogleSignInButton
+          nextPath={nextPath}
+          label={t.auth.continueWithGoogle}
+          dividerLabel={t.auth.orDivider}
+        />
+      </div>
+
+      <AuthSubmitForm action="/api/auth/register" method="post" className="mt-5 space-y-5">
         <input type="hidden" name="next" value={nextPath} />
 
         <div>

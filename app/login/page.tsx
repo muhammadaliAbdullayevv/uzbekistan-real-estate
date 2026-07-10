@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AuthShell } from "@/components/auth-shell";
+import { GoogleSignInButton } from "@/components/google-signin-button";
 import { PasswordInput } from "@/components/password-input";
 import { AuthSubmitForm } from "@/components/auth-submit-form";
 export { privatePageMetadata as metadata } from "@/lib/site";
@@ -32,12 +33,18 @@ export default async function LoginPage({ searchParams = {} }: LoginPageProps) {
         ? t.auth.rateLimited
       : searchParams.error === "invalid"
         ? t.auth.invalidLogin
+      : searchParams.error === "verify-invalid"
+        ? t.auth.verifyEmailInvalid
+      : searchParams.error === "google"
+        ? t.auth.invalidLogin
         : null;
   const notice =
     searchParams.registered === "1"
       ? t.auth.registeredSuccess
       : searchParams.notice === "password-reset"
         ? t.auth.passwordResetSuccess
+      : searchParams.notice === "email-verified"
+        ? t.auth.verifiedSuccess
         : null;
   const email = typeof searchParams.email === "string" ? searchParams.email : "";
 
@@ -71,7 +78,15 @@ export default async function LoginPage({ searchParams = {} }: LoginPageProps) {
         <p className="mt-3 text-sm leading-6 text-ink/62">{t.auth.loginDescription}</p>
       </div>
 
-      <AuthSubmitForm action="/api/auth/login" method="post" className="mt-8 space-y-5">
+      <div className="mt-8">
+        <GoogleSignInButton
+          nextPath={nextPath}
+          label={t.auth.continueWithGoogle}
+          dividerLabel={t.auth.orDivider}
+        />
+      </div>
+
+      <AuthSubmitForm action="/api/auth/login" method="post" className="mt-5 space-y-5">
         <input type="hidden" name="next" value={nextPath} />
 
         <div>

@@ -159,7 +159,7 @@ export async function createUserProfile(input: {
       ${input.name},
       ${input.passwordHash},
       ${phone},
-      ${now},
+      ${null},
       ${now},
       ${now}
     )
@@ -168,10 +168,107 @@ export async function createUserProfile(input: {
   return {
     id,
     email: input.email,
-    emailVerifiedAt: now,
+    emailVerifiedAt: null as Date | null,
     name: input.name,
     role: "USER" as UserRole
   };
+}
+
+export async function markEmailVerified(userId: string) {
+  const now = new Date();
+
+  await prisma.$executeRaw`
+    UPDATE "User"
+    SET "emailVerifiedAt" = ${now}, "updatedAt" = ${now}
+    WHERE "id" = ${userId} AND "emailVerifiedAt" IS NULL
+  `;
+}
+
+export async function getUserByGoogleId(googleId: string): Promise<UserAuthRecord | null> {
+  const rows = await prisma.$queryRaw<UserAuthRow[]>`
+    SELECT
+      "id",
+      "email",
+      "emailVerifiedAt",
+      "name",
+      "role",
+      "status",
+      "passwordHash",
+      "phone",
+      "telegramUsername",
+      "preferredRegion",
+      "preferredDistrict",
+      "preferredPropertyType",
+      "preferredRentType",
+      "preferredMinPrice",
+      "preferredMaxPrice",
+      "createdAt",
+      "updatedAt"
+    FROM "User"
+    WHERE "googleId" = ${googleId}
+    LIMIT 1
+  `;
+
+  return rows[0] ? normalizeAuthRow(rows[0]) : null;
+}
+
+export async function linkGoogleAccount(userId: string, googleId: string) {
+  const now = new Date();
+
+  await prisma.$executeRaw`
+    UPDATE "User"
+    SET
+      "googleId" = ${googleId},
+      "emailVerifiedAt" = COALESCE("emailVerifiedAt", ${now}),
+      "updatedAt" = ${now}
+    WHERE "id" = ${userId}
+  `;
+
+  const user = await getUserProfileById(userId);
+
+  if (!user) {
+    throw new Error("Unable to link Google account: user not found after update.");
+  }
+
+  return user;
+}
+
+export async function createUserFromGoogle(input: {
+  email: string;
+  googleId: string;
+  name: string | null;
+}) {
+  const id = randomUUID();
+  const now = new Date();
+
+  await prisma.$executeRaw`
+    INSERT INTO "User" (
+      "id",
+      "email",
+      "name",
+      "googleId",
+      "emailVerifiedAt",
+      "createdAt",
+      "updatedAt"
+    )
+    VALUES (
+      ${id},
+      ${input.email},
+      ${input.name},
+      ${input.googleId},
+      ${now},
+      ${now},
+      ${now}
+    )
+  `;
+
+  const user = await getUserProfileById(id);
+
+  if (!user) {
+    throw new Error("Unable to create Google account: user not found after insert.");
+  }
+
+  return user;
 }
 
 export async function searchUsersByEmail(query: string) {
