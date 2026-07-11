@@ -9,6 +9,7 @@ import {
 import { registerUser } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n";
 import { resolvePostAuthPath } from "@/lib/owner";
+import { redirectUrl } from "@/lib/site";
 import {
   createUserSession,
   getSafeUserNextPath,
@@ -16,8 +17,8 @@ import {
 } from "@/lib/user-session";
 import { userRegisterSchema } from "@/lib/validations/listing";
 
-export async function GET(request: Request) {
-  return NextResponse.redirect(new URL("/register", request.url), { status: 303 });
+export async function GET() {
+  return NextResponse.redirect(redirectUrl("/register"), { status: 303 });
 }
 
 export async function POST(request: Request) {
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
     const rawPhone = typeof phoneFieldErr === "string" ? phoneFieldErr.trim() : "";
     const filled = `&email=${encodeURIComponent(rawEmail)}&name=${encodeURIComponent(rawName)}&phone=${encodeURIComponent(rawPhone)}`;
     return NextResponse.redirect(
-      new URL(`/register?error=${code}&next=${encodedNextPath}${filled}`, request.url),
+      redirectUrl(`/register?error=${code}&next=${encodedNextPath}${filled}`),
       { status: 303 }
     );
   }
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
   if (await isRegisterRateLimited(rateKey)) {
     const filled = `&email=${encodeURIComponent(parsed.data.email)}&name=${encodeURIComponent(parsed.data.name)}&phone=${encodeURIComponent(parsed.data.phone ?? "")}`;
     return NextResponse.redirect(
-      new URL(`/register?error=rate-limited&next=${encodedNextPath}${filled}`, request.url),
+      redirectUrl(`/register?error=rate-limited&next=${encodedNextPath}${filled}`),
       { status: 303 }
     );
   }
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
     const sessionPayload = await registerUser({ ...parsed.data, locale: getLocale() });
     const token = await createUserSession(sessionPayload);
     const destination = resolvePostAuthPath(sessionPayload, safeNextPath);
-    const response = NextResponse.redirect(new URL(destination, request.url), {
+    const response = NextResponse.redirect(redirectUrl(destination), {
       status: 303
     });
     setUserSessionCookie(response, token);
@@ -83,7 +84,7 @@ export async function POST(request: Request) {
     const filled = `&email=${encodeURIComponent(parsed.data.email)}&name=${encodeURIComponent(parsed.data.name)}&phone=${encodeURIComponent(parsed.data.phone ?? "")}`;
 
     return NextResponse.redirect(
-      new URL(`/register?error=${message}&next=${encodedNextPath}${filled}`, request.url),
+      redirectUrl(`/register?error=${message}&next=${encodedNextPath}${filled}`),
       { status: 303 }
     );
   }

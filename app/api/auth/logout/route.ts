@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
+import { redirectUrl } from "@/lib/site";
 import {
   clearUserSessionCookie,
   deleteUserSession,
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
   const formData = await request.formData();
   const nextPath = getSafeUserNextPath(String(formData.get("next") ?? "/"));
   await deleteUserSession(cookies().get(USER_SESSION_COOKIE)?.value);
-  const response = NextResponse.redirect(new URL(nextPath, request.url), { status: 303 });
+  const response = NextResponse.redirect(redirectUrl(nextPath), { status: 303 });
 
   clearUserSessionCookie(response);
 

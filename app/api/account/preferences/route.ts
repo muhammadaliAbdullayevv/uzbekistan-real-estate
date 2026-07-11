@@ -7,6 +7,7 @@ import {
 } from "@/lib/account-preferences";
 import { getUserSession } from "@/lib/user-session";
 import { updateUserPreferences } from "@/lib/user-data";
+import { redirectUrl } from "@/lib/site";
 import { userPreferenceSchema } from "@/lib/validations/listing";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
   const session = await getUserSession();
 
   if (!session) {
-    return NextResponse.redirect(new URL("/login?next=/account", request.url), { status: 303 });
+    return NextResponse.redirect(redirectUrl("/login?next=/account"), { status: 303 });
   }
 
   const formData = await request.formData();
@@ -36,19 +37,19 @@ export async function POST(request: Request) {
   });
 
   if (!parsed.success) {
-    return NextResponse.redirect(new URL("/account?updated=0", request.url), { status: 303 });
+    return NextResponse.redirect(redirectUrl("/account?updated=0"), { status: 303 });
   }
 
   const user = await updateUserPreferences(session.userId, parsed.data);
 
   if (!user) {
-    return NextResponse.redirect(new URL("/login?next=/account", request.url), { status: 303 });
+    return NextResponse.redirect(redirectUrl("/login?next=/account"), { status: 303 });
   }
 
   revalidatePath("/");
   revalidatePath("/account");
 
-  const response = NextResponse.redirect(new URL("/account?updated=1", request.url), {
+  const response = NextResponse.redirect(redirectUrl("/account?updated=1"), {
     status: 303
   });
 

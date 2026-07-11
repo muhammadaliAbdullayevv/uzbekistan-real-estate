@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { getPublicAdminPath } from "@/lib/admin-path";
 import { applyUserAdminAction, getUserProfileById } from "@/lib/user-data";
 import { getOwnerLoginPath, isOwner } from "@/lib/owner";
+import { redirectUrl } from "@/lib/site";
 import { getUserSession } from "@/lib/user-session";
 import { adminUserActionSchema } from "@/lib/validations/listing";
 
@@ -13,11 +14,8 @@ type RouteContext = {
   };
 };
 
-function buildRedirectUrl(
-  request: Request,
-  input: { search?: string; userNotice?: string; userError?: string }
-) {
-  const url = new URL(getPublicAdminPath(), request.url);
+function buildRedirectUrl(input: { search?: string; userNotice?: string; userError?: string }) {
+  const url = redirectUrl(getPublicAdminPath());
 
   if (input.search) {
     url.searchParams.set("user", input.search);
@@ -38,11 +36,11 @@ export async function POST(request: Request, { params }: RouteContext) {
   const session = await getUserSession();
 
   if (!session) {
-    return NextResponse.redirect(new URL(getOwnerLoginPath(), request.url), { status: 303 });
+    return NextResponse.redirect(redirectUrl(getOwnerLoginPath()), { status: 303 });
   }
 
   if (!isOwner(session)) {
-    return NextResponse.redirect(new URL("/account", request.url), { status: 303 });
+    return NextResponse.redirect(redirectUrl("/account"), { status: 303 });
   }
 
   const formData = await request.formData();
@@ -54,7 +52,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   if (!parsed.success) {
     return NextResponse.redirect(
-      buildRedirectUrl(request, { search, userError: "invalid-action" }),
+      buildRedirectUrl({ search, userError: "invalid-action" }),
       { status: 303 }
     );
   }
@@ -63,14 +61,14 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   if (!user) {
     return NextResponse.redirect(
-      buildRedirectUrl(request, { search, userError: "not-found" }),
+      buildRedirectUrl({ search, userError: "not-found" }),
       { status: 303 }
     );
   }
 
   if (isOwner(user)) {
     return NextResponse.redirect(
-      buildRedirectUrl(request, { search, userError: "owner-protected" }),
+      buildRedirectUrl({ search, userError: "owner-protected" }),
       { status: 303 }
     );
   }
@@ -84,7 +82,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   revalidatePath("/my-listings");
 
   return NextResponse.redirect(
-    buildRedirectUrl(request, { search, userNotice: "updated" }),
+    buildRedirectUrl({ search, userNotice: "updated" }),
     { status: 303 }
   );
 }

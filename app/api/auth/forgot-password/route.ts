@@ -8,6 +8,7 @@ import {
   parseClientIp,
   recordForgotPasswordAttempt
 } from "@/lib/login-rate-limit";
+import { redirectUrl } from "@/lib/site";
 import { forgotPasswordSchema } from "@/lib/validations/listing";
 
 export async function POST(request: Request) {
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
     const rateKey = forgotPasswordRateLimitKey(ip, parsed.data.email);
 
     if (await isForgotPasswordRateLimited(rateKey)) {
-      return NextResponse.redirect(new URL("/forgot-password?error=rate-limited", request.url), {
+      return NextResponse.redirect(redirectUrl("/forgot-password?error=rate-limited"), {
         status: 303
       });
     }
@@ -35,13 +36,13 @@ export async function POST(request: Request) {
       await requestPasswordReset(parsed.data.email, locale);
     } catch (error) {
       console.error("Password reset email delivery failed:", error);
-      return NextResponse.redirect(new URL("/forgot-password?error=delivery", request.url), {
+      return NextResponse.redirect(redirectUrl("/forgot-password?error=delivery"), {
         status: 303
       });
     }
   }
 
-  return NextResponse.redirect(new URL("/forgot-password?sent=1", request.url), {
+  return NextResponse.redirect(redirectUrl("/forgot-password?sent=1"), {
     status: 303
   });
 }

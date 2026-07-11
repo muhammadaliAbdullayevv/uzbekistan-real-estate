@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { authenticateWithGoogle } from "@/lib/auth";
 import { exchangeGoogleCode } from "@/lib/google-auth";
 import { resolvePostAuthPath } from "@/lib/owner";
+import { redirectUrl } from "@/lib/site";
 import {
   createUserSession,
   getSafeUserNextPath,
@@ -27,7 +28,7 @@ export async function GET(request: Request) {
   const nextPath = getSafeUserNextPath(cookieStore.get(NEXT_COOKIE)?.value);
 
   if (!code || !returnedState || !expectedState || returnedState !== expectedState) {
-    const response = NextResponse.redirect(new URL("/login?error=google", request.url), {
+    const response = NextResponse.redirect(redirectUrl("/login?error=google"), {
       status: 303
     });
     clearOauthCookies(response);
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
 
     if (!result.user) {
       const response = NextResponse.redirect(
-        new URL(`/login?error=${result.error}`, request.url),
+        redirectUrl(`/login?error=${result.error}`),
         { status: 303 }
       );
       clearOauthCookies(response);
@@ -49,7 +50,7 @@ export async function GET(request: Request) {
 
     const token = await createUserSession(result.user);
     const destination = resolvePostAuthPath(result.user, nextPath);
-    const response = NextResponse.redirect(new URL(destination, request.url), { status: 303 });
+    const response = NextResponse.redirect(redirectUrl(destination), { status: 303 });
 
     setUserSessionCookie(response, token);
     clearOauthCookies(response);
@@ -57,7 +58,7 @@ export async function GET(request: Request) {
     return response;
   } catch (error) {
     console.error("Google sign-in failed:", error);
-    const response = NextResponse.redirect(new URL("/login?error=google", request.url), {
+    const response = NextResponse.redirect(redirectUrl("/login?error=google"), {
       status: 303
     });
     clearOauthCookies(response);

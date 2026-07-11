@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { getGoogleAuthUrl, hasGoogleAuthConfig } from "@/lib/google-auth";
+import { redirectUrl } from "@/lib/site";
 import { getSafeUserNextPath } from "@/lib/user-session";
 
 const STATE_COOKIE = "__google_oauth_state";
@@ -11,7 +12,7 @@ const OAUTH_COOKIE_MAX_AGE = 600; // 10 minutes
 
 export async function GET(request: Request) {
   if (!hasGoogleAuthConfig()) {
-    return NextResponse.redirect(new URL("/login?error=google", request.url), { status: 303 });
+    return NextResponse.redirect(redirectUrl("/login?error=google"), { status: 303 });
   }
 
   const url = new URL(request.url);

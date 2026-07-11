@@ -9,6 +9,7 @@ import {
   recordLoginFailure
 } from "@/lib/login-rate-limit";
 import { resolvePostAuthPath } from "@/lib/owner";
+import { redirectUrl } from "@/lib/site";
 import {
   createUserSession,
   getSafeUserNextPath,
@@ -16,8 +17,8 @@ import {
 } from "@/lib/user-session";
 import { userLoginSchema } from "@/lib/validations/listing";
 
-export async function GET(request: Request) {
-  return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
+export async function GET() {
+  return NextResponse.redirect(redirectUrl("/login"), { status: 303 });
 }
 
 export async function POST(request: Request) {
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.redirect(
-      new URL(`/login?error=invalid&next=${encodedNextPath}${encodedEmailAttempt}`, request.url),
+      redirectUrl(`/login?error=invalid&next=${encodedNextPath}${encodedEmailAttempt}`),
       { status: 303 }
     );
   }
@@ -48,9 +49,8 @@ export async function POST(request: Request) {
 
   if (await isLoginRateLimited(rateKey)) {
     return NextResponse.redirect(
-      new URL(
-        `/login?error=rate-limited&next=${encodedNextPath}&email=${encodeURIComponent(parsed.data.email)}`,
-        request.url
+      redirectUrl(
+        `/login?error=rate-limited&next=${encodedNextPath}&email=${encodeURIComponent(parsed.data.email)}`
       ),
       { status: 303 }
     );
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     const emailQuery = `&email=${encodeURIComponent(parsed.data.email)}`;
 
     return NextResponse.redirect(
-      new URL(`/login?error=${result.error}&next=${encodedNextPath}${emailQuery}`, request.url),
+      redirectUrl(`/login?error=${result.error}&next=${encodedNextPath}${emailQuery}`),
       { status: 303 }
     );
   }
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
 
   const token = await createUserSession(result.user);
   const nextPath = resolvePostAuthPath(result.user, safeNextPath);
-  const response = NextResponse.redirect(new URL(nextPath, request.url), { status: 303 });
+  const response = NextResponse.redirect(redirectUrl(nextPath), { status: 303 });
 
   setUserSessionCookie(response, token);
 

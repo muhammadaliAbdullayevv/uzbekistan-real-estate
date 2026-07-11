@@ -5,6 +5,7 @@ import {
   deleteStoredSessionById,
   hashToken
 } from "@/lib/session-store";
+import { redirectUrl } from "@/lib/site";
 import {
   USER_SESSION_COOKIE,
   getUserSession
@@ -72,5 +73,5 @@ export async function POST(request: Request) {
   }
 
   // Redirect back to the sessions page after form submission.
-  return NextResponse.redirect(new URL("/account/sessions", request.url));
+  return NextResponse.redirect(redirectUrl("/account/sessions"));
 }

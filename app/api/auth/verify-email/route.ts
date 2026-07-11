@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { redirectUrl } from "@/lib/site";
 import { markEmailVerified } from "@/lib/user-data";
 import { consumeUserToken } from "@/lib/user-tokens";
 import { getUserSession } from "@/lib/user-session";
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
   const userId = token ? await consumeUserToken(token, "VERIFY_EMAIL") : null;
 
   if (!userId) {
-    return NextResponse.redirect(new URL("/login?error=verify-invalid", request.url), {
+    return NextResponse.redirect(redirectUrl("/login?error=verify-invalid"), {
       status: 303
     });
   }
@@ -21,5 +22,5 @@ export async function GET(request: Request) {
   const session = await getUserSession();
   const destination = session ? "/account?notice=email-verified" : "/login?notice=email-verified";
 
-  return NextResponse.redirect(new URL(destination, request.url), { status: 303 });
+  return NextResponse.redirect(redirectUrl(destination), { status: 303 });
 }

@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { getPublicAdminPath } from "@/lib/admin-path";
 import { prisma } from "@/lib/db";
 import { getOwnerLoginPath, isOwner } from "@/lib/owner";
+import { redirectUrl } from "@/lib/site";
 import { getUserSession } from "@/lib/user-session";
 import { listingStatusSchema } from "@/lib/validations/listing";
 
@@ -19,11 +20,11 @@ export async function POST(request: Request, { params }: RouteContext) {
   const ownerDashboardPath = getPublicAdminPath();
 
   if (!session) {
-    return NextResponse.redirect(new URL(getOwnerLoginPath(), request.url), { status: 303 });
+    return NextResponse.redirect(redirectUrl(getOwnerLoginPath()), { status: 303 });
   }
 
   if (!isOwner(session)) {
-    return NextResponse.redirect(new URL("/account", request.url), { status: 303 });
+    return NextResponse.redirect(redirectUrl("/account"), { status: 303 });
   }
 
   const formData = await request.formData();
@@ -55,5 +56,5 @@ export async function POST(request: Request, { params }: RouteContext) {
   revalidatePath("/admin");
   revalidatePath(`/listings/${params.id}`);
 
-  return NextResponse.redirect(new URL(ownerDashboardPath, request.url), { status: 303 });
+  return NextResponse.redirect(redirectUrl(ownerDashboardPath), { status: 303 });
 }
