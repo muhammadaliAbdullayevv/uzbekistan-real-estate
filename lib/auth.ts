@@ -2,6 +2,7 @@ import type { GoogleProfile } from "@/lib/google-auth";
 import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
 import type { Locale } from "@/lib/i18n";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import { deleteStoredUserSessionsByUserId } from "@/lib/session-store";
 import {
   createUserFromGoogle,
   createUserProfile,
@@ -160,7 +161,13 @@ export async function resetUserPassword(input: { token: string; password: string
   }
 
   const passwordHash = await hashPassword(input.password);
-  return updateUserPassword(userId, passwordHash);
+  const user = await updateUserPassword(userId, passwordHash);
+
+  // A password reset should invalidate any session an attacker may already
+  // hold, not just block future logins with the old password.
+  await deleteStoredUserSessionsByUserId(userId);
+
+  return user;
 }
 
 export function toUserSession(user: {
