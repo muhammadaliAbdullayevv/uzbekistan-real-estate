@@ -3,6 +3,7 @@ import Link from "next/link";
 export { privatePageMetadata as metadata } from "@/lib/site";
 import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
+import { PreferencesPrompt } from "@/components/preferences-prompt";
 import { formatDate, formatDisplayName } from "@/lib/format";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import {
@@ -10,6 +11,7 @@ import {
   getFavoriteListingsForUser,
   getRecentViewedListingsForUser
 } from "@/lib/listings";
+import { getRegionOptions } from "@/lib/locations";
 import { requireUser } from "@/lib/session-auth";
 
 export default async function AccountPage() {
@@ -24,9 +26,43 @@ export default async function AccountPage() {
   ]);
 
   const displayName = user.name ? formatDisplayName(user.name) : user.email;
+  const shouldShowPreferencesPrompt =
+    !user.preferencesPromptDismissedAt &&
+    !user.preferredRegion &&
+    !user.preferredDistrict &&
+    !user.preferredPropertyType &&
+    !user.preferredRentType &&
+    user.preferredMinPrice === null &&
+    user.preferredMaxPrice === null;
 
   return (
     <div className="shell space-y-10">
+      {shouldShowPreferencesPrompt ? (
+        <PreferencesPrompt
+          name={user.name || user.email.split("@")[0] || "User"}
+          phone={user.phone ?? ""}
+          regionOptions={getRegionOptions(locale)}
+          propertyTypeLabels={t.enums.propertyTypes}
+          rentTypeLabels={t.enums.rentTypes}
+          copy={{
+            title: t.account.preferencesPromptTitle,
+            description: t.account.preferencesPromptDescription,
+            region: t.search.region,
+            anyRegion: t.search.allRegions,
+            district: t.search.districtCity,
+            districtPlaceholder: t.search.districtCityPlaceholder,
+            propertyType: t.search.propertyType,
+            anyPropertyType: t.search.allTypes,
+            rentType: t.addListing.form.rentType,
+            anyRentType: t.search.any,
+            minPrice: t.search.minPrice,
+            maxPrice: t.search.maxPrice,
+            save: t.account.preferencesPromptSave,
+            skip: t.account.preferencesPromptSkip
+          }}
+        />
+      ) : null}
+
       <section className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
         <div className="panel space-y-6 p-6 sm:p-8">
           <span className="pill border-accent/25 bg-accent/5 text-accent">{t.account.pill}</span>

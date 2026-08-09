@@ -4,7 +4,7 @@ export { privatePageMetadata as metadata } from "@/lib/site";
 import { AddListingForm } from "@/components/add-listing-form";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { getRegionOptions } from "@/lib/locations";
-import { requireUser } from "@/lib/session-auth";
+import { getCurrentUser } from "@/lib/session-auth";
 
 type AddListingPageProps = {
   searchParams?: Record<string, string | string[] | undefined>;
@@ -13,7 +13,7 @@ type AddListingPageProps = {
 export default async function AddListingPage({ searchParams = {} }: AddListingPageProps) {
   const locale = getLocale();
   const t = getTranslations(locale);
-  const user = await requireUser("/add-listing");
+  const user = await getCurrentUser();
   const showSuccess = searchParams.success === "1";
 
   return (
@@ -41,6 +41,8 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
         rentTypeLabels={t.enums.rentTypes}
         copy={{
           success: t.addListing.success,
+          draftRestored: t.addListing.draftRestored,
+          loginToSubmit: t.addListing.loginToSubmit,
           listingType: t.addListing.form.listingType,
           listingTypeRent: t.addListing.form.listingTypeRent,
           listingTypeSale: t.addListing.form.listingTypeSale,
@@ -78,6 +80,7 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
         }}
         showSuccess={showSuccess}
         initialPhone={user?.phone}
+        isAuthenticated={Boolean(user)}
       />
     </div>
   );

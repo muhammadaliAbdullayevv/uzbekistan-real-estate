@@ -268,6 +268,11 @@ const translations = {
       loggedInAs: "Kirish qilingan email",
       emailNotVerified:
         "Email manzilingiz hali tasdiqlanmagan. Ro'yxatdan o'tganda yuborilgan havolani oching.",
+      preferencesPromptTitle: "Qidiruv afzalliklaringizni sozlaysizmi?",
+      preferencesPromptDescription:
+        "Viloyat, uy turi va narx oralig'ini tanlang — sizga mos e'lonlarni topish osonlashadi. Buni istalgan vaqt /account sahifasidan o'zgartirishingiz mumkin.",
+      preferencesPromptSave: "Afzalliklarni saqlash",
+      preferencesPromptSkip: "Hozir emas",
       quickActions: "Tezkor amallar",
       security: "Xavfsizlik",
       securityTitle: "Hisob xavfsizligi",
@@ -313,6 +318,9 @@ const translations = {
       locationOnly:
         "Bu sayt O‘zbekiston bo‘ylab e’lonlarni qabul qiladi. E’lon akkauntingizga avtomatik biriktiriladi va saqlangan aloqa ma’lumotlari bu yerga to‘ldiriladi.",
       success: "E'loningiz yuborildi va tasdiqlanishni kutmoqda.",
+      draftRestored:
+        "Avval boshlagan e'loningiz tiklandi. Iltimos, ma'lumotlarni tekshiring va davom eting.",
+      loginToSubmit: "E'lonni yuborish uchun tizimga kiring. Ma'lumotlaringiz saqlanadi.",
       form: {
         listingType: "E’lon turi",
         listingTypeRent: "Ijaradagi uylar",
@@ -408,6 +416,12 @@ const translations = {
         "Yuborilgan uy-joy e'lonlarini ommaga chiqishidan oldin ko'rib chiqing va tasdiqlang yoki rad eting.",
       emptyTitle: "Kutayotgan e'lonlar yo'q",
       emptyDescription: "Yangi yuborilgan e'lonlar ommaga chiqishidan oldin shu yerda paydo bo'ladi.",
+      seedDemoDataTitle: "Test uchun namunaviy e'lonlar",
+      seedDemoDataDescription:
+        "Saytni sinab ko'rish uchun O'zbekiston bo'ylab ~100 namunaviy e'lon va demo hisobni yaratadi yoki yangilaydi. Faqat shu namunaviy ma'lumotlarga tegadi, haqiqiy foydalanuvchilar yoki e'lonlarga ta'sir qilmaydi.",
+      seedDemoDataButton: "Namunaviy e'lonlarni yaratish",
+      seedDemoDataSuccess: "Namunaviy e'lonlar muvaffaqiyatli yaratildi.",
+      seedDemoDataError: "Namunaviy e'lonlarni yaratib bo'lmadi. Qayta urinib ko'ring.",
       controlsPill: "Egasi boshqaruvi",
       manageUsers: "Foydalanuvchilarni boshqarish",
       manageUsersIntro:
@@ -737,6 +751,11 @@ const translations = {
       loggedInAs: "Вы вошли как",
       emailNotVerified:
         "Ваш email еще не подтвержден. Откройте ссылку, отправленную при регистрации.",
+      preferencesPromptTitle: "Настроить предпочтения поиска?",
+      preferencesPromptDescription:
+        "Выберите регион, тип жилья и диапазон цен — так будет проще находить подходящие варианты. Это можно изменить в любой момент на странице /account.",
+      preferencesPromptSave: "Сохранить предпочтения",
+      preferencesPromptSkip: "Не сейчас",
       quickActions: "Быстрые действия",
       security: "Безопасность",
       securityTitle: "Безопасность аккаунта",
@@ -782,6 +801,9 @@ const translations = {
       locationOnly:
         "Сайт принимает объявления по всему Узбекистану. Объявление автоматически привяжется к вашему аккаунту, а сохранённые контактные данные можно использовать здесь.",
       success: "Ваше объявление отправлено и ожидает одобрения.",
+      draftRestored:
+        "Ваш черновик объявления восстановлен. Проверьте данные и продолжите отправку.",
+      loginToSubmit: "Войдите, чтобы отправить объявление. Ваши данные будут сохранены.",
       form: {
         listingType: "Тип объявления",
         listingTypeRent: "Жильё в аренду",
@@ -877,6 +899,12 @@ const translations = {
         "Проверяйте отправленные объявления о жилье и одобряйте или отклоняйте их до публикации.",
       emptyTitle: "Нет объявлений на проверке",
       emptyDescription: "Новые заявки появятся здесь до того, как станут видны на публичном сайте.",
+      seedDemoDataTitle: "Тестовые демо-объявления",
+      seedDemoDataDescription:
+        "Создаёт или обновляет ~100 демо-объявлений по всему Узбекистану и демо-аккаунт для проверки сайта. Затрагивает только эти демо-данные, не влияет на реальных пользователей и объявления.",
+      seedDemoDataButton: "Создать демо-объявления",
+      seedDemoDataSuccess: "Демо-объявления успешно созданы.",
+      seedDemoDataError: "Не удалось создать демо-объявления. Попробуйте снова.",
       controlsPill: "Управление владельца",
       manageUsers: "Управление пользователями",
       manageUsersIntro:

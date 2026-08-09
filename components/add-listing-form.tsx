@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { LocationSelect } from "@/components/location-select";
 import {
@@ -17,6 +17,26 @@ import {
 } from "@/lib/constants";
 import type { UzbekistanRegion } from "@/lib/locations";
 
+const DRAFT_STORAGE_KEY = "draft-listing";
+
+type DraftValues = {
+  listingType?: string;
+  title?: string;
+  description?: string;
+  price?: string;
+  currency?: string;
+  region?: string;
+  district?: string;
+  city?: string;
+  address?: string;
+  rooms?: string;
+  area?: string;
+  propertyType?: string;
+  rentType?: string;
+  phone?: string;
+  images?: string[];
+};
+
 type AddListingFormProps = {
   mode?: "create" | "edit";
   submitPath?: string;
@@ -30,6 +50,8 @@ type AddListingFormProps = {
   rentTypeLabels: Record<(typeof RENT_TYPES)[number], string>;
   copy: {
     success: string;
+    draftRestored?: string;
+    loginToSubmit?: string;
     listingType: string;
     listingTypeRent: string;
     listingTypeSale: string;
@@ -69,6 +91,7 @@ type AddListingFormProps = {
   };
   showSuccess?: boolean;
   initialPhone?: string | null;
+  isAuthenticated?: boolean;
   initialValues?: {
     listingType: ListingTypeValue;
     title: string;
@@ -99,9 +122,11 @@ export function AddListingForm({
   copy,
   showSuccess = false,
   initialPhone,
+  isAuthenticated = true,
   initialValues
 }: AddListingFormProps) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [listingType, setListingType] = useState<ListingTypeValue>(
     initialValues?.listingType ?? "rent"
   );
@@ -116,6 +141,107 @@ export function AddListingForm({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [restoredDraft, setRestoredDraft] = useState<DraftValues | null>(null);
+
+  // Anonymous visitors can fill out the form; a draft persists across the
+  // login redirect round trip so nothing typed is lost.
+  useEffect(() => {
+    if (mode !== "create") {
+      return;
+    }
+
+    try {
+      const saved = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!saved) {
+        return;
+      }
+
+      const parsed = JSON.parse(saved) as DraftValues;
+      setRestoredDraft(parsed);
+
+      if (parsed.listingType === "rent" || parsed.listingType === "sale") {
+        setListingType(parsed.listingType);
+      }
+      if (parsed.currency) {
+        setSelectedCurrency(parsed.currency as CurrencyValue);
+      }
+      if (parsed.rentType === "monthly" || parsed.rentType === "daily") {
+        setSelectedRentType(parsed.rentType);
+      }
+      if (parsed.images) {
+        setImageUrls(parsed.images);
+      }
+    } catch {
+      // Ignore malformed/unavailable drafts — form just starts empty.
+    }
+  }, [mode]);
+
+  function persistDraft(overrideImages?: string[]) {
+    if (mode !== "create" || !formRef.current) {
+      return;
+    }
+
+    const formData = new FormData(formRef.current);
+    const draft: DraftValues = {
+      listingType: String(formData.get("listingType") ?? listingType),
+      title: String(formData.get("title") ?? ""),
+      description: String(formData.get("description") ?? ""),
+      price: String(formData.get("price") ?? ""),
+      currency: String(formData.get("currency") ?? selectedCurrency),
+      region: String(formData.get("region") ?? ""),
+      district: String(formData.get("district") ?? ""),
+      city: String(formData.get("city") ?? ""),
+      address: String(formData.get("address") ?? ""),
+      rooms: String(formData.get("rooms") ?? ""),
+      area: String(formData.get("area") ?? ""),
+      propertyType: String(formData.get("propertyType") ?? ""),
+      rentType: String(formData.get("rentType") ?? selectedRentType),
+      phone: String(formData.get("phone") ?? ""),
+      images: overrideImages ?? imageUrls
+    };
+
+    try {
+      window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    } catch {
+      // Best-effort — draft persistence should never block form use.
+    }
+  }
+
+  function clearDraft() {
+    try {
+      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+    } catch {
+      // Ignore.
+    }
+  }
+
+  const effectiveValues = restoredDraft
+    ? {
+        title: restoredDraft.title,
+        description: restoredDraft.description,
+        price: restoredDraft.price,
+        region: restoredDraft.region as UzbekistanRegion | undefined,
+        district: restoredDraft.district,
+        city: restoredDraft.city,
+        address: restoredDraft.address,
+        rooms: restoredDraft.rooms,
+        area: restoredDraft.area,
+        propertyType: restoredDraft.propertyType as (typeof PROPERTY_TYPES)[number] | undefined,
+        phone: restoredDraft.phone || initialPhone
+      }
+    : {
+        title: initialValues?.title,
+        description: initialValues?.description,
+        price: initialValues?.price,
+        region: initialValues?.region,
+        district: initialValues?.district,
+        city: initialValues?.city,
+        address: initialValues?.address,
+        rooms: initialValues?.rooms,
+        area: initialValues?.area,
+        propertyType: initialValues?.propertyType,
+        phone: initialValues?.phone || initialPhone
+      };
 
   async function uploadSingleFile(file: File) {
     const body = new FormData();
@@ -146,7 +272,11 @@ export function AddListingForm({
 
     try {
       const uploaded = await Promise.all(files.map((file) => uploadSingleFile(file)));
-      setImageUrls((current) => [...current, ...uploaded]);
+      setImageUrls((current) => {
+        const next = [...current, ...uploaded];
+        persistDraft(next);
+        return next;
+      });
     } catch (uploadIssue) {
       setUploadError(
         uploadIssue instanceof Error ? uploadIssue.message : copy.uploadUnable
@@ -158,7 +288,11 @@ export function AddListingForm({
   }
 
   function removeImage(url: string) {
-    setImageUrls((current) => current.filter((image) => image !== url));
+    setImageUrls((current) => {
+      const next = current.filter((image) => image !== url);
+      persistDraft(next);
+      return next;
+    });
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -187,6 +321,10 @@ export function AddListingForm({
       images: imageUrls
     };
 
+    if (mode === "create") {
+      persistDraft();
+    }
+
     try {
       const response = await fetch(submitPath, {
         method: mode === "create" ? "POST" : "PATCH",
@@ -196,10 +334,20 @@ export function AddListingForm({
         body: JSON.stringify(payload)
       });
 
+      if (response.status === 401 && mode === "create") {
+        // Draft is already saved — send the user to log in and back.
+        router.push("/login?next=/add-listing");
+        return;
+      }
+
       const result = await response.json();
 
       if (!response.ok) {
         throw new Error(result.error ?? copy.submitUnable);
+      }
+
+      if (mode === "create") {
+        clearDraft();
       }
 
       router.push(successPath);
@@ -225,7 +373,25 @@ export function AddListingForm({
         </div>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="panel space-y-8 p-6 sm:p-8">
+      {restoredDraft && copy.draftRestored ? (
+        <div className="panel border-accent/25 bg-accent/5 p-4 text-sm font-medium text-accent">
+          {copy.draftRestored}
+        </div>
+      ) : null}
+
+      {!isAuthenticated && copy.loginToSubmit ? (
+        <div className="panel border-line/80 bg-mist/45 p-4 text-sm leading-6 text-ink/70">
+          {copy.loginToSubmit}
+        </div>
+      ) : null}
+
+      <form
+        ref={formRef}
+        key={restoredDraft ? "draft" : "fresh"}
+        onSubmit={handleSubmit}
+        onChange={() => persistDraft()}
+        className="panel space-y-8 p-6 sm:p-8"
+      >
         <section className="space-y-3">
           <label className="block text-sm font-medium text-ink/80">{copy.listingType}</label>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -282,7 +448,7 @@ export function AddListingForm({
               minLength={5}
               maxLength={140}
               className="input"
-              defaultValue={initialValues?.title ?? ""}
+              defaultValue={effectiveValues.title ?? ""}
               placeholder={copy.titlePlaceholder}
             />
           </div>
@@ -297,7 +463,7 @@ export function AddListingForm({
               required
               minLength={20}
               className="textarea"
-              defaultValue={initialValues?.description ?? ""}
+              defaultValue={effectiveValues.description ?? ""}
               placeholder={copy.descriptionPlaceholder}
             />
           </div>
@@ -313,7 +479,7 @@ export function AddListingForm({
               min="1"
               required
               className="input"
-              defaultValue={initialValues?.price ?? ""}
+              defaultValue={effectiveValues.price ?? ""}
               placeholder="450"
             />
             {priceSuffix ? (
@@ -347,7 +513,7 @@ export function AddListingForm({
               id="region"
               name="region"
               label={copy.region}
-              defaultValue={initialValues?.region ?? regionOptions[0]?.value}
+              defaultValue={effectiveValues.region ?? regionOptions[0]?.value}
               options={regionOptions}
             />
           </div>
@@ -361,7 +527,7 @@ export function AddListingForm({
               name="district"
               required
               className="input"
-              defaultValue={initialValues?.district ?? ""}
+              defaultValue={effectiveValues.district ?? ""}
               placeholder={copy.districtCityPlaceholder}
             />
           </div>
@@ -374,7 +540,7 @@ export function AddListingForm({
               id="city"
               name="city"
               className="input"
-              defaultValue={initialValues?.city ?? ""}
+              defaultValue={effectiveValues.city ?? ""}
               placeholder={copy.cityNeighborhoodPlaceholder}
             />
           </div>
@@ -388,7 +554,7 @@ export function AddListingForm({
               name="address"
               required
               className="input"
-              defaultValue={initialValues?.address ?? ""}
+              defaultValue={effectiveValues.address ?? ""}
               placeholder={copy.addressPlaceholder}
             />
           </div>
@@ -404,7 +570,7 @@ export function AddListingForm({
               min="1"
               required
               className="input"
-              defaultValue={initialValues?.rooms ?? ""}
+              defaultValue={effectiveValues.rooms ?? ""}
               placeholder="2"
             />
           </div>
@@ -420,7 +586,7 @@ export function AddListingForm({
               min="10"
               required
               className="input"
-              defaultValue={initialValues?.area ?? ""}
+              defaultValue={effectiveValues.area ?? ""}
               placeholder="65"
             />
           </div>
@@ -433,7 +599,7 @@ export function AddListingForm({
               id="propertyType"
               name="propertyType"
               className="select"
-              defaultValue={initialValues?.propertyType ?? PROPERTY_TYPES[0]}
+              defaultValue={effectiveValues.propertyType ?? PROPERTY_TYPES[0]}
             >
               {PROPERTY_TYPES.map((propertyType) => (
                 <option key={propertyType} value={propertyType}>
@@ -472,7 +638,7 @@ export function AddListingForm({
               id="phone"
               name="phone"
               required
-              defaultValue={initialValues?.phone ?? initialPhone ?? ""}
+              defaultValue={effectiveValues.phone ?? ""}
               className="input"
               placeholder="+998901234567"
             />

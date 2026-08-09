@@ -32,6 +32,8 @@ export default async function OwnerPage({ searchParams = {} }: OwnerPageProps) {
   const userQuery = getFirstParam(searchParams.user)?.trim() ?? "";
   const userNotice = getFirstParam(searchParams.userNotice) ?? "";
   const userError = getFirstParam(searchParams.userError) ?? "";
+  const seeded = getFirstParam(searchParams.seeded) === "1";
+  const seedError = getFirstParam(searchParams.seedError) === "1";
 
   const [pendingListings, users] = await Promise.all([
     getPendingListings(),
@@ -53,6 +55,35 @@ export default async function OwnerPage({ searchParams = {} }: OwnerPageProps) {
           <input type="hidden" name="next" value="/login" />
           <button type="submit" className="btn-secondary">
             {t.common.signOut}
+          </button>
+        </form>
+      </section>
+
+      <section className="panel space-y-4 p-6 sm:p-8">
+        <div>
+          <h2 className="font-display text-2xl font-semibold text-ink">
+            {t.owner.seedDemoDataTitle}
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-ink/70">
+            {t.owner.seedDemoDataDescription}
+          </p>
+        </div>
+
+        {seeded ? (
+          <div className="rounded-2xl border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-accent">
+            {t.owner.seedDemoDataSuccess}
+          </div>
+        ) : null}
+
+        {seedError ? (
+          <div className="rounded-2xl border border-coral/20 bg-coral/10 px-4 py-3 text-sm text-coral">
+            {t.owner.seedDemoDataError}
+          </div>
+        ) : null}
+
+        <form action="/api/admin/seed-demo-listings" method="post">
+          <button type="submit" className="btn-primary">
+            {t.owner.seedDemoDataButton}
           </button>
         </form>
       </section>

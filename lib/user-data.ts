@@ -25,6 +25,7 @@ export type UserProfile = {
   preferredRentType: RentType | null;
   preferredMinPrice: number | null;
   preferredMaxPrice: number | null;
+  preferencesPromptDismissedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -44,6 +45,7 @@ type UserRow = {
   preferredRentType: RentType | null;
   preferredMinPrice: number | null;
   preferredMaxPrice: number | null;
+  preferencesPromptDismissedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -92,6 +94,7 @@ export async function getUserByEmail(email: string): Promise<UserAuthRecord | nu
       "preferredRentType",
       "preferredMinPrice",
       "preferredMaxPrice",
+      "preferencesPromptDismissedAt",
       "createdAt",
       "updatedAt"
     FROM "User"
@@ -117,6 +120,7 @@ const publicUserColumns = Prisma.sql`
   "preferredRentType",
   "preferredMinPrice",
   "preferredMaxPrice",
+  "preferencesPromptDismissedAt",
   "createdAt",
   "updatedAt"
 `;
@@ -202,6 +206,7 @@ export async function getUserByGoogleId(googleId: string): Promise<UserAuthRecor
       "preferredRentType",
       "preferredMinPrice",
       "preferredMaxPrice",
+      "preferencesPromptDismissedAt",
       "createdAt",
       "updatedAt"
     FROM "User"
@@ -349,4 +354,14 @@ export async function updateUserPreferences(userId: string, input: UserPreferenc
   `;
 
   return getUserProfileById(userId);
+}
+
+export async function dismissPreferencesPrompt(userId: string) {
+  const now = new Date();
+
+  await prisma.$executeRaw`
+    UPDATE "User"
+    SET "preferencesPromptDismissedAt" = ${now}, "updatedAt" = ${now}
+    WHERE "id" = ${userId} AND "preferencesPromptDismissedAt" IS NULL
+  `;
 }
