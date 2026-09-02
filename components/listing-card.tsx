@@ -40,7 +40,7 @@ export function ListingCard({
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-line/70 bg-white shadow-[0_16px_50px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_70px_rgba(15,23,42,0.12)] sm:rounded-[30px]">
-      <div className="relative aspect-[16/10] overflow-hidden bg-mist sm:aspect-[4/3]">
+      <div className="relative aspect-[16/9] overflow-hidden bg-mist sm:aspect-[4/3]">
         <Link
           href={`/listings/${listing.id}`}
           className="absolute inset-0 block overflow-hidden"
@@ -91,57 +91,51 @@ export function ListingCard({
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col space-y-3 p-4 sm:space-y-4 sm:p-6">
-        <div className="flex items-center">
+      <div className="flex flex-1 flex-col space-y-2 p-3.5 sm:space-y-4 sm:p-6">
+        <div className="flex items-center justify-between gap-2">
           <span
-            className={`inline-flex rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] ${listingIndicatorClass}`}
+            className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] sm:px-3 sm:py-1.5 sm:text-[11px] ${listingIndicatorClass}`}
           >
             {listingIndicator}
           </span>
+          {listing.userId || hasNoAgencyFee ? (
+            <div className="flex flex-wrap justify-end gap-1 text-[10px] font-medium sm:gap-1.5 sm:text-[11px]">
+              {listing.userId ? (
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-700 sm:px-2.5 sm:py-1">
+                  {t.common.verifiedOwner}
+                </span>
+              ) : null}
+              {hasNoAgencyFee ? (
+                <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-700 sm:px-2.5 sm:py-1">
+                  {t.common.noAgencyFee}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         <div>
           <Link href={`/listings/${listing.id}`} className="block">
-            <h3 className="font-display text-[1.15rem] font-semibold leading-tight text-ink transition group-hover:text-accent sm:text-[1.45rem]">
+            <h3 className="font-display text-[1.05rem] font-semibold leading-tight text-ink transition group-hover:text-accent sm:text-[1.45rem]">
               {listing.title}
             </h3>
           </Link>
           <LocationSummary
             locale={locale}
             value={listing}
-            className="mt-2 text-sm text-ink/60"
+            className="mt-1.5 text-[13px] text-ink/60 sm:mt-2 sm:text-sm"
           />
         </div>
 
-        <div className="flex flex-wrap gap-2 text-[13px] text-ink/72 sm:text-sm">
-          <div className="rounded-full bg-mist px-3 py-1.5 sm:py-2">
-            {listing.rooms} {t.common.roomsShort}
-          </div>
-          <div className="rounded-full bg-mist px-3 py-1.5 sm:py-2">{listing.area} m²</div>
-          <div className="rounded-full bg-mist px-3 py-1.5 sm:py-2">
-            {getPropertyTypeLabel(listing.propertyType, locale)}
-          </div>
-          <div className="rounded-full bg-mist px-3 py-1.5 sm:py-2">{listing.currency}</div>
-        </div>
-
-        <div className="flex flex-wrap gap-1.5 text-[11px] font-medium sm:gap-2 sm:text-xs">
-          <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sky-700">
-            {t.common.adminReviewed}
-          </span>
-          {listing.userId ? (
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-emerald-700">
-              {t.common.verifiedOwner}
-            </span>
-          ) : null}
-          {hasNoAgencyFee ? (
-            <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-amber-700">
-              {t.common.noAgencyFee}
-            </span>
-          ) : null}
-        </div>
+        <p className="text-[13px] text-ink/72 sm:text-sm">
+          {listing.rooms} {t.common.roomsShort} · {listing.area} m² · {listing.currency}
+        </p>
 
         <div className="mt-auto grid gap-3 pt-1">
-          <Link href={`/listings/${listing.id}`} className="btn-primary w-full text-center">
+          <Link
+            href={`/listings/${listing.id}`}
+            className="btn-primary w-full py-2.5 text-center sm:py-3"
+          >
             {t.common.viewDetails}
           </Link>
         </div>

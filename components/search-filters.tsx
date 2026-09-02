@@ -57,8 +57,8 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
 
   return (
     <form className="panel space-y-4 p-3 sm:p-5 md:p-6">
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.5fr)_minmax(180px,220px)_minmax(180px,220px)_minmax(150px,180px)_auto] lg:items-end">
-        <div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(0,1.5fr)_minmax(180px,220px)_minmax(180px,220px)_minmax(150px,180px)_auto] lg:items-end">
+        <div className="col-span-2 lg:col-span-1">
           <label htmlFor="q" className="mb-2 block text-sm font-medium text-ink/80">
             {t.search.searchLabel}
           </label>
