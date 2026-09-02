@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { CURRENCIES, LISTING_TYPES, PROPERTY_TYPES } from "@/lib/constants";
 import type { Locale } from "@/lib/i18n";
 import { getTranslations } from "@/lib/i18n";
@@ -32,29 +30,6 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
       values.currency ||
       (values.sort && values.sort !== "newest")
   );
-  const popularRegions = [
-    {
-      value: "Tashkent City",
-      label: locale === "uz" ? "Toshkent" : "Ташкент"
-    },
-    {
-      value: "Samarkand",
-      label: locale === "uz" ? "Samarqand" : "Самарканд"
-    },
-    {
-      value: "Bukhara",
-      label: locale === "uz" ? "Buxoro" : "Бухара"
-    },
-    {
-      value: "Fergana",
-      label: locale === "uz" ? "Farg‘ona" : "Фергана"
-    },
-    {
-      value: "Andijan",
-      label: locale === "uz" ? "Andijon" : "Андижан"
-    }
-  ];
-
   return (
     <form className="panel space-y-4 p-3 sm:p-5 md:p-6">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(0,1.5fr)_minmax(180px,220px)_minmax(180px,220px)_minmax(150px,180px)_auto] lg:items-end">
@@ -135,23 +110,6 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
           >
             {t.search.searchButton}
           </button>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3 border-t border-line/70 pt-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink/42">
-          {t.search.popularAreas}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {popularRegions.map((region) => (
-            <Link
-              key={region.value}
-              href={`/?region=${encodeURIComponent(region.value)}`}
-              className="rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink/72 transition hover:border-ink/30 hover:bg-mist/60 hover:text-ink"
-            >
-              {region.label}
-            </Link>
-          ))}
         </div>
       </div>
 

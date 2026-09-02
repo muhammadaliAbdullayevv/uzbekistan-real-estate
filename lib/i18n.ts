@@ -268,11 +268,13 @@ const translations = {
       loggedInAs: "Kirish qilingan email",
       emailNotVerified:
         "Email manzilingiz hali tasdiqlanmagan. Ro'yxatdan o'tganda yuborilgan havolani oching.",
-      preferencesPromptTitle: "Qidiruv afzalliklaringizni sozlaysizmi?",
-      preferencesPromptDescription:
-        "Viloyat, uy turi va narx oralig'ini tanlang — sizga mos e'lonlarni topish osonlashadi. Buni istalgan vaqt /account sahifasidan o'zgartirishingiz mumkin.",
-      preferencesPromptSave: "Afzalliklarni saqlash",
-      preferencesPromptSkip: "Hozir emas",
+      profileSectionTitle: "Profil ma'lumotlari",
+      profileSectionDescription:
+        "Ism, telefon raqami va Telegram foydalanuvchi nomingizni bu yerda yangilang.",
+      telegramUsername: "Telegram foydalanuvchi nomi",
+      telegramPlaceholder: "masalan: username",
+      saveProfile: "Saqlash",
+      profileUpdated: "Profil ma'lumotlari yangilandi.",
       quickActions: "Tezkor amallar",
       security: "Xavfsizlik",
       securityTitle: "Hisob xavfsizligi",
@@ -751,11 +753,13 @@ const translations = {
       loggedInAs: "Вы вошли как",
       emailNotVerified:
         "Ваш email еще не подтвержден. Откройте ссылку, отправленную при регистрации.",
-      preferencesPromptTitle: "Настроить предпочтения поиска?",
-      preferencesPromptDescription:
-        "Выберите регион, тип жилья и диапазон цен — так будет проще находить подходящие варианты. Это можно изменить в любой момент на странице /account.",
-      preferencesPromptSave: "Сохранить предпочтения",
-      preferencesPromptSkip: "Не сейчас",
+      profileSectionTitle: "Данные профиля",
+      profileSectionDescription:
+        "Обновите здесь имя, номер телефона и имя пользователя Telegram.",
+      telegramUsername: "Имя пользователя Telegram",
+      telegramPlaceholder: "например: username",
+      saveProfile: "Сохранить",
+      profileUpdated: "Данные профиля обновлены.",
       quickActions: "Быстрые действия",
       security: "Безопасность",
       securityTitle: "Безопасность аккаунта",

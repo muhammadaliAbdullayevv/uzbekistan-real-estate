@@ -44,9 +44,6 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
         <h1 className="max-w-3xl font-display text-[1.55rem] font-semibold leading-[1.15] text-ink sm:text-[2.1rem] md:text-[2.6rem]">
           {t.home.title}
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-ink/68 sm:text-base sm:leading-7">
-          {t.home.subtitle}
-        </p>
       </section>
 
       <SearchFilters locale={locale} values={filters} />
@@ -72,7 +69,7 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
             description={t.home.emptyDescription}
           />
         ) : (
-          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-6 lg:grid-cols-3">
             {listings.map((listing) => (
               <ListingCard
                 key={listing.id}

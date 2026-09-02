@@ -355,13 +355,3 @@ export async function updateUserPreferences(userId: string, input: UserPreferenc
 
   return getUserProfileById(userId);
 }
-
-export async function dismissPreferencesPrompt(userId: string) {
-  const now = new Date();
-
-  await prisma.$executeRaw`
-    UPDATE "User"
-    SET "preferencesPromptDismissedAt" = ${now}, "updatedAt" = ${now}
-    WHERE "id" = ${userId} AND "preferencesPromptDismissedAt" IS NULL
-  `;
-}

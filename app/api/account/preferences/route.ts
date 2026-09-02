@@ -28,6 +28,7 @@ export async function POST(request: Request) {
   const parsed = userPreferenceSchema.safeParse({
     name: formData.get("name"),
     phone: formData.get("phone"),
+    telegramUsername: formData.get("telegramUsername"),
     preferredRegion: formData.get("preferredRegion"),
     preferredDistrict: formData.get("preferredDistrict"),
     preferredPropertyType: formData.get("preferredPropertyType"),

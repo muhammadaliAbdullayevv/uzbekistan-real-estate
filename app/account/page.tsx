@@ -3,7 +3,7 @@ import Link from "next/link";
 export { privatePageMetadata as metadata } from "@/lib/site";
 import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
-import { PreferencesPrompt } from "@/components/preferences-prompt";
+import { ProfileEditForm } from "@/components/profile-edit-form";
 import { formatDate, formatDisplayName } from "@/lib/format";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import {
@@ -11,10 +11,13 @@ import {
   getFavoriteListingsForUser,
   getRecentViewedListingsForUser
 } from "@/lib/listings";
-import { getRegionOptions } from "@/lib/locations";
 import { requireUser } from "@/lib/session-auth";
 
-export default async function AccountPage() {
+type AccountPageProps = {
+  searchParams?: Record<string, string | string[] | undefined>;
+};
+
+export default async function AccountPage({ searchParams = {} }: AccountPageProps) {
   const locale = getLocale();
   const t = getTranslations(locale);
   const user = await requireUser("/account");
@@ -26,43 +29,10 @@ export default async function AccountPage() {
   ]);
 
   const displayName = user.name ? formatDisplayName(user.name) : user.email;
-  const shouldShowPreferencesPrompt =
-    !user.preferencesPromptDismissedAt &&
-    !user.preferredRegion &&
-    !user.preferredDistrict &&
-    !user.preferredPropertyType &&
-    !user.preferredRentType &&
-    user.preferredMinPrice === null &&
-    user.preferredMaxPrice === null;
+  const profileUpdated = searchParams.updated === "1";
 
   return (
     <div className="shell space-y-10">
-      {shouldShowPreferencesPrompt ? (
-        <PreferencesPrompt
-          name={user.name || user.email.split("@")[0] || "User"}
-          phone={user.phone ?? ""}
-          regionOptions={getRegionOptions(locale)}
-          propertyTypeLabels={t.enums.propertyTypes}
-          rentTypeLabels={t.enums.rentTypes}
-          copy={{
-            title: t.account.preferencesPromptTitle,
-            description: t.account.preferencesPromptDescription,
-            region: t.search.region,
-            anyRegion: t.search.allRegions,
-            district: t.search.districtCity,
-            districtPlaceholder: t.search.districtCityPlaceholder,
-            propertyType: t.search.propertyType,
-            anyPropertyType: t.search.allTypes,
-            rentType: t.addListing.form.rentType,
-            anyRentType: t.search.any,
-            minPrice: t.search.minPrice,
-            maxPrice: t.search.maxPrice,
-            save: t.account.preferencesPromptSave,
-            skip: t.account.preferencesPromptSkip
-          }}
-        />
-      ) : null}
-
       <section className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
         <div className="panel space-y-6 p-6 sm:p-8">
           <span className="pill border-accent/25 bg-accent/5 text-accent">{t.account.pill}</span>
@@ -75,20 +45,39 @@ export default async function AccountPage() {
               {t.account.emailNotVerified}
             </div>
           ) : null}
-          <div className="space-y-3 rounded-[24px] bg-mist p-5 text-sm leading-7 text-ink/70">
-            <p>
-              {t.account.loggedInAs} <strong className="text-ink">{user.email}</strong>
-            </p>
-            {user.phone ? (
-              <p>
-                {t.account.phone}: <strong className="text-ink">{user.phone}</strong>
-              </p>
-            ) : null}
-            <p className="text-ink/65">
-              {t.account.memberSince}{" "}
-              <strong className="text-ink">{formatDate(user.createdAt, locale)}</strong>
-            </p>
-          </div>
+
+          {profileUpdated ? (
+            <div className="rounded-[24px] border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-accent">
+              {t.account.profileUpdated}
+            </div>
+          ) : null}
+
+          <ProfileEditForm
+            name={user.name ?? ""}
+            phone={user.phone ?? ""}
+            telegramUsername={user.telegramUsername ?? ""}
+            email={user.email}
+            memberSinceValue={formatDate(user.createdAt, locale)}
+            preservedPreferences={{
+              preferredRegion: user.preferredRegion,
+              preferredDistrict: user.preferredDistrict,
+              preferredPropertyType: user.preferredPropertyType,
+              preferredRentType: user.preferredRentType,
+              preferredMinPrice: user.preferredMinPrice,
+              preferredMaxPrice: user.preferredMaxPrice
+            }}
+            copy={{
+              title: t.account.profileSectionTitle,
+              description: t.account.profileSectionDescription,
+              name: t.account.name,
+              phone: t.account.phone,
+              telegramUsername: t.account.telegramUsername,
+              telegramPlaceholder: t.account.telegramPlaceholder,
+              loggedInAs: t.account.loggedInAs,
+              memberSinceLabel: t.account.memberSince,
+              save: t.account.saveProfile
+            }}
+          />
 
           <section className="space-y-3 rounded-[24px] border border-line/80 bg-white p-5 shadow-sm">
             <div>
