@@ -81,9 +81,12 @@ export async function POST(request: Request) {
       );
     }
 
+    const allowLocalUploads = process.env.ALLOW_LOCAL_UPLOADS === "true";
+
     if (
       !hasSupabaseStorageConfig() &&
       !hasCloudinaryUploadConfig() &&
+      !allowLocalUploads &&
       process.env.NODE_ENV === "production"
     ) {
       return NextResponse.json(
