@@ -9,7 +9,7 @@ import {
 import { normalizeTelegramUsername } from "@/lib/format";
 import { UZBEKISTAN_REGIONS } from "@/lib/locations";
 
-function isValidListingImageValue(value: string) {
+export function isValidListingImageValue(value: string) {
   if (value.startsWith("/uploads/")) {
     return true;
   }
@@ -146,19 +146,11 @@ const optionalPositiveInt = z.preprocess((value) => {
 export const userPreferenceSchema = z
   .object({
     name: z.string().trim().min(2, "Name is required.").max(80),
-    phone: z.string().trim().max(30).optional(),
-    telegramUsername: z
+    phone: z
       .string()
       .trim()
-      .max(64)
       .optional()
-      .transform((value) => normalizeTelegramUsername(value)),
-    avatarUrl: z
-      .string()
-      .trim()
-      .max(2000)
-      .optional()
-      .refine((value) => !value || isValidListingImageValue(value), "Invalid avatar URL."),
+      .refine((value) => !value || /^\+998\d{9}$/.test(value), "Phone must be a valid Uzbekistan number."),
     preferredRegion: z.enum(UZBEKISTAN_REGIONS).optional().or(z.literal("")),
     preferredDistrict: z.string().trim().max(80).optional().or(z.literal("")),
     preferredPropertyType: z.enum(PROPERTY_TYPES).optional().or(z.literal("")),
@@ -169,8 +161,6 @@ export const userPreferenceSchema = z
   .transform((value) => ({
     name: value.name,
     phone: value.phone?.trim() || null,
-    telegramUsername: value.telegramUsername || null,
-    avatarUrl: value.avatarUrl?.trim() || null,
     preferredRegion: value.preferredRegion || null,
     preferredDistrict: value.preferredDistrict || null,
     preferredPropertyType: value.preferredPropertyType || null,

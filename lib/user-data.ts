@@ -362,8 +362,6 @@ export async function updateUserPreferences(userId: string, input: UserPreferenc
         WHEN "phone" IS NOT DISTINCT FROM ${input.phone} THEN "phoneVerifiedAt"
         ELSE NULL
       END,
-      "telegramUsername" = ${input.telegramUsername},
-      "avatarUrl" = ${input.avatarUrl},
       "preferredRegion" = ${input.preferredRegion},
       "preferredDistrict" = ${input.preferredDistrict},
       "preferredPropertyType" = CAST(${input.preferredPropertyType} AS "PropertyType"),
@@ -371,6 +369,19 @@ export async function updateUserPreferences(userId: string, input: UserPreferenc
       "preferredMinPrice" = ${input.preferredMinPrice},
       "preferredMaxPrice" = ${input.preferredMaxPrice},
       "updatedAt" = ${now}
+    WHERE "id" = ${userId}
+  `;
+
+  return getUserProfileById(userId);
+}
+
+/** Saves the profile photo immediately on upload, independent of the rest of the profile form. */
+export async function updateUserAvatar(userId: string, avatarUrl: string) {
+  const now = new Date();
+
+  await prisma.$executeRaw`
+    UPDATE "User"
+    SET "avatarUrl" = ${avatarUrl}, "updatedAt" = ${now}
     WHERE "id" = ${userId}
   `;
 

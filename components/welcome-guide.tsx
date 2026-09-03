@@ -25,25 +25,37 @@ type WelcomeGuideProps = {
 function SearchIllustration() {
   return (
     <svg
-      viewBox="0 0 280 150"
+      viewBox="0 0 280 170"
       className="mt-4 w-full rounded-[18px] bg-mist"
       aria-hidden="true"
     >
-      <rect x="16" y="16" width="248" height="34" rx="17" className="fill-white stroke-line" strokeWidth="1.5" />
-      <circle cx="36" cy="33" r="7" className="fill-none stroke-accent" strokeWidth="2.5" />
-      <line x1="41" y1="38" x2="46" y2="43" className="stroke-accent" strokeWidth="2.5" strokeLinecap="round" />
-      <rect x="56" y="28" width="90" height="10" rx="5" className="fill-line" />
-      <rect x="196" y="22" width="52" height="22" rx="11" className="fill-accent" />
+      {/* Search bar */}
+      <rect x="14" y="14" width="252" height="32" rx="16" className="fill-white stroke-line" strokeWidth="1.5" />
+      <circle cx="32" cy="30" r="6" className="fill-none stroke-accent" strokeWidth="2.2" />
+      <line x1="36.5" y1="34.5" x2="41" y2="39" className="stroke-accent" strokeWidth="2.2" strokeLinecap="round" />
+      <rect x="50" y="25" width="80" height="9" rx="4.5" className="fill-ink/15" />
+      <rect x="190" y="19" width="60" height="21" rx="10.5" className="fill-accent" />
+      <rect x="202" y="27" width="36" height="6" rx="3" className="fill-white/85" />
 
-      <rect x="16" y="66" width="118" height="68" rx="14" className="fill-white stroke-line" strokeWidth="1.5" />
-      <rect x="16" y="66" width="118" height="40" rx="14" className="fill-line" />
-      <rect x="28" y="116" width="60" height="8" rx="4" className="fill-line" />
-      <rect x="28" y="128" width="36" height="6" rx="3" className="fill-line" />
+      {/* Card 1 */}
+      <rect x="14" y="58" width="122" height="98" rx="14" className="fill-white stroke-line" strokeWidth="1.5" />
+      <rect x="14" y="58" width="122" height="56" rx="14" className="fill-mist" />
+      <path d="M28 96 40 84 52 96 52 102 44 102 44 90 32 90 32 102 28 102Z" className="fill-ink" />
+      <circle cx="112" cy="72" r="7" className="fill-saffron" />
+      <rect x="22" y="100" width="46" height="14" rx="7" className="fill-ink" />
+      <rect x="22" y="123" width="52" height="7" rx="3.5" className="fill-ink/70" />
+      <rect x="22" y="135" width="72" height="6" rx="3" className="fill-ink/35" />
+      <rect x="22" y="145" width="36" height="8" rx="4" className="fill-accent/15" />
 
-      <rect x="146" y="66" width="118" height="68" rx="14" className="fill-white stroke-line" strokeWidth="1.5" />
-      <rect x="146" y="66" width="118" height="40" rx="14" className="fill-accent/20" />
-      <rect x="158" y="116" width="60" height="8" rx="4" className="fill-line" />
-      <rect x="158" y="128" width="36" height="6" rx="3" className="fill-line" />
+      {/* Card 2 */}
+      <rect x="144" y="58" width="122" height="98" rx="14" className="fill-white stroke-line" strokeWidth="1.5" />
+      <rect x="144" y="58" width="122" height="56" rx="14" className="fill-accent/15" />
+      <path d="M158 96 170 84 182 96 182 102 174 102 174 90 162 90 162 102 158 102Z" className="fill-accent" />
+      <circle cx="242" cy="72" r="7" className="fill-saffron" />
+      <rect x="152" y="100" width="46" height="14" rx="7" className="fill-ink" />
+      <rect x="152" y="123" width="58" height="7" rx="3.5" className="fill-ink/70" />
+      <rect x="152" y="135" width="66" height="6" rx="3" className="fill-ink/35" />
+      <rect x="152" y="145" width="36" height="8" rx="4" className="fill-accent/15" />
     </svg>
   );
 }

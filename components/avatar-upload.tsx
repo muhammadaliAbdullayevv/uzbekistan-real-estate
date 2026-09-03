@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useRef, useState, type ChangeEvent } from "react";
 
 type AvatarUploadProps = {
@@ -20,6 +21,7 @@ const SIZE_CLASSES: Record<"md" | "lg", { frame: string; text: string; sizes: st
 };
 
 export function AvatarUpload({ initialUrl, initial, size = "md", copy }: AvatarUploadProps) {
+  const router = useRouter();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialUrl);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +50,23 @@ export function AvatarUpload({ initialUrl, initial, size = "md", copy }: AvatarU
         throw new Error(payload.error ?? copy.uploadFailed);
       }
 
-      setAvatarUrl(payload.url as string);
+      const uploadedUrl = payload.url as string;
+
+      // Persist immediately so the profile photo doesn't depend on the rest
+      // of the form being saved -- this is what lets the header avatar
+      // (a separate server component) pick up the change right away.
+      const saveResponse = await fetch("/api/account/avatar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatarUrl: uploadedUrl })
+      });
+
+      if (!saveResponse.ok) {
+        throw new Error(copy.uploadFailed);
+      }
+
+      setAvatarUrl(uploadedUrl);
+      router.refresh();
     } catch (uploadIssue) {
       setError(uploadIssue instanceof Error ? uploadIssue.message : copy.uploadFailed);
     } finally {
@@ -61,8 +79,6 @@ export function AvatarUpload({ initialUrl, initial, size = "md", copy }: AvatarU
 
   return (
     <div className="flex items-center gap-4">
-      <input type="hidden" name="avatarUrl" value={avatarUrl ?? ""} />
-
       <div
         className={`relative flex ${sizeClasses.frame} shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent/25 bg-accent/10 ${sizeClasses.text} font-bold text-accent`}
       >

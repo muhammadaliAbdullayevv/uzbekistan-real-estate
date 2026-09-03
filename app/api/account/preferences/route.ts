@@ -26,11 +26,11 @@ export async function POST(request: Request) {
       ? (formData.get("preferredListingType") as string)
       : null
   );
+  const phoneDigits =
+    typeof formData.get("phone") === "string" ? (formData.get("phone") as string).trim() : "";
   const parsed = userPreferenceSchema.safeParse({
     name: formData.get("name"),
-    phone: formData.get("phone"),
-    telegramUsername: formData.get("telegramUsername"),
-    avatarUrl: formData.get("avatarUrl"),
+    phone: phoneDigits ? `+998${phoneDigits}` : "",
     preferredRegion: formData.get("preferredRegion"),
     preferredDistrict: formData.get("preferredDistrict"),
     preferredPropertyType: formData.get("preferredPropertyType"),

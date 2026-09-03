@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { HeaderAvatarLink } from "@/components/header-avatar-link";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { getUserSession } from "@/lib/user-session";
@@ -63,24 +63,11 @@ export async function SiteHeader() {
                   <span>{t.nav.addListing}</span>
                 </Link>
 
-                <Link
-                  href="/account"
-                  aria-label={t.nav.account}
-                  title={t.nav.account}
-                  className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent/25 bg-accent/10 text-sm font-bold text-accent transition hover:bg-accent/15 sm:h-10 sm:w-10"
-                >
-                  {session.avatarUrl ? (
-                    <Image
-                      src={session.avatarUrl}
-                      alt=""
-                      fill
-                      sizes="40px"
-                      className="object-cover"
-                    />
-                  ) : (
-                    avatarInitial
-                  )}
-                </Link>
+                <HeaderAvatarLink
+                  avatarUrl={session.avatarUrl}
+                  initial={avatarInitial}
+                  label={t.nav.account}
+                />
               </>
             ) : (
               <>

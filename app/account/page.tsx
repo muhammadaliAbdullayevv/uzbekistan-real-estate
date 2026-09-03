@@ -3,9 +3,9 @@ import Link from "next/link";
 export { privatePageMetadata as metadata } from "@/lib/site";
 import { BackLink } from "@/components/back-link";
 import { ProfileEditForm } from "@/components/profile-edit-form";
-import { formatDate, formatDisplayName } from "@/lib/format";
+import { ProfileSummary } from "@/components/profile-summary";
 import { getLocale, getTranslations } from "@/lib/i18n";
-import { getRegionOptions } from "@/lib/locations";
+import { getRegionLabel, getRegionOptions } from "@/lib/locations";
 import { getOwnerDashboardPath, isOwner } from "@/lib/owner";
 import { requireUser } from "@/lib/session-auth";
 
@@ -74,7 +74,6 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
   const t = getTranslations(locale);
   const user = await requireUser("/account");
 
-  const displayName = user.name ? formatDisplayName(user.name) : user.email;
   const showOwnerDashboardLink = isOwner({ email: user.email });
   const profileUpdated = searchParams.updated === "1";
   const telegramError = typeof searchParams.telegramError === "string" ? searchParams.telegramError : null;
@@ -84,6 +83,20 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
       : telegramError === "no-phone"
         ? t.account.phoneVerifyNoPhone
         : null;
+
+  const isProfileComplete = Boolean(user.phone && user.preferredRegion);
+  const isEditMode = searchParams.edit === "1" || !isProfileComplete || Boolean(telegramErrorMessage);
+
+  const mastheadCopy = {
+    avatarChange: t.account.avatarChange,
+    avatarUploading: t.account.avatarUploading,
+    avatarUploadFailed: t.account.avatarUploadFailed,
+    emailVerifiedBadge: t.account.emailVerifiedBadge,
+    emailNotVerifiedBadge: t.account.emailNotVerifiedBadge,
+    phoneVerifiedBadge: t.account.phoneVerifiedBadge,
+    phoneNotVerifiedBadge: t.account.phoneNotVerifiedBadge,
+    phoneNotSetBadge: t.account.phoneNotSetBadge
+  };
 
   return (
     <div className="shell space-y-8">
@@ -101,57 +114,74 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
         </div>
       ) : null}
 
+      {!isProfileComplete ? (
+        <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+          <strong className="font-semibold">{t.account.incompleteProfileTitle}</strong>{" "}
+          {t.account.incompleteProfileBody}
+        </div>
+      ) : null}
+
       <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-        <ProfileEditForm
-          name={user.name ?? ""}
-          phone={user.phone ?? ""}
-          telegramUsername={user.telegramUsername ?? ""}
-          email={user.email}
-          avatarUrl={user.avatarUrl}
-          emailVerifiedAt={user.emailVerifiedAt}
-          phoneVerifiedAt={user.phoneVerifiedAt}
-          memberSinceValue={formatDate(user.createdAt, locale)}
-          regionOptions={getRegionOptions(locale)}
-          preservedPreferences={{
-            preferredRegion: user.preferredRegion,
-            preferredDistrict: user.preferredDistrict,
-            preferredPropertyType: user.preferredPropertyType,
-            preferredRentType: user.preferredRentType,
-            preferredMinPrice: user.preferredMinPrice,
-            preferredMaxPrice: user.preferredMaxPrice
-          }}
-          copy={{
-            sectionPersonal: t.account.profileSectionPersonal,
-            sectionContact: t.account.profileSectionContact,
-            sectionLocation: t.account.profileSectionLocation,
-            name: t.account.name,
-            phone: t.account.phone,
-            telegramUsername: t.account.telegramUsername,
-            telegramPlaceholder: t.account.telegramPlaceholder,
-            memberSinceLabel: t.account.memberSince,
-            save: t.account.saveProfile,
-            avatarChange: t.account.avatarChange,
-            avatarUploading: t.account.avatarUploading,
-            avatarUploadFailed: t.account.avatarUploadFailed,
-            region: t.search.region,
-            anyRegion: t.search.allRegions,
-            district: t.search.districtCity,
-            districtPlaceholder: t.search.districtCityPlaceholder,
-            locationDetect: t.account.locationDetect,
-            locationDetecting: t.account.locationDetecting,
-            locationUnsupported: t.account.locationUnsupported,
-            locationPermissionDenied: t.account.locationPermissionDenied,
-            locationFailed: t.account.locationFailed,
-            phoneVerified: t.account.phoneVerified,
-            phoneVerifyButton: t.account.phoneVerifyButton,
-            phoneVerifyHint: t.account.phoneVerifyHint,
-            emailVerifiedBadge: t.account.emailVerifiedBadge,
-            emailNotVerifiedBadge: t.account.emailNotVerifiedBadge,
-            phoneVerifiedBadge: t.account.phoneVerifiedBadge,
-            phoneNotVerifiedBadge: t.account.phoneNotVerifiedBadge,
-            phoneNotSetBadge: t.account.phoneNotSetBadge
-          }}
-        />
+        {isEditMode ? (
+          <ProfileEditForm
+            name={user.name ?? ""}
+            phone={user.phone ?? ""}
+            email={user.email}
+            avatarUrl={user.avatarUrl}
+            emailVerifiedAt={user.emailVerifiedAt}
+            phoneVerifiedAt={user.phoneVerifiedAt}
+            regionOptions={getRegionOptions(locale)}
+            preservedPreferences={{
+              preferredRegion: user.preferredRegion,
+              preferredDistrict: user.preferredDistrict,
+              preferredPropertyType: user.preferredPropertyType,
+              preferredRentType: user.preferredRentType,
+              preferredMinPrice: user.preferredMinPrice,
+              preferredMaxPrice: user.preferredMaxPrice
+            }}
+            copy={{
+              sectionPersonal: t.account.profileSectionPersonal,
+              sectionContact: t.account.profileSectionContact,
+              sectionLocation: t.account.profileSectionLocation,
+              name: t.account.name,
+              phone: t.account.phone,
+              save: t.account.saveProfile,
+              region: t.search.region,
+              anyRegion: t.search.allRegions,
+              district: t.search.districtCity,
+              districtPlaceholder: t.search.districtCityPlaceholder,
+              locationDetect: t.account.locationDetect,
+              locationDetecting: t.account.locationDetecting,
+              locationUnsupported: t.account.locationUnsupported,
+              locationPermissionDenied: t.account.locationPermissionDenied,
+              locationFailed: t.account.locationFailed,
+              locationDetectHint: t.account.locationDetectHint,
+              phoneVerified: t.account.phoneVerified,
+              phoneVerifyButton: t.account.phoneVerifyButton,
+              phoneVerifyHint: t.account.phoneVerifyHint,
+              ...mastheadCopy
+            }}
+          />
+        ) : (
+          <ProfileSummary
+            name={user.name ?? ""}
+            email={user.email}
+            phone={user.phone ?? ""}
+            avatarUrl={user.avatarUrl}
+            emailVerifiedAt={user.emailVerifiedAt}
+            phoneVerifiedAt={user.phoneVerifiedAt}
+            regionLabel={getRegionLabel(user.preferredRegion, locale)}
+            district={user.preferredDistrict}
+            copy={{
+              ...mastheadCopy,
+              phoneRowLabel: t.account.phone,
+              regionRowLabel: t.search.region,
+              districtRowLabel: t.search.districtCity,
+              notSet: t.account.notSet,
+              editButton: t.account.editProfile
+            }}
+          />
+        )}
 
         <div className="panel p-4 sm:p-5 lg:sticky lg:top-24">
           <Link
