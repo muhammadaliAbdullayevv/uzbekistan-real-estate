@@ -29,6 +29,7 @@ export async function POST(request: Request) {
     name: formData.get("name"),
     phone: formData.get("phone"),
     telegramUsername: formData.get("telegramUsername"),
+    avatarUrl: formData.get("avatarUrl"),
     preferredRegion: formData.get("preferredRegion"),
     preferredDistrict: formData.get("preferredDistrict"),
     preferredPropertyType: formData.get("preferredPropertyType"),
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(redirectUrl("/login?next=/account"), { status: 303 });
   }
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   revalidatePath("/account");
 
   const response = NextResponse.redirect(redirectUrl("/account?updated=1"), {

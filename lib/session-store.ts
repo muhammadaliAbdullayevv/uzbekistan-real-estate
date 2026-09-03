@@ -8,6 +8,7 @@ type StoredUserSessionRow = {
   userId: string;
   email: string;
   name: string | null;
+  avatarUrl: string | null;
   role: "USER" | "ADMIN";
   status: "ACTIVE" | "BLOCKED";
   expiresAt: Date;
@@ -82,6 +83,7 @@ export async function getStoredUserSession(token: string) {
       u."id" AS "userId",
       u."email",
       u."name",
+      u."avatarUrl",
       u."role",
       u."status",
       s."expiresAt"

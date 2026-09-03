@@ -15,6 +15,7 @@ export type UserSession = {
   userId: string;
   email: string;
   name: string | null;
+  avatarUrl: string | null;
 };
 
 export async function createUserSession(session: UserSession) {
@@ -42,7 +43,8 @@ export async function getUserSession() {
     return {
       userId: session.userId,
       email: session.email,
-      name: session.name
+      name: session.name,
+      avatarUrl: session.avatarUrl
     } satisfies UserSession;
   } catch {
     return null;

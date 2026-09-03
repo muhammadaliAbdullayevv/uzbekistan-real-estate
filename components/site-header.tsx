@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -32,25 +33,16 @@ export async function SiteHeader() {
           <nav className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
             <LanguageSwitcher currentLocale={locale} label={t.language.label} />
 
-            <Link
-              href="/"
-              className="rounded-full border border-line/80 bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-ink/20 hover:bg-mist/60 sm:px-4 sm:py-2.5 sm:text-sm"
-            >
-              {t.nav.rentals}
-            </Link>
-
             {session ? (
               <>
                 <Link
                   href="/add-listing"
-                  aria-label={t.nav.addListing}
-                  title={t.nav.addListing}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink text-white transition hover:bg-accent sm:h-10 sm:w-10"
+                  className="flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-3 py-2 text-xs font-semibold text-white transition hover:bg-accent sm:px-4 sm:py-2.5 sm:text-sm"
                 >
                   <svg
                     aria-hidden="true"
                     viewBox="0 0 24 24"
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
@@ -59,15 +51,26 @@ export async function SiteHeader() {
                   >
                     <path d="M12 5v14M5 12h14" />
                   </svg>
+                  <span>{t.nav.addListing}</span>
                 </Link>
 
                 <Link
                   href={profileHref}
                   aria-label={t.nav.account}
                   title={t.nav.account}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-accent/25 bg-accent/10 text-sm font-bold text-accent transition hover:bg-accent/15 sm:h-10 sm:w-10"
+                  className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent/25 bg-accent/10 text-sm font-bold text-accent transition hover:bg-accent/15 sm:h-10 sm:w-10"
                 >
-                  {avatarInitial}
+                  {session.avatarUrl ? (
+                    <Image
+                      src={session.avatarUrl}
+                      alt=""
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    avatarInitial
+                  )}
                 </Link>
               </>
             ) : (

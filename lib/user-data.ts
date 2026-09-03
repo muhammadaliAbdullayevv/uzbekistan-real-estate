@@ -15,6 +15,7 @@ export type UserProfile = {
   email: string;
   emailVerifiedAt: Date | null;
   name: string | null;
+  avatarUrl: string | null;
   role: UserRole;
   status: UserStatus;
   phone: string | null;
@@ -35,6 +36,7 @@ type UserRow = {
   email: string;
   emailVerifiedAt: Date | null;
   name: string | null;
+  avatarUrl: string | null;
   role: UserRole;
   status: UserStatus;
   phone: string | null;
@@ -83,6 +85,7 @@ export async function getUserByEmail(email: string): Promise<UserAuthRecord | nu
       "email",
       "emailVerifiedAt",
       "name",
+      "avatarUrl",
       "role",
       "status",
       "passwordHash",
@@ -110,6 +113,7 @@ const publicUserColumns = Prisma.sql`
   "email",
   "emailVerifiedAt",
   "name",
+  "avatarUrl",
   "role",
   "status",
   "phone",
@@ -195,6 +199,7 @@ export async function getUserByGoogleId(googleId: string): Promise<UserAuthRecor
       "email",
       "emailVerifiedAt",
       "name",
+      "avatarUrl",
       "role",
       "status",
       "passwordHash",
@@ -343,6 +348,7 @@ export async function updateUserPreferences(userId: string, input: UserPreferenc
       "name" = ${input.name},
       "phone" = ${input.phone},
       "telegramUsername" = ${input.telegramUsername},
+      "avatarUrl" = ${input.avatarUrl},
       "preferredRegion" = ${input.preferredRegion},
       "preferredDistrict" = ${input.preferredDistrict},
       "preferredPropertyType" = CAST(${input.preferredPropertyType} AS "PropertyType"),

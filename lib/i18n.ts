@@ -127,7 +127,9 @@ const translations = {
       resultsNote: "Faqat tasdiqlangan e'lonlar. Egalar bilan to'g'ridan-to'g'ri bog'laning.",
       emptyTitle: "Bu filtrlarga mos ijara topilmadi",
       emptyDescription:
-        "Narx oralig'ini kengaytiring, xona sonini tozalang yoki boshqa ko'cha va mo'ljalni qidiring."
+        "Narx oralig'ini kengaytiring, xona sonini tozalang yoki boshqa ko'cha va mo'ljalni qidiring.",
+      welcomeGuideTitle: "Xush kelibsiz!",
+      welcomeGuideDismiss: "Tushunarli"
     },
     search: {
       searchLabel: "Qidiruv",
@@ -275,6 +277,14 @@ const translations = {
       telegramPlaceholder: "masalan: username",
       saveProfile: "Saqlash",
       profileUpdated: "Profil ma'lumotlari yangilandi.",
+      avatarChange: "Rasmni o'zgartirish",
+      avatarUploading: "Yuklanmoqda...",
+      avatarUploadFailed: "Rasmni yuklab bo'lmadi.",
+      locationDetect: "Joylashuvni aniqlash",
+      locationDetecting: "Aniqlanmoqda...",
+      locationUnsupported: "Brauzeringiz joylashuvni aniqlashni qo'llab-quvvatlamaydi.",
+      locationPermissionDenied: "Joylashuvga ruxsat berilmadi.",
+      locationFailed: "Joylashuvni aniqlab bo'lmadi. Qo'lda tanlang.",
       quickActions: "Tezkor amallar",
       security: "Xavfsizlik",
       securityTitle: "Hisob xavfsizligi",
@@ -613,7 +623,9 @@ const translations = {
       resultsNote: "Только одобренные объявления. Связывайтесь с владельцами напрямую.",
       emptyTitle: "По этим фильтрам ничего не найдено",
       emptyDescription:
-        "Расширьте диапазон цены, уберите фильтр по комнатам или попробуйте другой адрес и ориентир."
+        "Расширьте диапазон цены, уберите фильтр по комнатам или попробуйте другой адрес и ориентир.",
+      welcomeGuideTitle: "Добро пожаловать!",
+      welcomeGuideDismiss: "Понятно"
     },
     search: {
       searchLabel: "Поиск",
@@ -760,6 +772,14 @@ const translations = {
       telegramPlaceholder: "например: username",
       saveProfile: "Сохранить",
       profileUpdated: "Данные профиля обновлены.",
+      avatarChange: "Изменить фото",
+      avatarUploading: "Загрузка...",
+      avatarUploadFailed: "Не удалось загрузить фото.",
+      locationDetect: "Определить местоположение",
+      locationDetecting: "Определяем...",
+      locationUnsupported: "Ваш браузер не поддерживает определение местоположения.",
+      locationPermissionDenied: "Доступ к местоположению не разрешён.",
+      locationFailed: "Не удалось определить местоположение. Выберите вручную.",
       quickActions: "Быстрые действия",
       security: "Безопасность",
       securityTitle: "Безопасность аккаунта",

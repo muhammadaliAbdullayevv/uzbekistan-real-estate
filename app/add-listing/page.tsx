@@ -2,6 +2,7 @@
 
 export { privatePageMetadata as metadata } from "@/lib/site";
 import { AddListingForm } from "@/components/add-listing-form";
+import { BackLink } from "@/components/back-link";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { getRegionOptions } from "@/lib/locations";
 import { getCurrentUser } from "@/lib/session-auth";
@@ -17,7 +18,10 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
   const showSuccess = searchParams.success === "1";
 
   return (
-    <div className="shell grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
+    <div className="shell space-y-6">
+      <BackLink href="/" label={t.common.backToListings} />
+
+      <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
       <section className="panel h-fit space-y-5 p-6 sm:p-8">
         <span className="pill border-accent/25 bg-accent/5 text-accent">
           {t.addListing.pill}
@@ -82,6 +86,7 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
         initialPhone={user?.phone}
         isAuthenticated={Boolean(user)}
       />
+      </div>
     </div>
   );
 }

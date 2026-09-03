@@ -174,10 +174,12 @@ export function toUserSession(user: {
   id: string;
   email: string;
   name: string | null;
+  avatarUrl?: string | null;
 }): UserSession {
   return {
     userId: user.id,
     email: user.email,
-    name: user.name
+    name: user.name,
+    avatarUrl: user.avatarUrl ?? null
   };
 }

@@ -1,6 +1,7 @@
 import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
 import { SearchFilters } from "@/components/search-filters";
+import { WelcomeGuide } from "@/components/welcome-guide";
 import { formatMessage, getLocale, getTranslations } from "@/lib/i18n";
 import {
   getApprovedListings,
@@ -40,6 +41,14 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
 
   return (
     <div className="shell space-y-3 sm:space-y-4">
+      <WelcomeGuide
+        copy={{
+          title: t.home.welcomeGuideTitle,
+          body: t.home.subtitle,
+          dismiss: t.home.welcomeGuideDismiss
+        }}
+      />
+
       <section className="rounded-[24px] border border-line/70 bg-white px-4 py-4 shadow-soft sm:rounded-[28px] sm:px-7 sm:py-6">
         <h1 className="max-w-3xl font-display text-[1.55rem] font-semibold leading-[1.15] text-ink sm:text-[2.1rem] md:text-[2.6rem]">
           {t.home.title}

@@ -153,6 +153,12 @@ export const userPreferenceSchema = z
       .max(64)
       .optional()
       .transform((value) => normalizeTelegramUsername(value)),
+    avatarUrl: z
+      .string()
+      .trim()
+      .max(2000)
+      .optional()
+      .refine((value) => !value || isValidListingImageValue(value), "Invalid avatar URL."),
     preferredRegion: z.enum(UZBEKISTAN_REGIONS).optional().or(z.literal("")),
     preferredDistrict: z.string().trim().max(80).optional().or(z.literal("")),
     preferredPropertyType: z.enum(PROPERTY_TYPES).optional().or(z.literal("")),
@@ -164,6 +170,7 @@ export const userPreferenceSchema = z
     name: value.name,
     phone: value.phone?.trim() || null,
     telegramUsername: value.telegramUsername || null,
+    avatarUrl: value.avatarUrl?.trim() || null,
     preferredRegion: value.preferredRegion || null,
     preferredDistrict: value.preferredDistrict || null,
     preferredPropertyType: value.preferredPropertyType || null,

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 export { privatePageMetadata as metadata } from "@/lib/site";
+import { BackLink } from "@/components/back-link";
 import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
 import { ProfileEditForm } from "@/components/profile-edit-form";
@@ -11,6 +12,7 @@ import {
   getFavoriteListingsForUser,
   getRecentViewedListingsForUser
 } from "@/lib/listings";
+import { getRegionOptions } from "@/lib/locations";
 import { requireUser } from "@/lib/session-auth";
 
 type AccountPageProps = {
@@ -33,13 +35,14 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
 
   return (
     <div className="shell space-y-10">
+      <BackLink href="/" label={t.common.backToListings} />
+
       <section className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
         <div className="panel space-y-6 p-6 sm:p-8">
           <span className="pill border-accent/25 bg-accent/5 text-accent">{t.account.pill}</span>
           <h1 className="font-display text-4xl font-semibold text-ink">
             {displayName}
           </h1>
-          <p className="text-base leading-7 text-ink/70">{t.account.intro}</p>
           {!user.emailVerifiedAt ? (
             <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
               {t.account.emailNotVerified}
@@ -57,7 +60,9 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
             phone={user.phone ?? ""}
             telegramUsername={user.telegramUsername ?? ""}
             email={user.email}
+            avatarUrl={user.avatarUrl}
             memberSinceValue={formatDate(user.createdAt, locale)}
+            regionOptions={getRegionOptions(locale)}
             preservedPreferences={{
               preferredRegion: user.preferredRegion,
               preferredDistrict: user.preferredDistrict,
@@ -68,14 +73,25 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
             }}
             copy={{
               title: t.account.profileSectionTitle,
-              description: t.account.profileSectionDescription,
               name: t.account.name,
               phone: t.account.phone,
               telegramUsername: t.account.telegramUsername,
               telegramPlaceholder: t.account.telegramPlaceholder,
               loggedInAs: t.account.loggedInAs,
               memberSinceLabel: t.account.memberSince,
-              save: t.account.saveProfile
+              save: t.account.saveProfile,
+              avatarChange: t.account.avatarChange,
+              avatarUploading: t.account.avatarUploading,
+              avatarUploadFailed: t.account.avatarUploadFailed,
+              region: t.search.region,
+              anyRegion: t.search.allRegions,
+              district: t.search.districtCity,
+              districtPlaceholder: t.search.districtCityPlaceholder,
+              locationDetect: t.account.locationDetect,
+              locationDetecting: t.account.locationDetecting,
+              locationUnsupported: t.account.locationUnsupported,
+              locationPermissionDenied: t.account.locationPermissionDenied,
+              locationFailed: t.account.locationFailed
             }}
           />
 
