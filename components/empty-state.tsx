@@ -5,13 +5,15 @@ type EmptyStateProps = {
   title: string;
   description: string;
   icon?: ReactNode;
+  action?: ReactNode;
 };
 
 export function EmptyState({
   eyebrow,
   title,
   description,
-  icon
+  icon,
+  action
 }: EmptyStateProps) {
   return (
     <div className="panel flex min-h-[240px] flex-col items-center justify-center px-6 py-12 text-center">
@@ -23,6 +25,7 @@ export function EmptyState({
       {eyebrow ? <div className="pill mb-4">{eyebrow}</div> : null}
       <h2 className="font-display text-3xl font-semibold text-ink">{title}</h2>
       <p className="mt-3 max-w-lg text-sm leading-6 text-ink/70">{description}</p>
+      {action ? <div className="mt-6 flex flex-wrap items-center justify-center gap-3">{action}</div> : null}
     </div>
   );
 }

@@ -20,6 +20,8 @@ export type UserProfile = {
   status: UserStatus;
   phone: string | null;
   telegramUsername: string | null;
+  telegramChatId: string | null;
+  phoneVerifiedAt: Date | null;
   preferredRegion: string | null;
   preferredDistrict: string | null;
   preferredPropertyType: PropertyType | null;
@@ -41,6 +43,8 @@ type UserRow = {
   status: UserStatus;
   phone: string | null;
   telegramUsername: string | null;
+  telegramChatId: string | null;
+  phoneVerifiedAt: Date | null;
   preferredRegion: string | null;
   preferredDistrict: string | null;
   preferredPropertyType: PropertyType | null;
@@ -91,6 +95,8 @@ export async function getUserByEmail(email: string): Promise<UserAuthRecord | nu
       "passwordHash",
       "phone",
       "telegramUsername",
+      "telegramChatId",
+      "phoneVerifiedAt",
       "preferredRegion",
       "preferredDistrict",
       "preferredPropertyType",
@@ -118,6 +124,8 @@ const publicUserColumns = Prisma.sql`
   "status",
   "phone",
   "telegramUsername",
+  "telegramChatId",
+  "phoneVerifiedAt",
   "preferredRegion",
   "preferredDistrict",
   "preferredPropertyType",
@@ -205,6 +213,8 @@ export async function getUserByGoogleId(googleId: string): Promise<UserAuthRecor
       "passwordHash",
       "phone",
       "telegramUsername",
+      "telegramChatId",
+      "phoneVerifiedAt",
       "preferredRegion",
       "preferredDistrict",
       "preferredPropertyType",
@@ -347,6 +357,11 @@ export async function updateUserPreferences(userId: string, input: UserPreferenc
     SET
       "name" = ${input.name},
       "phone" = ${input.phone},
+      -- Changing the phone number invalidates any prior Telegram verification of the old number.
+      "phoneVerifiedAt" = CASE
+        WHEN "phone" IS NOT DISTINCT FROM ${input.phone} THEN "phoneVerifiedAt"
+        ELSE NULL
+      END,
       "telegramUsername" = ${input.telegramUsername},
       "avatarUrl" = ${input.avatarUrl},
       "preferredRegion" = ${input.preferredRegion},
@@ -360,4 +375,25 @@ export async function updateUserPreferences(userId: string, input: UserPreferenc
   `;
 
   return getUserProfileById(userId);
+}
+
+/** Called by the Telegram bot process once the user shares their contact. */
+export async function markPhoneVerifiedByTelegram(input: {
+  userId: string;
+  phone: string;
+  telegramChatId: string;
+}) {
+  const now = new Date();
+
+  await prisma.$executeRaw`
+    UPDATE "User"
+    SET
+      "phone" = ${input.phone},
+      "phoneVerifiedAt" = ${now},
+      "telegramChatId" = ${input.telegramChatId},
+      "updatedAt" = ${now}
+    WHERE "id" = ${input.userId}
+  `;
+
+  return getUserProfileById(input.userId);
 }

@@ -15,6 +15,7 @@ Real estate marketplace for Uzbekistan. Built with Next.js App Router, TypeScrip
 - User listing management with edit, delete, and active/rented/sold controls
 - PostgreSQL-backed user sessions
 - Supabase Storage-backed image uploads for public-safe storage when configured
+- Optional Telegram-bot phone number verification from the profile page
 
 ## Stack
 
@@ -39,6 +40,7 @@ Required variables:
 - `PUBLIC_CONTACT_EMAIL`: footer/contact page email
 - `OWNER_EMAIL`: the single owner account email
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: optional, enables the "Continue with Google" button (see below)
+- `TELEGRAM_BOT_TOKEN` / `TELEGRAM_BOT_USERNAME`: optional, enables Telegram-based phone verification on the profile page (see below)
 - `SUPABASE_URL`: Supabase project URL, used for storage uploads
 - `SUPABASE_SECRET_KEY`: Supabase secret key for server-side storage uploads
 - `SUPABASE_STORAGE_BUCKET`: public Storage bucket name, for example `listing-images`
@@ -77,6 +79,24 @@ Important:
 5. Copy the generated **Client ID** and **Client secret** into `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env`.
 
 Signing in with Google auto-verifies the account's email and links to an existing email/password account with the same address if one exists (no duplicate accounts).
+
+## Telegram phone verification setup (optional)
+
+The "Verify via Telegram" button on the profile page is hidden automatically unless `TELEGRAM_BOT_USERNAME` is set, and verification only actually completes once the bot process below is running with a matching `TELEGRAM_BOT_TOKEN`. To enable it:
+
+1. Message [@BotFather](https://t.me/BotFather) on Telegram and send `/newbot`.
+2. Follow the prompts to name the bot and choose a unique `@username`.
+3. BotFather replies with an API token — put it in `TELEGRAM_BOT_TOKEN` in `.env`.
+4. Put the bot's username (without the `@`) in `TELEGRAM_BOT_USERNAME` in `.env`. This is used to build the `https://t.me/<username>?start=...` link the site sends users to.
+5. Run the bot as its own long-running process (separate from `npm run dev`/`npm start`):
+
+```bash
+npm run telegram-bot
+```
+
+How it works: a user saves a phone number on `/account`, then taps "Verify via Telegram". The site creates a short-lived one-time token and redirects to the bot's deep link. The bot asks the user to share their Telegram contact (a native button, not typed text — this is what actually proves the phone number), then marks that phone number verified on the account that started the flow. The token expires after 20 minutes and is single-use.
+
+In production (e.g. the VPS deploy), run this as its own systemd service alongside the main app, so it keeps polling independently of app restarts.
 
 ## Local setup
 
@@ -118,6 +138,7 @@ npm run dev
 - `npm run build`
 - `npm run prisma:migrate`
 - `npm run prisma:seed`
+- `npm run telegram-bot`
 
 ## Auth and moderation
 

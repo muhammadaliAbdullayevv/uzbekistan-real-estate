@@ -9,6 +9,8 @@ type ProfileEditFormProps = {
   telegramUsername: string;
   email: string;
   avatarUrl: string | null;
+  emailVerifiedAt: Date | null;
+  phoneVerifiedAt: Date | null;
   memberSinceValue: string;
   regionOptions: Array<{ value: string; label: string }>;
   preservedPreferences: {
@@ -20,12 +22,13 @@ type ProfileEditFormProps = {
     preferredMaxPrice: number | null;
   };
   copy: {
-    title: string;
+    sectionPersonal: string;
+    sectionContact: string;
+    sectionLocation: string;
     name: string;
     phone: string;
     telegramUsername: string;
     telegramPlaceholder: string;
-    loggedInAs: string;
     memberSinceLabel: string;
     save: string;
     avatarChange: string;
@@ -40,8 +43,53 @@ type ProfileEditFormProps = {
     locationUnsupported: string;
     locationPermissionDenied: string;
     locationFailed: string;
+    phoneVerified: string;
+    phoneVerifyButton: string;
+    phoneVerifyHint: string;
+    emailVerifiedBadge: string;
+    emailNotVerifiedBadge: string;
+    phoneVerifiedBadge: string;
+    phoneNotVerifiedBadge: string;
+    phoneNotSetBadge: string;
   };
 };
+
+function CheckIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
+function StatusBadge({ tone, children }: { tone: "positive" | "warning" | "neutral"; children: string }) {
+  const toneClasses =
+    tone === "positive"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : tone === "warning"
+        ? "border-amber-200 bg-amber-50 text-amber-800"
+        : "border-line bg-mist text-ink/55";
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${toneClasses}`}
+    >
+      {tone === "positive" ? <CheckIcon /> : null}
+      {children}
+    </span>
+  );
+}
 
 export function ProfileEditForm({
   name,
@@ -49,6 +97,8 @@ export function ProfileEditForm({
   telegramUsername,
   email,
   avatarUrl,
+  emailVerifiedAt,
+  phoneVerifiedAt,
   memberSinceValue,
   regionOptions,
   preservedPreferences,
@@ -57,10 +107,41 @@ export function ProfileEditForm({
   const initial = (name.trim()[0] || email[0] || "?").toUpperCase();
 
   return (
-    <section className="space-y-4 rounded-[24px] border border-line/80 bg-white p-5 shadow-sm">
-      <p className="text-sm uppercase tracking-[0.18em] text-ink/45">{copy.title}</p>
+    <section className="panel p-6 sm:p-8">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <AvatarUpload
+            initialUrl={avatarUrl}
+            initial={initial}
+            size="lg"
+            copy={{
+              change: copy.avatarChange,
+              uploading: copy.avatarUploading,
+              uploadFailed: copy.avatarUploadFailed
+            }}
+          />
+          <div className="min-w-0">
+            <p className="truncate font-display text-xl font-semibold text-ink sm:text-2xl">
+              {name || email}
+            </p>
+            <p className="mt-1 truncate text-sm text-ink/55">{email}</p>
+            <p className="mt-0.5 text-xs text-ink/40">
+              {copy.memberSinceLabel} {memberSinceValue}
+            </p>
+          </div>
+        </div>
 
-      <form action="/api/account/preferences" method="post" className="space-y-4">
+        <div className="flex flex-wrap gap-2 lg:flex-col lg:items-end">
+          <StatusBadge tone={emailVerifiedAt ? "positive" : "warning"}>
+            {emailVerifiedAt ? copy.emailVerifiedBadge : copy.emailNotVerifiedBadge}
+          </StatusBadge>
+          <StatusBadge tone={phoneVerifiedAt ? "positive" : phone ? "warning" : "neutral"}>
+            {phoneVerifiedAt ? copy.phoneVerifiedBadge : phone ? copy.phoneNotVerifiedBadge : copy.phoneNotSetBadge}
+          </StatusBadge>
+        </div>
+      </div>
+
+      <form action="/api/account/preferences" method="post" className="mt-8 divide-y divide-line/70">
         <input
           type="hidden"
           name="preferredPropertyType"
@@ -82,64 +163,76 @@ export function ProfileEditForm({
           value={preservedPreferences.preferredMaxPrice ?? ""}
         />
 
-        <AvatarUpload
-          initialUrl={avatarUrl}
-          initial={initial}
-          copy={{
-            change: copy.avatarChange,
-            uploading: copy.avatarUploading,
-            uploadFailed: copy.avatarUploadFailed
-          }}
-        />
-
-        <div className="rounded-[18px] bg-mist px-4 py-3 text-sm text-ink/70">
-          {copy.loggedInAs} <strong className="text-ink">{email}</strong>
-          <br />
-          {copy.memberSinceLabel} <strong className="text-ink">{memberSinceValue}</strong>
+        <div className="pb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink/45">
+            {copy.sectionPersonal}
+          </p>
+          <div className="mt-4">
+            <label htmlFor="profile-name" className="mb-2 block text-sm font-medium text-ink/80">
+              {copy.name}
+            </label>
+            <input
+              id="profile-name"
+              name="name"
+              required
+              minLength={2}
+              maxLength={80}
+              defaultValue={name}
+              className="input"
+            />
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="profile-name" className="mb-2 block text-sm font-medium text-ink/80">
-            {copy.name}
-          </label>
-          <input
-            id="profile-name"
-            name="name"
-            required
-            minLength={2}
-            maxLength={80}
-            defaultValue={name}
-            className="input"
-          />
+        <div className="space-y-4 py-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink/45">
+            {copy.sectionContact}
+          </p>
+
+          <div>
+            <label htmlFor="profile-phone" className="mb-2 block text-sm font-medium text-ink/80">
+              {copy.phone}
+            </label>
+            <input
+              id="profile-phone"
+              name="phone"
+              defaultValue={phone}
+              placeholder="+998901234567"
+              className="input"
+            />
+            {phoneVerifiedAt ? null : (
+              <>
+                <p className="mt-2 text-xs text-ink/50">{copy.phoneVerifyHint}</p>
+                <button
+                  type="submit"
+                  name="startTelegramVerify"
+                  value="1"
+                  className="btn-secondary mt-3 w-full"
+                >
+                  {copy.phoneVerifyButton}
+                </button>
+              </>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="profile-telegram" className="mb-2 block text-sm font-medium text-ink/80">
+              {copy.telegramUsername}
+            </label>
+            <input
+              id="profile-telegram"
+              name="telegramUsername"
+              defaultValue={telegramUsername}
+              placeholder={copy.telegramPlaceholder}
+              className="input"
+            />
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="profile-phone" className="mb-2 block text-sm font-medium text-ink/80">
-            {copy.phone}
-          </label>
-          <input
-            id="profile-phone"
-            name="phone"
-            defaultValue={phone}
-            placeholder="+998901234567"
-            className="input"
-          />
-        </div>
+        <div className="space-y-4 pt-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink/45">
+            {copy.sectionLocation}
+          </p>
 
-        <div>
-          <label htmlFor="profile-telegram" className="mb-2 block text-sm font-medium text-ink/80">
-            {copy.telegramUsername}
-          </label>
-          <input
-            id="profile-telegram"
-            name="telegramUsername"
-            defaultValue={telegramUsername}
-            placeholder={copy.telegramPlaceholder}
-            className="input"
-          />
-        </div>
-
-        <div className="space-y-3 border-t border-line/70 pt-4">
           <LocationDetectButton
             regionSelectId="profile-region"
             districtInputId="profile-district"
@@ -174,11 +267,11 @@ export function ProfileEditForm({
               className="input"
             />
           </div>
-        </div>
 
-        <button type="submit" className="btn-primary w-full">
-          {copy.save}
-        </button>
+          <button type="submit" className="btn-primary w-full">
+            {copy.save}
+          </button>
+        </div>
       </form>
     </section>
   );

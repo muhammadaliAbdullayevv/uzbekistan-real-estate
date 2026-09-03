@@ -43,9 +43,17 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
     <div className="shell space-y-3 sm:space-y-4">
       <WelcomeGuide
         copy={{
-          title: t.home.welcomeGuideTitle,
-          body: t.home.subtitle,
-          dismiss: t.home.welcomeGuideDismiss
+          steps: [
+            { title: t.home.welcomeStep1Title, body: t.home.welcomeStep1Body },
+            { title: t.home.welcomeStep2Title, body: t.home.welcomeStep2Body },
+            { title: t.home.welcomeStep3Title, body: t.home.welcomeStep3Body }
+          ],
+          next: t.home.welcomeNext,
+          finish: t.home.welcomeFinish,
+          profileCtaTitle: t.home.profileCtaTitle,
+          profileCtaBody: t.home.profileCtaBody,
+          profileCtaButton: t.home.profileCtaButton,
+          profileCtaSkip: t.home.profileCtaSkip
         }}
       />
 

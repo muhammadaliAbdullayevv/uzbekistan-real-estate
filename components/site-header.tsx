@@ -3,16 +3,12 @@ import Link from "next/link";
 
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { getLocale, getTranslations } from "@/lib/i18n";
-import { getOwnerDashboardPath, isOwner } from "@/lib/owner";
 import { getUserSession } from "@/lib/user-session";
 
 export async function SiteHeader() {
   const session = await getUserSession();
   const locale = getLocale();
   const t = getTranslations(locale);
-  const ownerHref = getOwnerDashboardPath();
-  const canAccessOwner = isOwner(session);
-  const profileHref = canAccessOwner ? ownerHref : "/account";
   const avatarInitial = session
     ? (session.name?.trim()?.[0] || session.email[0] || "?").toUpperCase()
     : null;
@@ -22,8 +18,21 @@ export async function SiteHeader() {
       <div className="shell py-3 md:py-4">
         <div className="flex items-center justify-between gap-2">
           <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-ink text-xs font-bold text-white md:h-10 md:w-10 md:text-sm">
-              UZ
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-ink to-accent text-white shadow-[0_8px_20px_-10px_rgba(15,118,110,0.75)] md:h-10 md:w-10">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="h-[18px] w-[18px] md:h-5 md:w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 11.5 12 4l9 7.5" />
+                <path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9" />
+                <path d="M9.5 20v-6h5v6" />
+              </svg>
             </div>
             <p className="hidden truncate font-display text-base font-semibold tracking-tight text-ink sm:block sm:text-lg md:text-xl">
               Uzbekistan Rentals
@@ -55,7 +64,7 @@ export async function SiteHeader() {
                 </Link>
 
                 <Link
-                  href={profileHref}
+                  href="/account"
                   aria-label={t.nav.account}
                   title={t.nav.account}
                   className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent/25 bg-accent/10 text-sm font-bold text-accent transition hover:bg-accent/15 sm:h-10 sm:w-10"

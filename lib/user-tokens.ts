@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 import { prisma } from "@/lib/db";
 
-export type UserTokenTypeValue = "VERIFY_EMAIL" | "RESET_PASSWORD";
+export type UserTokenTypeValue = "VERIFY_EMAIL" | "RESET_PASSWORD" | "PHONE_VERIFY";
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");

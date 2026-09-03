@@ -8,13 +8,15 @@
     "start": "next start",
     "postinstall": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "telegram-bot": "tsx scripts/telegram-bot.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
+    "dotenv": "^17.4.2",
     "jose": "^5.9.3",
     "next": "^14.2.16",
     "nodemailer": "^8.0.7",

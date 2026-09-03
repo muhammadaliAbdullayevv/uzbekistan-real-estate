@@ -8,6 +8,7 @@ import {
 import { getUserSession } from "@/lib/user-session";
 import { updateUserPreferences } from "@/lib/user-data";
 import { redirectUrl } from "@/lib/site";
+import { createTelegramVerifyRedirect } from "@/lib/telegram-verification";
 import { userPreferenceSchema } from "@/lib/validations/listing";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +51,19 @@ export async function POST(request: Request) {
 
   revalidatePath("/", "layout");
   revalidatePath("/account");
+
+  const startTelegramVerify = formData.get("startTelegramVerify") === "1";
+
+  if (startTelegramVerify) {
+    const verifyResult = await createTelegramVerifyRedirect(session.userId);
+    const redirectTarget = verifyResult.ok
+      ? verifyResult.url
+      : redirectUrl(`/account?telegramError=${verifyResult.errorCode}`);
+
+    const response = NextResponse.redirect(redirectTarget, { status: 303 });
+    setPreferredListingTypeCookie(response, preferredListingType);
+    return response;
+  }
 
   const response = NextResponse.redirect(redirectUrl("/account?updated=1"), {
     status: 303

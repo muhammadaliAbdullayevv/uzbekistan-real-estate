@@ -2,304 +2,204 @@ import Link from "next/link";
 
 export { privatePageMetadata as metadata } from "@/lib/site";
 import { BackLink } from "@/components/back-link";
-import { EmptyState } from "@/components/empty-state";
-import { ListingCard } from "@/components/listing-card";
 import { ProfileEditForm } from "@/components/profile-edit-form";
 import { formatDate, formatDisplayName } from "@/lib/format";
 import { getLocale, getTranslations } from "@/lib/i18n";
-import {
-  getFavoriteListingIds,
-  getFavoriteListingsForUser,
-  getRecentViewedListingsForUser
-} from "@/lib/listings";
 import { getRegionOptions } from "@/lib/locations";
+import { getOwnerDashboardPath, isOwner } from "@/lib/owner";
 import { requireUser } from "@/lib/session-auth";
 
 type AccountPageProps = {
   searchParams?: Record<string, string | string[] | undefined>;
 };
 
+function NavIcon({ path }: { path: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={path} />
+    </svg>
+  );
+}
+
+function ChevronRight() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="shrink-0 text-ink/25"
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
+
+function NavRow({ href, icon, label }: { href: string; icon: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center justify-between gap-3 py-3 text-sm font-medium text-ink transition hover:text-accent"
+    >
+      <span className="flex items-center gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mist text-ink/60">
+          <NavIcon path={icon} />
+        </span>
+        {label}
+      </span>
+      <ChevronRight />
+    </Link>
+  );
+}
+
 export default async function AccountPage({ searchParams = {} }: AccountPageProps) {
   const locale = getLocale();
   const t = getTranslations(locale);
   const user = await requireUser("/account");
 
-  const [favorites, recentViews, favoriteIds] = await Promise.all([
-    getFavoriteListingsForUser(user.id),
-    getRecentViewedListingsForUser(user.id),
-    getFavoriteListingIds(user.id)
-  ]);
-
   const displayName = user.name ? formatDisplayName(user.name) : user.email;
+  const showOwnerDashboardLink = isOwner({ email: user.email });
   const profileUpdated = searchParams.updated === "1";
+  const telegramError = typeof searchParams.telegramError === "string" ? searchParams.telegramError : null;
+  const telegramErrorMessage =
+    telegramError === "not-configured"
+      ? t.account.phoneVerifyNotConfigured
+      : telegramError === "no-phone"
+        ? t.account.phoneVerifyNoPhone
+        : null;
 
   return (
-    <div className="shell space-y-10">
+    <div className="shell space-y-8">
       <BackLink href="/" label={t.common.backToListings} />
 
-      <section className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
-        <div className="panel space-y-6 p-6 sm:p-8">
-          <span className="pill border-accent/25 bg-accent/5 text-accent">{t.account.pill}</span>
-          <h1 className="font-display text-4xl font-semibold text-ink">
-            {displayName}
-          </h1>
-          {!user.emailVerifiedAt ? (
-            <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
-              {t.account.emailNotVerified}
-            </div>
-          ) : null}
-
-          {profileUpdated ? (
-            <div className="rounded-[24px] border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-accent">
-              {t.account.profileUpdated}
-            </div>
-          ) : null}
-
-          <ProfileEditForm
-            name={user.name ?? ""}
-            phone={user.phone ?? ""}
-            telegramUsername={user.telegramUsername ?? ""}
-            email={user.email}
-            avatarUrl={user.avatarUrl}
-            memberSinceValue={formatDate(user.createdAt, locale)}
-            regionOptions={getRegionOptions(locale)}
-            preservedPreferences={{
-              preferredRegion: user.preferredRegion,
-              preferredDistrict: user.preferredDistrict,
-              preferredPropertyType: user.preferredPropertyType,
-              preferredRentType: user.preferredRentType,
-              preferredMinPrice: user.preferredMinPrice,
-              preferredMaxPrice: user.preferredMaxPrice
-            }}
-            copy={{
-              title: t.account.profileSectionTitle,
-              name: t.account.name,
-              phone: t.account.phone,
-              telegramUsername: t.account.telegramUsername,
-              telegramPlaceholder: t.account.telegramPlaceholder,
-              loggedInAs: t.account.loggedInAs,
-              memberSinceLabel: t.account.memberSince,
-              save: t.account.saveProfile,
-              avatarChange: t.account.avatarChange,
-              avatarUploading: t.account.avatarUploading,
-              avatarUploadFailed: t.account.avatarUploadFailed,
-              region: t.search.region,
-              anyRegion: t.search.allRegions,
-              district: t.search.districtCity,
-              districtPlaceholder: t.search.districtCityPlaceholder,
-              locationDetect: t.account.locationDetect,
-              locationDetecting: t.account.locationDetecting,
-              locationUnsupported: t.account.locationUnsupported,
-              locationPermissionDenied: t.account.locationPermissionDenied,
-              locationFailed: t.account.locationFailed
-            }}
-          />
-
-          <section className="space-y-3 rounded-[24px] border border-line/80 bg-white p-5 shadow-sm">
-            <div>
-              <p className="text-sm uppercase tracking-[0.18em] text-ink/45">
-                {t.account.quickActions}
-              </p>
-            </div>
-            <div className="grid gap-3">
-              <Link href="/add-listing" className="btn-primary w-full text-center">
-                {t.account.submitListing}
-              </Link>
-              <Link href="/my-listings" className="btn-secondary w-full text-center">
-                {t.account.trackListings}
-              </Link>
-              <Link href="/favorites" className="btn-secondary w-full text-center">
-                {t.account.openFavorites}
-              </Link>
-            </div>
-          </section>
-
-          <section className="space-y-3 rounded-[24px] border border-line/80 bg-white p-5 shadow-sm">
-            <div>
-              <p className="text-sm uppercase tracking-[0.18em] text-ink/45">
-                {t.account.security}
-              </p>
-            </div>
-            <div className="grid gap-3">
-              <Link href="/account/sessions" className="btn-secondary w-full text-center">
-                {t.account.manageSessions}
-              </Link>
-              <form action="/api/auth/logout" method="post">
-                <input type="hidden" name="next" value="/" />
-                <button
-                  type="submit"
-                  className="inline-flex w-full items-center justify-center rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50"
-                >
-                  {t.common.signOut}
-                </button>
-              </form>
-            </div>
-          </section>
+      {profileUpdated ? (
+        <div className="rounded-[24px] border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-accent">
+          {t.account.profileUpdated}
         </div>
+      ) : null}
 
-        <section className="panel space-y-6 p-6 sm:p-8">
-          <div>
-            <p className="text-sm uppercase tracking-[0.18em] text-ink/45">
-              {t.account.overview}
-            </p>
-            <h2 className="mt-2 font-display text-3xl font-semibold text-ink">
-              {t.account.overviewTitle}
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-ink/60">
-              {t.account.overviewDescription}
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <article className="rounded-[26px] border border-line/80 bg-mist/45 p-5">
-              <p className="text-sm uppercase tracking-[0.18em] text-ink/45">
-                {t.account.trackListings}
-              </p>
-              <h3 className="mt-3 font-display text-2xl font-semibold text-ink">
-                {t.account.myListingsTitle}
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-ink/65">
-                {t.account.myListingsDescription}
-              </p>
-              <Link href="/my-listings" className="btn-secondary mt-5 w-full text-center">
-                {t.account.trackListings}
-              </Link>
-            </article>
-
-            <article className="rounded-[26px] border border-line/80 bg-mist/45 p-5">
-              <p className="text-sm uppercase tracking-[0.18em] text-ink/45">
-                {t.account.savedListings}
-              </p>
-              <h3 className="mt-3 font-display text-2xl font-semibold text-ink">
-                {t.account.savedTitle}
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-ink/65">
-                {t.account.savedListingsDescription}
-              </p>
-              <Link href="/favorites" className="btn-secondary mt-5 w-full text-center">
-                {t.account.openFavorites}
-              </Link>
-            </article>
-
-            <article className="rounded-[26px] border border-line/80 bg-white p-5">
-              <p className="text-sm uppercase tracking-[0.18em] text-ink/45">
-                {t.account.recentlyViewed}
-              </p>
-              <h3 className="mt-3 font-display text-2xl font-semibold text-ink">
-                {t.account.recentTitle}
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-ink/65">
-                {t.account.recentlyViewedDescription}
-              </p>
-            </article>
-
-            <article className="rounded-[26px] border border-line/80 bg-white p-5">
-              <p className="text-sm uppercase tracking-[0.18em] text-ink/45">
-                {t.account.manageSessions}
-              </p>
-              <h3 className="mt-3 font-display text-2xl font-semibold text-ink">
-                {t.account.securityTitle}
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-ink/65">
-                {t.account.securityDescription}
-              </p>
-              <Link href="/account/sessions" className="btn-secondary mt-5 w-full text-center">
-                {t.account.manageSessions}
-              </Link>
-            </article>
-          </div>
-        </section>
-      </section>
-
-      <section className="space-y-4">
-        <div>
-          <p className="text-sm uppercase tracking-[0.18em] text-ink/45">{t.account.favorites}</p>
-          <h2 className="font-display text-3xl font-semibold text-ink">
-            {t.account.savedListings}
-          </h2>
+      {telegramErrorMessage ? (
+        <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+          {telegramErrorMessage}
         </div>
+      ) : null}
 
-        {favorites.length === 0 ? (
-          <EmptyState
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-              </svg>
-            }
-            title={t.account.noFavoritesTitle}
-            description={t.account.noFavorites}
-          />
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {favorites.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                locale={locale}
-                listing={listing}
-                isFavorited={favoriteIds.has(listing.id)}
-                canFavorite
+      <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+        <ProfileEditForm
+          name={user.name ?? ""}
+          phone={user.phone ?? ""}
+          telegramUsername={user.telegramUsername ?? ""}
+          email={user.email}
+          avatarUrl={user.avatarUrl}
+          emailVerifiedAt={user.emailVerifiedAt}
+          phoneVerifiedAt={user.phoneVerifiedAt}
+          memberSinceValue={formatDate(user.createdAt, locale)}
+          regionOptions={getRegionOptions(locale)}
+          preservedPreferences={{
+            preferredRegion: user.preferredRegion,
+            preferredDistrict: user.preferredDistrict,
+            preferredPropertyType: user.preferredPropertyType,
+            preferredRentType: user.preferredRentType,
+            preferredMinPrice: user.preferredMinPrice,
+            preferredMaxPrice: user.preferredMaxPrice
+          }}
+          copy={{
+            sectionPersonal: t.account.profileSectionPersonal,
+            sectionContact: t.account.profileSectionContact,
+            sectionLocation: t.account.profileSectionLocation,
+            name: t.account.name,
+            phone: t.account.phone,
+            telegramUsername: t.account.telegramUsername,
+            telegramPlaceholder: t.account.telegramPlaceholder,
+            memberSinceLabel: t.account.memberSince,
+            save: t.account.saveProfile,
+            avatarChange: t.account.avatarChange,
+            avatarUploading: t.account.avatarUploading,
+            avatarUploadFailed: t.account.avatarUploadFailed,
+            region: t.search.region,
+            anyRegion: t.search.allRegions,
+            district: t.search.districtCity,
+            districtPlaceholder: t.search.districtCityPlaceholder,
+            locationDetect: t.account.locationDetect,
+            locationDetecting: t.account.locationDetecting,
+            locationUnsupported: t.account.locationUnsupported,
+            locationPermissionDenied: t.account.locationPermissionDenied,
+            locationFailed: t.account.locationFailed,
+            phoneVerified: t.account.phoneVerified,
+            phoneVerifyButton: t.account.phoneVerifyButton,
+            phoneVerifyHint: t.account.phoneVerifyHint,
+            emailVerifiedBadge: t.account.emailVerifiedBadge,
+            emailNotVerifiedBadge: t.account.emailNotVerifiedBadge,
+            phoneVerifiedBadge: t.account.phoneVerifiedBadge,
+            phoneNotVerifiedBadge: t.account.phoneNotVerifiedBadge,
+            phoneNotSetBadge: t.account.phoneNotSetBadge
+          }}
+        />
+
+        <div className="panel p-4 sm:p-5 lg:sticky lg:top-24">
+          <Link
+            href="/add-listing"
+            className="flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent"
+          >
+            <NavIcon path="M12 5v14M5 12h14" />
+            {t.account.submitListing}
+          </Link>
+
+          <nav className="mt-2 divide-y divide-line/70 px-1">
+            <NavRow
+              href="/my-listings"
+              label={t.account.trackListings}
+              icon="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
+            />
+            <NavRow
+              href="/favorites"
+              label={t.account.openFavorites}
+              icon="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"
+            />
+            {showOwnerDashboardLink ? (
+              <NavRow
+                href={getOwnerDashboardPath()}
+                label={t.account.ownerDashboard}
+                icon="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"
               />
-            ))}
-          </div>
-        )}
-      </section>
+            ) : null}
+            <NavRow
+              href="/account/sessions"
+              label={t.account.manageSessions}
+              icon="M5 11h14v9H5zM8 11V7a4 4 0 0 1 8 0v4"
+            />
+          </nav>
 
-      <section className="space-y-4">
-        <div>
-          <p className="text-sm uppercase tracking-[0.18em] text-ink/45">
-            {t.account.recentActivity}
-          </p>
-          <h2 className="font-display text-3xl font-semibold text-ink">
-            {t.account.recentlyViewed}
-          </h2>
+          <form action="/api/auth/logout" method="post" className="mt-2 border-t border-line/70 px-1 pt-2">
+            <input type="hidden" name="next" value="/" />
+            <button
+              type="submit"
+              className="flex w-full items-center gap-3 py-3 text-sm font-medium text-rose-600 transition hover:text-rose-700"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+                <NavIcon path="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+              </span>
+              {t.common.signOut}
+            </button>
+          </form>
         </div>
-
-        {recentViews.length === 0 ? (
-          <EmptyState
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-            }
-            title={t.account.noRecentViewsTitle}
-            description={t.account.noRecentViews}
-          />
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {recentViews.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                locale={locale}
-                listing={listing}
-                isFavorited={favoriteIds.has(listing.id)}
-                canFavorite
-              />
-            ))}
-          </div>
-        )}
       </section>
     </div>
   );

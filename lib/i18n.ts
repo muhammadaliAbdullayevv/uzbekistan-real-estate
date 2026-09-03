@@ -128,8 +128,22 @@ const translations = {
       emptyTitle: "Bu filtrlarga mos ijara topilmadi",
       emptyDescription:
         "Narx oralig'ini kengaytiring, xona sonini tozalang yoki boshqa ko'cha va mo'ljalni qidiring.",
-      welcomeGuideTitle: "Xush kelibsiz!",
-      welcomeGuideDismiss: "Tushunarli"
+      welcomeStep1Title: "Xush kelibsiz!",
+      welcomeStep1Body:
+        "Bu — O'zbekiston bo'ylab ijaraga va sotuvga qo'yilgan uy-joylarni topish uchun sayt. Keling, asosiy imkoniyatlar bilan tanishtiramiz.",
+      welcomeStep2Title: "Qidiruv orqali toping",
+      welcomeStep2Body:
+        "Bosh sahifadagi qidiruv qatori va filtrlar yordamida hudud, narx va turga qarab kerakli uy-joyni bir necha soniyada toping.",
+      welcomeStep3Title: "Bog'laning va foydalaning",
+      welcomeStep3Body:
+        "Yoqtirgan e'loningizni oching va uy egasi bilan to'g'ridan-to'g'ri bog'laning. E'lonlarni saqlashingiz, o'zingiz e'lon joylashtirishingiz va kabinetingizni boshqarishingiz ham mumkin.",
+      welcomeNext: "Keyingi",
+      welcomeFinish: "Boshladik",
+      profileCtaTitle: "Profilingizni to'ldiring",
+      profileCtaBody:
+        "Barcha imkoniyatlardan to'liq foydalanish uchun ism, telefon raqami va joylashuvingizni kiriting.",
+      profileCtaButton: "Profilni to'ldirish",
+      profileCtaSkip: "Keyinroq"
     },
     search: {
       searchLabel: "Qidiruv",
@@ -273,6 +287,10 @@ const translations = {
       profileSectionTitle: "Profil ma'lumotlari",
       profileSectionDescription:
         "Ism, telefon raqami va Telegram foydalanuvchi nomingizni bu yerda yangilang.",
+      profileSectionAccount: "Hisob",
+      profileSectionPersonal: "Shaxsiy ma'lumotlar",
+      profileSectionContact: "Aloqa",
+      profileSectionLocation: "Joylashuv",
       telegramUsername: "Telegram foydalanuvchi nomi",
       telegramPlaceholder: "masalan: username",
       saveProfile: "Saqlash",
@@ -285,7 +303,21 @@ const translations = {
       locationUnsupported: "Brauzeringiz joylashuvni aniqlashni qo'llab-quvvatlamaydi.",
       locationPermissionDenied: "Joylashuvga ruxsat berilmadi.",
       locationFailed: "Joylashuvni aniqlab bo'lmadi. Qo'lda tanlang.",
+      phoneVerified: "Tasdiqlangan",
+      phoneVerifyButton: "Telegram orqali tasdiqlash",
+      phoneVerifyHint:
+        "Tugmani bosganingizda raqam saqlanadi va Telegram botga o'tasiz. Botda ulashadigan raqamingiz shu yerdagi bilan bir xil bo'lishi kerak.",
+      phoneVerifyNotConfigured:
+        "Telegram orqali tasdiqlash hozircha mavjud emas. Birozdan so'ng qayta urinib ko'ring.",
+      phoneVerifyNoPhone:
+        "Tasdiqlashdan oldin telefon raqamingizni kiriting va saqlang.",
+      emailVerifiedBadge: "Email tasdiqlangan",
+      emailNotVerifiedBadge: "Email tasdiqlanmagan",
+      phoneVerifiedBadge: "Telefon tasdiqlangan",
+      phoneNotVerifiedBadge: "Telefon tasdiqlanmagan",
+      phoneNotSetBadge: "Telefon kiritilmagan",
       quickActions: "Tezkor amallar",
+      ownerDashboard: "Boshqaruv paneli",
       security: "Xavfsizlik",
       securityTitle: "Hisob xavfsizligi",
       securityDescription:
@@ -317,7 +349,11 @@ const translations = {
       recentActivity: "So'nggi faollik",
       recentlyViewed: "Yaqinda ko'rilganlar",
       noRecentViewsTitle: "Hozircha ko‘rilgan e’lon yo‘q",
-      noRecentViews: "E’lon sahifalarini ochganingizda ular shu yerda paydo bo‘ladi."
+      noRecentViews: "E’lon sahifalarini ochganingizda ular shu yerda paydo bo‘ladi.",
+      gettingStartedTitle: "Hali hech narsa yo'q",
+      gettingStartedDescription:
+        "E'lonlarni ko'rib chiqing, yoqtirgan uy-joylaringizni saqlang yoki birinchi e'loningizni joylashtiring.",
+      gettingStartedEyebrow: "Boshlash uchun"
     },
     addListing: {
       pill: "Uy-joy e'loni yuborish",
@@ -624,8 +660,22 @@ const translations = {
       emptyTitle: "По этим фильтрам ничего не найдено",
       emptyDescription:
         "Расширьте диапазон цены, уберите фильтр по комнатам или попробуйте другой адрес и ориентир.",
-      welcomeGuideTitle: "Добро пожаловать!",
-      welcomeGuideDismiss: "Понятно"
+      welcomeStep1Title: "Добро пожаловать!",
+      welcomeStep1Body:
+        "Это сайт для поиска жилья в аренду и на продажу по всему Узбекистану. Покажем основные возможности.",
+      welcomeStep2Title: "Ищите через поиск",
+      welcomeStep2Body:
+        "С помощью строки поиска и фильтров на главной странице быстро находите нужное жильё по региону, цене и типу.",
+      welcomeStep3Title: "Связывайтесь и пользуйтесь",
+      welcomeStep3Body:
+        "Откройте понравившееся объявление и свяжитесь с владельцем напрямую. Также можно сохранять объявления, размещать свои и управлять кабинетом.",
+      welcomeNext: "Далее",
+      welcomeFinish: "Начать",
+      profileCtaTitle: "Заполните профиль",
+      profileCtaBody:
+        "Укажите имя, номер телефона и местоположение, чтобы пользоваться всеми возможностями.",
+      profileCtaButton: "Заполнить профиль",
+      profileCtaSkip: "Позже"
     },
     search: {
       searchLabel: "Поиск",
@@ -768,6 +818,10 @@ const translations = {
       profileSectionTitle: "Данные профиля",
       profileSectionDescription:
         "Обновите здесь имя, номер телефона и имя пользователя Telegram.",
+      profileSectionAccount: "Аккаунт",
+      profileSectionPersonal: "Личные данные",
+      profileSectionContact: "Контакты",
+      profileSectionLocation: "Местоположение",
       telegramUsername: "Имя пользователя Telegram",
       telegramPlaceholder: "например: username",
       saveProfile: "Сохранить",
@@ -780,7 +834,21 @@ const translations = {
       locationUnsupported: "Ваш браузер не поддерживает определение местоположения.",
       locationPermissionDenied: "Доступ к местоположению не разрешён.",
       locationFailed: "Не удалось определить местоположение. Выберите вручную.",
+      phoneVerified: "Подтверждён",
+      phoneVerifyButton: "Подтвердить через Telegram",
+      phoneVerifyHint:
+        "При нажатии номер сохранится, и вы перейдёте в Telegram-бот. Номер, которым вы поделитесь там, должен совпадать с указанным здесь.",
+      phoneVerifyNotConfigured:
+        "Подтверждение через Telegram пока недоступно. Попробуйте позже.",
+      phoneVerifyNoPhone:
+        "Перед подтверждением введите и сохраните номер телефона.",
+      emailVerifiedBadge: "Email подтверждён",
+      emailNotVerifiedBadge: "Email не подтверждён",
+      phoneVerifiedBadge: "Телефон подтверждён",
+      phoneNotVerifiedBadge: "Телефон не подтверждён",
+      phoneNotSetBadge: "Телефон не указан",
       quickActions: "Быстрые действия",
+      ownerDashboard: "Панель управления",
       security: "Безопасность",
       securityTitle: "Безопасность аккаунта",
       securityDescription:
@@ -812,7 +880,11 @@ const translations = {
       recentActivity: "Недавняя активность",
       recentlyViewed: "Недавно просмотренные",
       noRecentViewsTitle: "Пока нет просмотренных объявлений",
-      noRecentViews: "Когда вы откроете карточки объявлений, они появятся здесь."
+      noRecentViews: "Когда вы откроете карточки объявлений, они появятся здесь.",
+      gettingStartedTitle: "Пока здесь пусто",
+      gettingStartedDescription:
+        "Просмотрите объявления, сохраните понравившееся жильё или разместите своё первое объявление.",
+      gettingStartedEyebrow: "Для начала"
     },
     addListing: {
       pill: "Подать объявление",
