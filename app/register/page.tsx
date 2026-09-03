@@ -72,7 +72,7 @@ export default async function RegisterPage({ searchParams = {} }: RegisterPagePr
         <h2 className="mt-4 font-display text-3xl font-semibold text-ink sm:text-[2.1rem]">
           {t.auth.createAccount}
         </h2>
-        <p className="mt-3 text-sm leading-6 text-ink/62">{t.auth.registerDescription}</p>
+        <p className="mt-3 text-sm leading-6 text-ink/60">{t.auth.registerDescription}</p>
       </div>
 
       <div className="mt-8">
@@ -180,7 +180,7 @@ export default async function RegisterPage({ searchParams = {} }: RegisterPagePr
           />
         </div>
 
-        <label className="flex items-start gap-3 rounded-[24px] border border-line/80 bg-mist/45 px-4 py-4 text-sm leading-6 text-ink/72">
+        <label className="flex items-start gap-3 rounded-[24px] border border-line/80 bg-mist/45 px-4 py-4 text-sm leading-6 text-ink/70">
           <input
             type="checkbox"
             name="acceptedTerms"
@@ -214,7 +214,7 @@ export default async function RegisterPage({ searchParams = {} }: RegisterPagePr
         </button>
       </AuthSubmitForm>
 
-      <p className="mt-5 text-sm text-ink/62">
+      <p className="mt-5 text-sm text-ink/60">
         {t.auth.alreadyRegistered}{" "}
         <Link
           href={`/login?next=${encodeURIComponent(nextPath)}${prefilledEmail ? `&email=${encodeURIComponent(prefilledEmail)}` : ""}`}

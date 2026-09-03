@@ -38,7 +38,7 @@ export function ProfileEditForm({
     <section className="space-y-3 rounded-[24px] border border-line/80 bg-white p-5 shadow-sm">
       <div>
         <p className="text-sm uppercase tracking-[0.18em] text-ink/45">{copy.title}</p>
-        <p className="mt-2 text-sm leading-6 text-ink/62">{copy.description}</p>
+        <p className="mt-2 text-sm leading-6 text-ink/60">{copy.description}</p>
       </div>
 
       <form action="/api/account/preferences" method="post" className="space-y-4">

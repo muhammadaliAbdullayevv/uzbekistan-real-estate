@@ -152,17 +152,17 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-ink/45">
               {t.common.propertyInfo}
             </h2>
-            <p className="mt-4 text-base leading-7 text-ink/78">
+            <p className="mt-4 text-base leading-7 text-ink/80">
               {listing.rooms} {t.common.roomsShort} · {listing.area} m² ·{" "}
               {getPropertyTypeLabel(listing.propertyType, locale)}
             </p>
             {listing.listingType === "rent" && listing.rentType ? (
-              <p className="mt-2 text-sm text-ink/58">
+              <p className="mt-2 text-sm text-ink/60">
                 {t.common.listingType}: {getListingTypeLabel(listing.listingType, locale)} ·{" "}
                 {getRentTypeLabel(listing.rentType, locale)}
               </p>
             ) : (
-              <p className="mt-2 text-sm text-ink/58">
+              <p className="mt-2 text-sm text-ink/60">
                 {t.common.listingType}: {getListingTypeLabel(listing.listingType, locale)}
               </p>
             )}
@@ -197,7 +197,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               </div>
               <p className="text-right text-sm text-ink/55">
                 <span className="block">{t.common.created}</span>
-                <span className="mt-1 block font-medium text-ink/72">
+                <span className="mt-1 block font-medium text-ink/70">
                   {formatDate(listing.createdAt, locale)}
                 </span>
               </p>

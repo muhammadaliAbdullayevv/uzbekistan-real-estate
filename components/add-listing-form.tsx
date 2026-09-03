@@ -403,7 +403,7 @@ export function AddListingForm({
                   key={option}
                   className={`cursor-pointer rounded-[24px] border px-5 py-4 transition ${
                     checked
-                      ? "border-accent bg-accent/6 shadow-sm"
+                      ? "border-accent bg-accent/5 shadow-sm"
                       : "border-line bg-white hover:border-ink/20 hover:bg-mist/40"
                   }`}
                 >

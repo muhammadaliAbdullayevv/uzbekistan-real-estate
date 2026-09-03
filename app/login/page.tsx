@@ -75,7 +75,7 @@ export default async function LoginPage({ searchParams = {} }: LoginPageProps) {
         <h2 className="mt-4 font-display text-3xl font-semibold text-ink sm:text-[2.1rem]">
           {t.auth.logIn}
         </h2>
-        <p className="mt-3 text-sm leading-6 text-ink/62">{t.auth.loginDescription}</p>
+        <p className="mt-3 text-sm leading-6 text-ink/60">{t.auth.loginDescription}</p>
       </div>
 
       <div className="mt-8">
@@ -148,13 +148,13 @@ export default async function LoginPage({ searchParams = {} }: LoginPageProps) {
         </button>
       </AuthSubmitForm>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-ink/62">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-ink/60">
         <Link href="/forgot-password" className="font-medium text-accent">
           {t.auth.forgotPassword}
         </Link>
       </div>
 
-      <p className="mt-5 text-sm text-ink/62">
+      <p className="mt-5 text-sm text-ink/60">
         {t.auth.noAccountYet}{" "}
         <Link
           href={`/register?next=${encodeURIComponent(nextPath)}${email ? `&email=${encodeURIComponent(email)}` : ""}`}

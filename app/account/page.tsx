@@ -129,7 +129,7 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
             <h2 className="mt-2 font-display text-3xl font-semibold text-ink">
               {t.account.overviewTitle}
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-ink/62">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-ink/60">
               {t.account.overviewDescription}
             </p>
           </div>

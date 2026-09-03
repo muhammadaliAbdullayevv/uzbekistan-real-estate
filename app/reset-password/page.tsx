@@ -47,7 +47,7 @@ export default async function ResetPasswordPage({ searchParams = {} }: ResetPass
         <h1 className="mt-4 font-display text-3xl font-semibold text-ink sm:text-[2.1rem]">
           {t.auth.resetPasswordTitle}
         </h1>
-        <p className="mt-3 text-sm leading-6 text-ink/62">{t.auth.resetPasswordDescription}</p>
+        <p className="mt-3 text-sm leading-6 text-ink/60">{t.auth.resetPasswordDescription}</p>
       </div>
 
         {!tokenStatus.valid ? (
@@ -93,7 +93,7 @@ export default async function ResetPasswordPage({ searchParams = {} }: ResetPass
           </AuthSubmitForm>
         )}
 
-      <p className="mt-5 text-sm text-ink/62">
+      <p className="mt-5 text-sm text-ink/60">
         <Link href="/login" className="font-medium text-accent">
           {t.auth.logIn}
         </Link>

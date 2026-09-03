@@ -83,7 +83,7 @@ export async function SiteHeader() {
               </svg>
             </summary>
 
-            <div className="absolute right-0 top-[calc(100%+0.75rem)] z-40 w-[min(18rem,calc(100vw-2rem))] rounded-[24px] border border-line/80 bg-white/98 p-4 shadow-[0_22px_60px_rgba(15,23,42,0.16)] backdrop-blur">
+            <div className="absolute right-0 top-[calc(100%+0.75rem)] z-40 w-[min(18rem,calc(100vw-2rem))] rounded-[24px] border border-line/80 bg-white p-4 shadow-[0_22px_60px_rgba(15,23,42,0.16)]">
               <div className="mb-4 flex justify-end">
                 <LanguageSwitcher currentLocale={locale} label={t.language.label} />
               </div>

@@ -42,21 +42,21 @@ export function LocationSection({
       <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-ink/45">
         {t.common.location}
       </h2>
-      <dl className="mt-4 space-y-3 text-sm text-ink/72">
+      <dl className="mt-4 space-y-3 text-sm text-ink/70">
         <div className="flex items-start justify-between gap-4">
-          <dt className="text-ink/48">{t.common.region}</dt>
+          <dt className="text-ink/50">{t.common.region}</dt>
           <dd className="max-w-[18rem] text-right font-medium text-ink">
             {details.region ?? "—"}
           </dd>
         </div>
         <div className="flex items-start justify-between gap-4">
-          <dt className="text-ink/48">{t.common.district}</dt>
+          <dt className="text-ink/50">{t.common.district}</dt>
           <dd className="max-w-[18rem] text-right font-medium text-ink">
             {details.districtCity ?? "—"}
           </dd>
         </div>
         <div className="flex items-start justify-between gap-4">
-          <dt className="text-ink/48">{t.common.address}</dt>
+          <dt className="text-ink/50">{t.common.address}</dt>
           <dd className="max-w-[18rem] text-right font-medium text-ink">
             {value.address?.trim() || "—"}
           </dd>

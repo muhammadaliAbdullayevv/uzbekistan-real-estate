@@ -47,7 +47,7 @@ export default function ForgotPasswordPage({ searchParams = {} }: ForgotPassword
         <h1 className="mt-4 font-display text-3xl font-semibold text-ink sm:text-[2.1rem]">
           {t.auth.forgotPasswordTitle}
         </h1>
-        <p className="mt-3 text-sm leading-6 text-ink/62">{t.auth.forgotPasswordDescription}</p>
+        <p className="mt-3 text-sm leading-6 text-ink/60">{t.auth.forgotPasswordDescription}</p>
       </div>
 
         {sent ? (
@@ -97,7 +97,7 @@ export default function ForgotPasswordPage({ searchParams = {} }: ForgotPassword
           </button>
       </AuthSubmitForm>
 
-      <p className="mt-5 text-sm text-ink/62">
+      <p className="mt-5 text-sm text-ink/60">
           <Link href="/login" className="font-medium text-accent">
             {t.auth.logIn}
           </Link>

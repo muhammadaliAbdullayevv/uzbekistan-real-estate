@@ -53,11 +53,11 @@ export function ListingCard({
             sizes="(max-width: 1024px) 50vw, 33vw"
           />
           <div className="absolute inset-x-0 top-0 flex flex-wrap gap-1 p-2 sm:gap-2 sm:p-4">
-            <span className="rounded-full bg-white/92 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-ink shadow-sm sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[0.16em]">
+            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-ink shadow-sm sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[0.16em]">
               {getPropertyTypeLabel(listing.propertyType, locale)}
             </span>
             {listing.listingType === "rent" && listing.rentType ? (
-              <span className="rounded-full bg-accent/12 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-accent shadow-sm sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[0.16em]">
+              <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-accent shadow-sm sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[0.16em]">
                 {getRentTypeLabel(listing.rentType, locale)}
               </span>
             ) : null}
@@ -123,7 +123,7 @@ export function ListingCard({
           />
         </div>
 
-        <p className="truncate text-[12px] text-ink/72 sm:text-sm">
+        <p className="truncate text-[12px] text-ink/70 sm:text-sm">
           {listing.rooms} {t.common.roomsShort} · {listing.area} m² · {listing.currency}
         </p>
 
