@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SessionRefresher } from "@/components/session-refresher";
 import { SiteHeader } from "@/components/site-header";
 import { hasUnreadMessages } from "@/lib/conversations";
+import { hasGeminiConfig } from "@/lib/gemini";
 import {
   getLocale,
   getLocaleForOpenGraph,
@@ -67,6 +68,15 @@ export default async function RootLayout({
       label: t.nav.addListing,
       icon: "M12 5v14M5 12h14"
     },
+    ...(hasGeminiConfig()
+      ? [
+          {
+            href: "/ai-uychi",
+            label: t.aiUychi.title,
+            icon: "M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3z"
+          }
+        ]
+      : []),
     {
       href: "/chat",
       label: t.nav.chat,

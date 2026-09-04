@@ -461,6 +461,20 @@ const translations = {
       backToInbox: "Suhbatlarga qaytish",
       you: "Siz"
     },
+    aiUychi: {
+      title: "AI Uychi",
+      intro: "Uy-joy topishda yordam bering deb so'rang — masalan, \"Chilonzorda 2 xonali, 500 dollargacha ijara\".",
+      placeholder: "Xabar yozing...",
+      send: "Yuborish",
+      sending: "O'ylanmoqda...",
+      emptyState: "Nima izlayotganingizni yozing, AI Uychi yordam beradi.",
+      disclaimer: "AI Uychi xato qilishi mumkin. Muhim tafsilotlarni e'lon egasi bilan tekshiring.",
+      notConfigured: "AI Uychi hozircha sozlanmagan.",
+      rateLimited: "Juda ko'p xabar yubordingiz. Birozdan keyin qayta urinib ko'ring.",
+      messageEmpty: "Xabar matnini kiriting.",
+      emptyResponse: "Javob berib bo'lmadi, qayta urinib ko'ring.",
+      unableToRespond: "AI Uychi javob bera olmadi. Qayta urinib ko'ring."
+    },
     userListingCard: {
       statusCopy: {
         PENDING: "E'lon admin tasdiqlamaguncha yopiq turadi.",
@@ -1018,6 +1032,20 @@ const translations = {
       messageEmpty: "Введите текст сообщения.",
       backToInbox: "К перепискам",
       you: "Вы"
+    },
+    aiUychi: {
+      title: "AI Uychi",
+      intro: "Спросите то, что ищете — например, «2-комнатная в Чиланзаре, аренда до 500 долларов».",
+      placeholder: "Напишите сообщение...",
+      send: "Отправить",
+      sending: "Думаю...",
+      emptyState: "Напишите, что вы ищете — AI Uychi поможет.",
+      disclaimer: "AI Uychi может ошибаться. Проверяйте важные детали у владельца объявления.",
+      notConfigured: "AI Uychi пока не настроен.",
+      rateLimited: "Слишком много сообщений. Попробуйте немного позже.",
+      messageEmpty: "Введите текст сообщения.",
+      emptyResponse: "Не удалось получить ответ, попробуйте ещё раз.",
+      unableToRespond: "AI Uychi не смог ответить. Попробуйте ещё раз."
     },
     userListingCard: {
       statusCopy: {
