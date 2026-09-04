@@ -12,6 +12,7 @@ import {
 } from "react";
 
 import { LocationSelect } from "@/components/location-select";
+import { isLocalImageUrl } from "@/lib/image-url";
 import {
   CURRENCIES,
   LISTING_TYPES,
@@ -842,7 +843,7 @@ export function AddListingForm({
                     src={photo.previewUrl}
                     alt={copy.uploadPreviewAlt}
                     fill
-                    unoptimized={photo.status === "uploading"}
+                    unoptimized={isLocalImageUrl(photo.previewUrl)}
                     className="object-cover"
                     sizes="(max-width: 1024px) 42vw, 18vw"
                   />

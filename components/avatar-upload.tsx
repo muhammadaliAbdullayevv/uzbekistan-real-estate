@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type ChangeEvent } from "react";
 
+import { isLocalImageUrl } from "@/lib/image-url";
+
 type AvatarUploadProps = {
   initialUrl: string | null;
   initial: string;
@@ -83,7 +85,14 @@ export function AvatarUpload({ initialUrl, initial, size = "md", copy }: AvatarU
         className={`relative flex ${sizeClasses.frame} shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent/25 bg-accent/10 ${sizeClasses.text} font-bold text-accent`}
       >
         {avatarUrl ? (
-          <Image src={avatarUrl} alt="" fill sizes={sizeClasses.sizes} className="object-cover" />
+          <Image
+            src={avatarUrl}
+            alt=""
+            fill
+            unoptimized={isLocalImageUrl(avatarUrl)}
+            sizes={sizeClasses.sizes}
+            className="object-cover"
+          />
         ) : (
           initial
         )}

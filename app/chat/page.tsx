@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/empty-state";
 import { listConversationsForUser } from "@/lib/conversations";
 import { formatDate } from "@/lib/format";
 import { getLocale, getTranslations } from "@/lib/i18n";
+import { isLocalImageUrl } from "@/lib/image-url";
 import { getUserSession } from "@/lib/user-session";
 
 export const dynamic = "force-dynamic";
@@ -63,6 +64,7 @@ export default async function ChatInboxPage() {
                       src={conversation.otherAvatarUrl}
                       alt=""
                       fill
+                      unoptimized={isLocalImageUrl(conversation.otherAvatarUrl)}
                       sizes="48px"
                       className="object-cover"
                     />

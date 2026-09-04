@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { isLocalImageUrl } from "@/lib/image-url";
+
 type HeaderAvatarLinkProps = {
   avatarUrl: string | null;
   initial: string | null;
@@ -15,7 +17,14 @@ export function HeaderAvatarLink({ avatarUrl, initial, label }: HeaderAvatarLink
   const isActive = pathname === "/account";
 
   const content = avatarUrl ? (
-    <Image src={avatarUrl} alt="" fill sizes="40px" className="object-cover" />
+    <Image
+      src={avatarUrl}
+      alt=""
+      fill
+      unoptimized={isLocalImageUrl(avatarUrl)}
+      sizes="40px"
+      className="object-cover"
+    />
   ) : (
     initial
   );
