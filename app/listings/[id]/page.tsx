@@ -232,6 +232,21 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </Link>
               )}
             </div>
+
+            {listing.userId && (!session || session.userId !== listing.userId) ? (
+              session ? (
+                <form action="/api/conversations" method="post">
+                  <input type="hidden" name="listingId" value={listing.id} />
+                  <button type="submit" className="btn-secondary w-full">
+                    {t.common.messageOwner}
+                  </button>
+                </form>
+              ) : (
+                <Link href={loginToContactHref} className="btn-secondary w-full text-center">
+                  {t.common.logInToMessage}
+                </Link>
+              )
+            ) : null}
           </section>
         </aside>
       </div>

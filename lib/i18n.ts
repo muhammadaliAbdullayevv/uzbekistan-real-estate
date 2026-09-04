@@ -26,8 +26,10 @@ const translations = {
     nav: {
       menu: "Menyu",
       rentals: "Ijara",
+      listings: "E'lonlar",
       addListing: "E'lon qo'shish",
       saved: "Saqlanganlar",
+      chat: "Xabarlar",
       account: "Kabinet",
       owner: "Egasi",
       login: "Kirish",
@@ -83,6 +85,8 @@ const translations = {
       noAgencyFee: "Vositachisiz",
       viewDetails: "Batafsil",
       contactOwner: "Egasi bilan bog'lanish",
+      messageOwner: "Xabar yozish",
+      logInToMessage: "Xabar yozish uchun kiring",
       backToListings: "E'lonlarga qaytish",
       location: "Joylashuv",
       listingType: "E’lon turi",
@@ -440,6 +444,22 @@ const translations = {
       emptyDescription:
         "Birinchi kvartira, xona yoki hovli e'loningizni admin ko'rib chiqishi uchun Add Listing sahifasidan yuboring."
     },
+    chat: {
+      pill: "Xabarlar",
+      inboxTitle: "Suhbatlar",
+      inboxEmptyTitle: "Hozircha suhbat yo'q",
+      inboxEmptyDescription:
+        "E'lon egasiga xabar yozganingizda, suhbat shu yerda paydo bo'ladi.",
+      browseListings: "E'lonlarni ko'rish",
+      emptyThread: "Hali xabar yo'q. Birinchi bo'lib yozing.",
+      messagePlaceholder: "Xabar yozing...",
+      send: "Yuborish",
+      sending: "Yuborilmoqda...",
+      notFound: "Suhbat topilmadi",
+      messageEmpty: "Xabar matnini kiriting.",
+      backToInbox: "Suhbatlarga qaytish",
+      you: "Siz"
+    },
     userListingCard: {
       statusCopy: {
         PENDING: "E'lon admin tasdiqlamaguncha yopiq turadi.",
@@ -565,8 +585,10 @@ const translations = {
     nav: {
       menu: "Меню",
       rentals: "Аренда",
+      listings: "Объявления",
       addListing: "Добавить объявление",
       saved: "Сохранённое",
+      chat: "Сообщения",
       account: "Кабинет",
       owner: "Владелец",
       login: "Войти",
@@ -622,6 +644,8 @@ const translations = {
       noAgencyFee: "Без комиссии",
       viewDetails: "Подробнее",
       contactOwner: "Связаться с владельцем",
+      messageOwner: "Написать владельцу",
+      logInToMessage: "Войдите, чтобы написать сообщение",
       backToListings: "Назад к объявлениям",
       location: "Локация",
       listingType: "Тип объявления",
@@ -977,6 +1001,21 @@ const translations = {
       emptyTitle: "Вы ещё не отправляли объявления",
       emptyDescription:
         "Используйте Add Listing, чтобы отправить свою первую квартиру, комнату или дом на проверку."
+    },
+    chat: {
+      pill: "Сообщения",
+      inboxTitle: "Переписки",
+      inboxEmptyTitle: "Пока нет переписок",
+      inboxEmptyDescription: "Когда вы напишете владельцу объявления, переписка появится здесь.",
+      browseListings: "Смотреть объявления",
+      emptyThread: "Сообщений пока нет. Напишите первым.",
+      messagePlaceholder: "Напишите сообщение...",
+      send: "Отправить",
+      sending: "Отправка...",
+      notFound: "Переписка не найдена",
+      messageEmpty: "Введите текст сообщения.",
+      backToInbox: "К перепискам",
+      you: "Вы"
     },
     userListingCard: {
       statusCopy: {
