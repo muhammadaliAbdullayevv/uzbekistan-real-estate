@@ -68,15 +68,15 @@ export default async function RootLayout({
       icon: "M12 5v14M5 12h14"
     },
     {
-      href: "/favorites",
-      label: t.nav.saved,
-      icon: "m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"
-    },
-    {
       href: "/chat",
       label: t.nav.chat,
       icon: "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z",
       showDot: hasUnread
+    },
+    {
+      href: "/account",
+      label: t.nav.account,
+      icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0"
     }
   ];
 
