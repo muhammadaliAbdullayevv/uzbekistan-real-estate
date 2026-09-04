@@ -31,8 +31,13 @@ If a change helps one and hurts the other, say so explicitly before implementing
   (`GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` — feature-flagged by env presence, not a
   boolean flag). Google sign-in auto-verifies email and links by email to an existing
   password account — never creates a duplicate account for the same email.
-- **Image storage:** local VPS disk (`public/uploads/listings`, served by Next.js as
-  static files) is the primary/production path, enabled via `ALLOW_LOCAL_UPLOADS=true`.
+- **Image storage:** local VPS disk (`public/uploads/listings`) is the primary/production
+  path, enabled via `ALLOW_LOCAL_UPLOADS=true`. Served directly by **nginx**
+  (`location /uploads/` in `deploy/nginx-uzbekistan-rentals.conf`, aliased to the real
+  path on disk), not proxied through Next.js — confirmed empirically that `next start`
+  does not reliably serve files added to `public/` after the process has already
+  started (a freshly uploaded file 404'd until the app was restarted), so routing
+  uploads through the app would silently break real users' photos between deploys.
   Supabase Storage and Cloudinary remain supported as optional alternatives in the
   provider-selection code (`app/api/upload/route.ts`) if either is ever configured via
   env vars, but neither is configured in production as of the 2026-09 switch away from
