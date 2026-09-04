@@ -57,10 +57,8 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
         }}
       />
 
-      <section className="surface-dark rounded-[24px] px-4 py-8 sm:rounded-[28px] sm:px-8 sm:py-12 lg:py-16">
-        <div className="auth-orb auth-orb-a" />
-        <div className="auth-orb auth-orb-b" />
-        <h1 className="relative max-w-3xl font-display text-3xl font-semibold leading-[1.1] text-white sm:text-5xl lg:text-6xl">
+      <section className="surface-dark rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5">
+        <h1 className="max-w-xl font-display text-sm font-medium leading-snug text-white sm:text-base">
           {t.home.title}
         </h1>
       </section>

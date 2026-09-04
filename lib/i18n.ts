@@ -124,7 +124,7 @@ const translations = {
       sold: "Sotilgan"
     },
     home: {
-      title: "O‘zbekiston bo‘ylab uy-joy toping",
+      title: "Kvartira va uylarni topish uchun pastdagi qidiruvdan foydalaning",
       subtitle:
         "Ijaraga olish yoki sotib olish uchun kvartira, uy va xonalarni oson qidiring.",
       resultsFound: "{count} ta e'lon topildi",
@@ -683,7 +683,7 @@ const translations = {
       sold: "Продано"
     },
     home: {
-      title: "Найдите жильё по всему Узбекистану",
+      title: "Используйте поиск ниже, чтобы найти квартиру или дом",
       subtitle:
         "Легко ищите квартиры, дома и комнаты для аренды или покупки.",
       resultsFound: "Найдено объявлений: {count}",
