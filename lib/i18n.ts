@@ -367,15 +367,10 @@ const translations = {
       gettingStartedEyebrow: "Boshlash uchun"
     },
     addListing: {
-      pill: "Uy-joy e'loni yuborish",
       title: "Uy-joy e’lonini joylashtirish",
       intro: "Ijaraga berish yoki sotish uchun e’lon yuboring.",
       editTitle: "Uy-joy e’lonini tahrirlash",
       editIntro: "E’lon tafsilotlarini yangilang va bozor holatini boshqaring.",
-      tips:
-        "Aniq sarlavha, haqiqiy manzil, to'g'ri narx va ishlaydigan telefon raqamini kiriting. Yuklangan rasmlar xavfsiz saqlanadi va tasdiqlangach e'londa ko'rsatiladi.",
-      locationOnly:
-        "Bu sayt O‘zbekiston bo‘ylab e’lonlarni qabul qiladi. E’lon akkauntingizga avtomatik biriktiriladi va saqlangan aloqa ma’lumotlari bu yerga to‘ldiriladi.",
       success: "E'loningiz yuborildi va tasdiqlanishni kutmoqda.",
       draftRestored:
         "Avval boshlagan e'loningiz tiklandi. Iltimos, ma'lumotlarni tekshiring va davom eting.",
@@ -925,15 +920,10 @@ const translations = {
       gettingStartedEyebrow: "Для начала"
     },
     addListing: {
-      pill: "Подать объявление",
       title: "Разместить объявление о жилье",
       intro: "Отправьте объявление для аренды или продажи.",
       editTitle: "Редактировать объявление о жилье",
       editIntro: "Обновите детали объявления и управляйте его рыночным статусом.",
-      tips:
-        "Укажите понятный заголовок, реальный адрес, точную цену и рабочий номер телефона. Загруженные фото хранятся безопасно и показываются в объявлении после одобрения.",
-      locationOnly:
-        "Сайт принимает объявления по всему Узбекистану. Объявление автоматически привяжется к вашему аккаунту, а сохранённые контактные данные можно использовать здесь.",
       success: "Ваше объявление отправлено и ожидает одобрения.",
       draftRestored:
         "Ваш черновик объявления восстановлен. Проверьте данные и продолжите отправку.",
