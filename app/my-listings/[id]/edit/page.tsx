@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 export { privatePageMetadata as metadata } from "@/lib/site";
 import { AddListingForm } from "@/components/add-listing-form";
 import { getLocale, getTranslations } from "@/lib/i18n";
-import { getRegionOptions, isUzbekistanRegion } from "@/lib/locations";
+import { getDistrictOptionsByRegion, getRegionOptions, isUzbekistanRegion } from "@/lib/locations";
 import { getListingForUserById } from "@/lib/listings";
 import { getUserSession } from "@/lib/user-session";
 
@@ -45,6 +45,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
           submitPath={`/api/listings/${listing.id}`}
           successPath="/my-listings?status=updated"
           regionOptions={getRegionOptions(locale)}
+          districtOptionsByRegion={getDistrictOptionsByRegion(locale)}
           listingTypeLabels={t.enums.listingTypes}
           propertyTypeLabels={t.enums.propertyTypes}
           rentTypeLabels={t.enums.rentTypes}
@@ -66,7 +67,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             currency: t.addListing.form.currency,
             region: t.addListing.form.region,
             districtCity: t.addListing.form.districtCity,
-            districtCityPlaceholder: t.addListing.form.districtCityPlaceholder,
+            districtSelectPrompt: t.addListing.form.districtSelectPrompt,
             cityNeighborhood: t.addListing.form.cityNeighborhood,
             cityNeighborhoodPlaceholder: t.addListing.form.cityNeighborhoodPlaceholder,
             address: t.addListing.form.address,

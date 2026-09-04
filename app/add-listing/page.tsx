@@ -2,7 +2,7 @@ export { privatePageMetadata as metadata } from "@/lib/site";
 import { AddListingForm } from "@/components/add-listing-form";
 import { BackLink } from "@/components/back-link";
 import { getLocale, getTranslations } from "@/lib/i18n";
-import { getRegionOptions } from "@/lib/locations";
+import { getDistrictOptionsByRegion, getRegionOptions } from "@/lib/locations";
 import { getCurrentUser } from "@/lib/session-auth";
 
 type AddListingPageProps = {
@@ -29,6 +29,7 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
 
         <AddListingForm
           regionOptions={getRegionOptions(locale)}
+          districtOptionsByRegion={getDistrictOptionsByRegion(locale)}
           listingTypeLabels={t.enums.listingTypes}
           propertyTypeLabels={t.enums.propertyTypes}
           rentTypeLabels={t.enums.rentTypes}
@@ -52,7 +53,7 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
             currency: t.addListing.form.currency,
             region: t.addListing.form.region,
             districtCity: t.addListing.form.districtCity,
-            districtCityPlaceholder: t.addListing.form.districtCityPlaceholder,
+            districtSelectPrompt: t.addListing.form.districtSelectPrompt,
             cityNeighborhood: t.addListing.form.cityNeighborhood,
             cityNeighborhoodPlaceholder: t.addListing.form.cityNeighborhoodPlaceholder,
             address: t.addListing.form.address,

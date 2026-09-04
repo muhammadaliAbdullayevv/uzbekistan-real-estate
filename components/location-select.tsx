@@ -1,3 +1,5 @@
+import type { ChangeEvent } from "react";
+
 type LocationSelectOption = {
   value: string;
   label: string;
@@ -8,9 +10,11 @@ type LocationSelectProps = {
   name: string;
   label: string;
   defaultValue?: string;
+  value?: string;
   options: LocationSelectOption[];
   emptyLabel?: string;
   className?: string;
+  onChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
 };
 
 export function LocationSelect({
@@ -18,9 +22,11 @@ export function LocationSelect({
   name,
   label,
   defaultValue,
+  value,
   options,
   emptyLabel,
-  className
+  className,
+  onChange
 }: LocationSelectProps) {
   return (
     <div>
@@ -30,7 +36,9 @@ export function LocationSelect({
       <select
         id={id}
         name={name}
-        defaultValue={defaultValue}
+        defaultValue={value === undefined ? defaultValue : undefined}
+        value={value}
+        onChange={onChange}
         className={className ? `select ${className}` : "select"}
       >
         {emptyLabel ? <option value="">{emptyLabel}</option> : null}

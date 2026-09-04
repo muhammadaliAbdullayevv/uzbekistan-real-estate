@@ -56,6 +56,7 @@ type AddListingFormProps = {
     value: UzbekistanRegion;
     label: string;
   }>;
+  districtOptionsByRegion: Record<string, Array<{ value: string; label: string }>>;
   listingTypeLabels: Record<(typeof LISTING_TYPES)[number], string>;
   propertyTypeLabels: Record<(typeof PROPERTY_TYPES)[number], string>;
   rentTypeLabels: Record<(typeof RENT_TYPES)[number], string>;
@@ -79,7 +80,7 @@ type AddListingFormProps = {
     currency: string;
     region: string;
     districtCity: string;
-    districtCityPlaceholder: string;
+    districtSelectPrompt: string;
     cityNeighborhood: string;
     cityNeighborhoodPlaceholder: string;
     address: string;
@@ -134,6 +135,7 @@ export function AddListingForm({
   submitPath = "/api/listings",
   successPath = "/add-listing?success=1",
   regionOptions,
+  districtOptionsByRegion,
   listingTypeLabels,
   propertyTypeLabels,
   rentTypeLabels,
@@ -166,6 +168,10 @@ export function AddListingForm({
   const [priceValue, setPriceValue] = useState<string>(
     initialValues?.price !== undefined ? String(initialValues.price) : ""
   );
+  const [selectedRegion, setSelectedRegion] = useState<string>(
+    initialValues?.region ?? regionOptions[0]?.value ?? ""
+  );
+  const [selectedDistrict, setSelectedDistrict] = useState<string>(initialValues?.district ?? "");
 
   // Anonymous visitors can fill out the form; a draft persists across the
   // login redirect round trip so nothing typed is lost.
@@ -198,6 +204,12 @@ export function AddListingForm({
       }
       if (parsed.price) {
         setPriceValue(parsed.price);
+      }
+      if (parsed.region) {
+        setSelectedRegion(parsed.region);
+      }
+      if (parsed.district) {
+        setSelectedDistrict(parsed.district);
       }
     } catch {
       // Ignore malformed/unavailable drafts — form just starts empty.
@@ -414,6 +426,14 @@ export function AddListingForm({
       ? new Intl.NumberFormat("en-US").format(parsedPrice)
       : null;
 
+  const baseDistrictOptions = districtOptionsByRegion[selectedRegion] ?? [];
+  // A legacy or not-yet-normalized district value won't be in the canonical
+  // list — keep it selectable instead of silently dropping it on save.
+  const districtOptions =
+    selectedDistrict && !baseDistrictOptions.some((option) => option.value === selectedDistrict)
+      ? [{ value: selectedDistrict, label: selectedDistrict }, ...baseDistrictOptions]
+      : baseDistrictOptions;
+
   return (
     <div className="space-y-6">
       {showSuccess ? (
@@ -574,22 +594,41 @@ export function AddListingForm({
               id="region"
               name="region"
               label={copy.region}
-              defaultValue={effectiveValues.region ?? regionOptions[0]?.value}
+              value={selectedRegion}
               options={regionOptions}
+              onChange={(event) => {
+                const nextRegion = event.target.value;
+                setSelectedRegion(nextRegion);
+
+                const stillValid = (districtOptionsByRegion[nextRegion] ?? []).some(
+                  (option) => option.value === selectedDistrict
+                );
+
+                if (!stillValid) {
+                  setSelectedDistrict("");
+                }
+              }}
             />
 
             <div>
               <label htmlFor="district" className="mb-2 block text-sm font-medium text-ink/80">
                 {copy.districtCity}
               </label>
-              <input
+              <select
                 id="district"
                 name="district"
                 required
-                className="input"
-                defaultValue={effectiveValues.district ?? ""}
-                placeholder={copy.districtCityPlaceholder}
-              />
+                className="select"
+                value={selectedDistrict}
+                onChange={(event) => setSelectedDistrict(event.target.value)}
+              >
+                <option value="">{copy.districtSelectPrompt}</option>
+                {districtOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
