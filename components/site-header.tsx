@@ -46,7 +46,7 @@ export async function SiteHeader() {
               <>
                 <Link
                   href="/add-listing"
-                  className="flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-3 py-2 text-xs font-semibold text-white transition hover:bg-accent sm:px-4 sm:py-2.5 sm:text-sm"
+                  className="hidden shrink-0 items-center gap-1.5 rounded-full bg-ink px-3 py-2 text-xs font-semibold text-white transition hover:bg-accent sm:flex sm:px-4 sm:py-2.5 sm:text-sm"
                 >
                   <svg
                     aria-hidden="true"

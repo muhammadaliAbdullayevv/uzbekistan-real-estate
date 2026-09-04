@@ -63,6 +63,11 @@ export default async function RootLayout({
       icon: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
     },
     {
+      href: "/add-listing",
+      label: t.nav.addListing,
+      icon: "M12 5v14M5 12h14"
+    },
+    {
       href: "/favorites",
       label: t.nav.saved,
       icon: "m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"
