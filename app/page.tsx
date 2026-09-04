@@ -5,11 +5,9 @@ import { WelcomeGuide } from "@/components/welcome-guide";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import {
   getApprovedListings,
-  getFavoriteListingIds,
   getFirstParam,
   type ListingSearchParams
 } from "@/lib/listings";
-import { getUserSession } from "@/lib/user-session";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +16,6 @@ type HomePageProps = {
 };
 
 export default async function HomePage({ searchParams = {} }: HomePageProps) {
-  const session = await getUserSession();
   const locale = getLocale();
   const t = getTranslations(locale);
   const filters: ListingSearchParams = {
@@ -34,10 +31,7 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
     sort: getFirstParam(searchParams.sort) ?? "newest"
   };
 
-  const [listings, favoriteIds] = await Promise.all([
-    getApprovedListings(filters),
-    session ? getFavoriteListingIds(session.userId) : Promise.resolve(new Set<string>())
-  ]);
+  const listings = await getApprovedListings(filters);
 
   return (
     <div className="shell space-y-3 sm:space-y-4">
@@ -89,13 +83,7 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
         ) : (
           <div className="grid grid-cols-2 gap-2.5 sm:gap-6 lg:grid-cols-3">
             {listings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                locale={locale}
-                listing={listing}
-                isFavorited={favoriteIds.has(listing.id)}
-                canFavorite={Boolean(session)}
-              />
+              <ListingCard key={listing.id} locale={locale} listing={listing} />
             ))}
           </div>
         )}

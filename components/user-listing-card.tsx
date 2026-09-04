@@ -1,7 +1,7 @@
 import type { ListingStatus } from "@prisma/client";
 import Link from "next/link";
 
-import { PropertyImage } from "@/components/property-image";
+import { ListingCardPhotos } from "@/components/listing-card-photos";
 import { UserListingActions } from "@/components/user-listing-actions";
 import {
   formatDate,
@@ -37,7 +37,6 @@ const AVAILABILITY_STYLES: Record<ListingAvailabilityStatusValue, string> = {
 
 export function UserListingCard({ locale, listing }: UserListingCardProps) {
   const t = getTranslations(locale);
-  const image = listing.images[0]?.url;
   const isPubliclyVisible =
     listing.status === "APPROVED" && listing.availabilityStatus === "ACTIVE";
   const isOffMarket =
@@ -46,12 +45,9 @@ export function UserListingCard({ locale, listing }: UserListingCardProps) {
   return (
     <article className="panel overflow-hidden">
       <div className="relative aspect-[16/10] overflow-hidden">
-        <PropertyImage
-          src={image}
+        <ListingCardPhotos
+          images={listing.images.map((image) => image.url)}
           alt={listing.title}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
         />
       </div>
 

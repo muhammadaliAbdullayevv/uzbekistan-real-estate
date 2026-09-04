@@ -1,7 +1,6 @@
 import Link from "next/link";
 
-import { FavoriteButton } from "@/components/favorite-button";
-import { PropertyImage } from "@/components/property-image";
+import { ListingCardPhotos } from "@/components/listing-card-photos";
 import { LocationSummary } from "@/components/location-display";
 import {
   formatPrice,
@@ -15,19 +14,10 @@ import type { ListingWithImages } from "@/lib/listings";
 type ListingCardProps = {
   locale: Locale;
   listing: ListingWithImages;
-  isFavorited?: boolean;
-  canFavorite?: boolean;
 };
 
-export function ListingCard({
-  locale,
-  listing,
-  isFavorited = false,
-  canFavorite = false
-}: ListingCardProps) {
+export function ListingCard({ locale, listing }: ListingCardProps) {
   const t = getTranslations(locale);
-  const image = listing.images[0]?.url;
-  const saveHref = `/login?next=${encodeURIComponent(`/listings/${listing.id}`)}`;
   const hasNoAgencyFee =
     listing.title.toLowerCase().includes("no agency fee") ||
     listing.description.toLowerCase().includes("no agency fee");
@@ -45,12 +35,9 @@ export function ListingCard({
           href={`/listings/${listing.id}`}
           className="absolute inset-0 block overflow-hidden"
         >
-          <PropertyImage
-            src={image}
+          <ListingCardPhotos
+            images={listing.images.map((image) => image.url)}
             alt={listing.title}
-            fill
-            className="object-cover transition duration-700 group-hover:scale-[1.05]"
-            sizes="(max-width: 1024px) 50vw, 33vw"
           />
           <div className="absolute inset-x-0 top-0 flex flex-wrap gap-1 p-2 sm:gap-2 sm:p-4">
             <span className="rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-ink shadow-sm sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[0.16em]">
@@ -74,21 +61,6 @@ export function ListingCard({
             </p>
           </div>
         </Link>
-        <div className="absolute right-2 top-2 z-10 sm:right-4 sm:top-4">
-          <FavoriteButton
-            listingId={listing.id}
-            isFavorited={isFavorited}
-            canFavorite={canFavorite}
-            loginHref={saveHref}
-            variant="icon"
-            copy={{
-              save: t.common.save,
-              saved: t.common.saved,
-              saveListing: t.common.saveListing,
-              removeFromSaved: t.common.removeFromSaved
-            }}
-          />
-        </div>
       </div>
 
       <div className="flex flex-1 flex-col space-y-2 p-3.5 sm:space-y-4 sm:p-6">

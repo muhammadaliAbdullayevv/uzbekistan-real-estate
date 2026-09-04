@@ -5,7 +5,7 @@ export { privatePageMetadata as metadata } from "@/lib/site";
 import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
 import { getLocale, getTranslations } from "@/lib/i18n";
-import { getFavoriteListingIds, getFavoriteListingsForUser } from "@/lib/listings";
+import { getFavoriteListingsForUser } from "@/lib/listings";
 import { getUserSession } from "@/lib/user-session";
 
 export const dynamic = "force-dynamic";
@@ -19,10 +19,7 @@ export default async function FavoritesPage() {
     redirect("/login?next=/favorites");
   }
 
-  const [favorites, favoriteIds] = await Promise.all([
-    getFavoriteListingsForUser(session.userId),
-    getFavoriteListingIds(session.userId)
-  ]);
+  const favorites = await getFavoriteListingsForUser(session.userId);
 
   return (
     <div className="shell space-y-8">
@@ -50,13 +47,7 @@ export default async function FavoritesPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {favorites.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              locale={locale}
-              listing={listing}
-              isFavorited={favoriteIds.has(listing.id)}
-              canFavorite
-            />
+            <ListingCard key={listing.id} locale={locale} listing={listing} />
           ))}
         </div>
       )}
