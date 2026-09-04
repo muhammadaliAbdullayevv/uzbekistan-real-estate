@@ -6,8 +6,37 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/db";
 import { getLocale, getTranslations } from "@/lib/i18n";
+import { getAbsoluteUrl } from "@/lib/site";
+import { getOwnerDashboardPath, getOwnerEmail } from "@/lib/owner";
+import { sendTelegramNotification } from "@/lib/telegram-notify";
+import { getUserByEmail } from "@/lib/user-data";
 import { getUserSession } from "@/lib/user-session";
 import { listingInputSchema } from "@/lib/validations/listing";
+
+/**
+ * Best-effort: the owner moderates every listing alone, so let them know a
+ * new one is waiting instead of relying on them checking the dashboard.
+ * No-ops silently if OWNER_EMAIL's account hasn't verified its phone via
+ * Telegram yet (same as any other user without a telegramChatId).
+ */
+async function notifyOwnerOfNewListing(listing: { title: string }) {
+  const ownerEmail = getOwnerEmail();
+
+  if (!ownerEmail) {
+    return;
+  }
+
+  const owner = await getUserByEmail(ownerEmail);
+
+  if (!owner?.telegramChatId) {
+    return;
+  }
+
+  const link = getAbsoluteUrl(getOwnerDashboardPath());
+  const text = [`🆕 Yangi e'lon ko'rib chiqishni kutmoqda`, listing.title, "", link].join("\n");
+
+  await sendTelegramNotification(owner.telegramChatId, text);
+}
 
 export async function POST(request: Request) {
   try {
@@ -104,6 +133,10 @@ export async function POST(request: Request) {
     revalidatePath("/admin");
     revalidatePath("/account");
     revalidatePath("/my-listings");
+
+    notifyOwnerOfNewListing({ title: listingData.title }).catch((notifyError) => {
+      console.error("Owner notify failed:", notifyError);
+    });
 
     return NextResponse.json(
       {
