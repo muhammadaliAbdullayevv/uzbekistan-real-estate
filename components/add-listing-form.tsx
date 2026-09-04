@@ -11,7 +11,9 @@ import {
   type FormEvent
 } from "react";
 
+import { LocationPicker } from "@/components/location-picker";
 import { LocationSelect } from "@/components/location-select";
+import { getDistrictCentroid } from "@/lib/district-coordinates";
 import { isLocalImageUrl } from "@/lib/image-url";
 import {
   CURRENCIES,
@@ -23,6 +25,8 @@ import {
   type RentTypeValue
 } from "@/lib/constants";
 import type { UzbekistanRegion } from "@/lib/locations";
+
+const FALLBACK_MAP_CENTER = { lat: 41.311158, lng: 69.279737 };
 
 const DRAFT_STORAGE_KEY = "draft-listing";
 
@@ -96,6 +100,13 @@ type AddListingFormProps = {
     cityNeighborhoodPlaceholder: string;
     address: string;
     addressPlaceholder: string;
+    mapLocation: string;
+    mapLocationHelper: string;
+    useMyLocation: string;
+    locating: string;
+    locateError: string;
+    mapLocationNotSet: string;
+    locationRequired: string;
     rooms: string;
     area: string;
     propertyType: string;
@@ -136,6 +147,8 @@ type AddListingFormProps = {
     area: number;
     propertyType: (typeof PROPERTY_TYPES)[number];
     rentType: RentTypeValue | null;
+    latitude: number;
+    longitude: number;
     phone: string;
     images: string[];
   };
@@ -184,6 +197,9 @@ export function AddListingForm({
     initialValues?.region ?? regionOptions[0]?.value ?? ""
   );
   const [selectedDistrict, setSelectedDistrict] = useState<string>(initialValues?.district ?? "");
+  const [position, setPosition] = useState<{ lat: number; lng: number } | null>(
+    initialValues ? { lat: initialValues.latitude, lng: initialValues.longitude } : null
+  );
 
   // Anonymous visitors can fill out the form; a draft persists across the
   // login redirect round trip so nothing typed is lost.
@@ -411,6 +427,11 @@ export function AddListingForm({
       return;
     }
 
+    if (!position) {
+      setError(copy.locationRequired);
+      return;
+    }
+
     setIsSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
@@ -430,6 +451,8 @@ export function AddListingForm({
       area: getValue("area"),
       propertyType: getValue("propertyType"),
       rentType: listingType === "rent" ? getValue("rentType") : "",
+      latitude: position.lat,
+      longitude: position.lng,
       phone: getValue("phone") ? `+998${getValue("phone")}` : "",
       images: uploadedImages
     };
@@ -716,6 +739,26 @@ export function AddListingForm({
                 placeholder={copy.addressPlaceholder}
               />
             </div>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-ink/80">{copy.mapLocation}</label>
+            <LocationPicker
+              initialPosition={initialValues ? { lat: initialValues.latitude, lng: initialValues.longitude } : null}
+              defaultCenter={
+                getDistrictCentroid(selectedRegion, selectedDistrict) ?? FALLBACK_MAP_CENTER
+              }
+              onChange={setPosition}
+              copy={{
+                helper: copy.mapLocationHelper,
+                useMyLocation: copy.useMyLocation,
+                locating: copy.locating,
+                locateError: copy.locateError,
+                notSet: copy.mapLocationNotSet
+              }}
+            />
+            <input type="hidden" name="latitude" value={position?.lat ?? ""} readOnly />
+            <input type="hidden" name="longitude" value={position?.lng ?? ""} readOnly />
           </div>
         </section>
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ListingCardPhotos } from "@/components/listing-card-photos";
 import { LocationSummary } from "@/components/location-display";
 import {
+  formatDistance,
   formatPrice,
   getPropertyTypeLabel,
   getRentTypeLabel
@@ -46,6 +47,15 @@ export function ListingCard({ locale, listing }: ListingCardProps) {
             {listing.listingType === "rent" && listing.rentType ? (
               <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-accent shadow-sm sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[0.16em]">
                 {getRentTypeLabel(listing.rentType, locale)}
+              </span>
+            ) : null}
+            {listing.distanceKm !== undefined ? (
+              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-semibold text-ink shadow-sm sm:px-3 sm:py-1 sm:text-[11px]">
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-2.5 w-2.5 sm:h-3 sm:w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 21s-7-6.14-7-11a7 7 0 0 1 14 0c0 4.86-7 11-7 11z" />
+                  <circle cx="12" cy="10" r="2.5" />
+                </svg>
+                {formatDistance(listing.distanceKm, locale)}
               </span>
             ) : null}
           </div>

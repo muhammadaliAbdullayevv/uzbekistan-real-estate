@@ -56,6 +56,19 @@ If a change helps one and hurts the other, say so explicitly before implementing
 - **Authorization boundary:** `OWNER_EMAIL` is checked server-side only and must never
   leak to the client (no exposing it in a client bundle, API response, or log visible to
   users).
+- **Listing location / "near me" search:** every listing has `latitude`/`longitude` +
+  a `locationPrecision` (`EXACT` | `APPROXIMATE`). New/edited listings require a real
+  pin placed via `components/location-picker.tsx` (Leaflet + OpenStreetMap tiles — free,
+  no API key, matches the free/cheap-infra constraint; no Google Maps). Listings that
+  predate the picker (2026-09) were backfilled with `APPROXIMATE` district/region
+  centroids from `lib/district-coordinates.ts` (generated once via free OSM Nominatim
+  geocoding, see `scripts/backfill-listing-locations.ts` — re-run with `--apply` if more
+  ownerless/uncoordinated listings ever need backfilling; it never overwrites a listing
+  that already has coordinates). "Near me" search (`components/near-me-button.tsx`) uses
+  the browser Geolocation API client-side and a Haversine SQL sort server-side
+  (`lib/listings.ts`) — no third-party distance/places API. Raw lat/lng is never sent to
+  the client for public listing browsing/detail views (only a rounded `distanceKm` is);
+  it's only exposed to a listing's own owner when editing it.
 
 ## 3. How I want you to work
 

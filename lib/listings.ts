@@ -27,6 +27,8 @@ export type ListingSearchParams = {
   propertyType?: string;
   currency?: string;
   sort?: string;
+  nearLat?: string;
+  nearLng?: string;
 };
 
 export type ListingImageRecord = {
@@ -50,6 +52,9 @@ export type ListingWithImages = {
   area: number;
   propertyType: PropertyType;
   rentType: RentTypeValue | null;
+  latitude: number | null;
+  longitude: number | null;
+  locationPrecision: "EXACT" | "APPROXIMATE";
   availabilityStatus: ListingAvailabilityStatusValue;
   phone: string;
   telegramUsername: string | null;
@@ -58,6 +63,7 @@ export type ListingWithImages = {
   updatedAt: Date;
   userId: string | null;
   images: ListingImageRecord[];
+  distanceKm?: number;
 };
 
 type ListingRow = Omit<ListingWithImages, "images"> & {
@@ -82,43 +88,65 @@ const LISTING_AVAILABILITY_STATUS = {
   SOLD: "SOLD"
 } as const;
 
-const listingSelectSql = Prisma.sql`
-  SELECT
-    l."id",
-    l."title",
-    l."description",
-    l."price",
-    l."listingType",
-    l."currency",
-    l."region",
-    l."district",
-    l."city",
-    l."address",
-    l."rooms",
-    l."area",
-    l."propertyType",
-    l."rentType",
-    l."availabilityStatus",
-    l."phone",
-    l."telegramUsername",
-    l."status",
-    l."createdAt",
-    l."updatedAt",
-    l."userId",
-    COALESCE(
-      json_agg(
-        json_build_object(
-          'id', li."id",
-          'url', li."url",
-          'listingId', li."listingId"
-        )
-        ORDER BY li."id"
-      ) FILTER (WHERE li."id" IS NOT NULL),
-      '[]'::json
-    ) AS "images"
-  FROM "Listing" l
-  LEFT JOIN "ListingImage" li ON li."listingId" = l."id"
-`;
+type NearPoint = { lat: number; lng: number };
+
+function buildSelectSql(near?: NearPoint) {
+  // Haversine great-circle distance in km. The LEAST/GREATEST clamp guards
+  // against floating-point rounding pushing acos()'s argument fractionally
+  // outside [-1, 1], which would otherwise produce NaN for near-antipodal
+  // or identical points.
+  const distanceColumn = near
+    ? Prisma.sql`,
+      6371 * acos(
+        LEAST(1, GREATEST(-1,
+          cos(radians(${near.lat})) * cos(radians(l."latitude")) * cos(radians(l."longitude") - radians(${near.lng}))
+          + sin(radians(${near.lat})) * sin(radians(l."latitude"))
+        ))
+      ) AS "distanceKm"`
+    : Prisma.sql``;
+
+  return Prisma.sql`
+    SELECT
+      l."id",
+      l."title",
+      l."description",
+      l."price",
+      l."listingType",
+      l."currency",
+      l."region",
+      l."district",
+      l."city",
+      l."address",
+      l."rooms",
+      l."area",
+      l."propertyType",
+      l."rentType",
+      l."latitude",
+      l."longitude",
+      l."locationPrecision",
+      l."availabilityStatus",
+      l."phone",
+      l."telegramUsername",
+      l."status",
+      l."createdAt",
+      l."updatedAt",
+      l."userId",
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'id', li."id",
+            'url', li."url",
+            'listingId', li."listingId"
+          )
+          ORDER BY li."id"
+        ) FILTER (WHERE li."id" IS NOT NULL),
+        '[]'::json
+      ) AS "images"
+      ${distanceColumn}
+    FROM "Listing" l
+    LEFT JOIN "ListingImage" li ON li."listingId" = l."id"
+  `;
+}
 
 function mapListingRow(row: ListingRow): ListingWithImages {
   const rawImages = Array.isArray(row.images)
@@ -129,7 +157,11 @@ function mapListingRow(row: ListingRow): ListingWithImages {
 
   return {
     ...row,
-    images: (rawImages as ListingImageRecord[]) ?? []
+    images: (rawImages as ListingImageRecord[]) ?? [],
+    distanceKm:
+      row.distanceKm === undefined || row.distanceKm === null
+        ? undefined
+        : Number(row.distanceKm)
   };
 }
 
@@ -144,7 +176,35 @@ function listingStatusSql(status: ListingStatus) {
   return Prisma.sql`CAST(${status} AS "ListingStatus")`;
 }
 
-function buildWhereSql(filters: ListingSearchParams) {
+function parseNearPoint(filters: ListingSearchParams): NearPoint | undefined {
+  const latRaw = getFirstParam(filters.nearLat)?.trim();
+  const lngRaw = getFirstParam(filters.nearLng)?.trim();
+
+  // Number("") is 0, not NaN -- without this check, the hidden nearLat/
+  // nearLng inputs (empty when "near me" isn't active) would silently
+  // activate near-mode sorted from (0, 0) on every normal filter submit.
+  if (!latRaw || !lngRaw) {
+    return undefined;
+  }
+
+  const lat = Number(latRaw);
+  const lng = Number(lngRaw);
+
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    lat < -90 ||
+    lat > 90 ||
+    lng < -180 ||
+    lng > 180
+  ) {
+    return undefined;
+  }
+
+  return { lat, lng };
+}
+
+function buildWhereSql(filters: ListingSearchParams, near?: NearPoint) {
   const q = getFirstParam(filters.q)?.trim();
   const region = getFirstParam(filters.region)?.trim();
   const district = getFirstParam(filters.district)?.trim();
@@ -214,10 +274,18 @@ function buildWhereSql(filters: ListingSearchParams) {
     conditions.push(Prisma.sql`l."price" <= ${maxPrice}`);
   }
 
+  if (near) {
+    conditions.push(Prisma.sql`l."latitude" IS NOT NULL AND l."longitude" IS NOT NULL`);
+  }
+
   return Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`;
 }
 
-function buildOrderBySql(sort?: string) {
+function buildOrderBySql(sort?: string, near?: NearPoint) {
+  if (near) {
+    return Prisma.sql`ORDER BY "distanceKm" ASC, l."createdAt" DESC`;
+  }
+
   const value = getFirstParam(sort);
 
   if (value === "price_asc") {
@@ -231,9 +299,9 @@ function buildOrderBySql(sort?: string) {
   return Prisma.sql`ORDER BY l."createdAt" DESC`;
 }
 
-async function runListingQuery(whereSql: Prisma.Sql, orderBySql: Prisma.Sql) {
+async function runListingQuery(whereSql: Prisma.Sql, orderBySql: Prisma.Sql, near?: NearPoint) {
   const rows = await prisma.$queryRaw<ListingRow[]>(
-    Prisma.sql`${listingSelectSql} ${whereSql} ${groupAndOrderSql(orderBySql)}`
+    Prisma.sql`${buildSelectSql(near)} ${whereSql} ${groupAndOrderSql(orderBySql)}`
   );
 
   return rows.map(mapListingRow);
@@ -254,7 +322,7 @@ async function getApprovedListingsByIds(ids: string[]) {
 
   const rows = await prisma.$queryRaw<ListingRow[]>(
     Prisma.sql`
-      ${listingSelectSql}
+      ${buildSelectSql()}
       WHERE l."status" = ${listingStatusSql(ListingStatus.APPROVED)}
         AND l."availabilityStatus" = CAST(${LISTING_AVAILABILITY_STATUS.ACTIVE} AS "ListingAvailabilityStatus")
         AND l."id" IN (${Prisma.join(ids)})
@@ -328,7 +396,8 @@ function toPositiveNumber(value?: string) {
 }
 
 export async function getApprovedListings(filters: ListingSearchParams) {
-  return runListingQuery(buildWhereSql(filters), buildOrderBySql(filters.sort));
+  const near = parseNearPoint(filters);
+  return runListingQuery(buildWhereSql(filters, near), buildOrderBySql(filters.sort, near), near);
 }
 
 export async function getApprovedListingById(id: string) {
@@ -436,6 +505,8 @@ export async function updateListingForUser(
     area: number;
     propertyType: PropertyType;
     rentType: RentTypeValue | null;
+    latitude: number;
+    longitude: number;
     phone: string;
     images: string[];
   }
@@ -480,6 +551,9 @@ export async function updateListingForUser(
           "area" = ${input.area},
           "propertyType" = CAST(${input.propertyType} AS "PropertyType"),
           "rentType" = ${rentTypeSql},
+          "latitude" = ${input.latitude},
+          "longitude" = ${input.longitude},
+          "locationPrecision" = CAST('EXACT' AS "LocationPrecision"),
           "availabilityStatus" = CAST(${normalizedAvailabilityStatus} AS "ListingAvailabilityStatus"),
           "phone" = ${input.phone},
           "updatedAt" = ${now}

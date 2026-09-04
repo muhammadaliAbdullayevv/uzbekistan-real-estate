@@ -117,6 +117,8 @@ const translations = {
       ownerContact: "Egasi bilan aloqa",
       forRentIndicator: "Ijaraga beriladi",
       forSaleIndicator: "Sotuvda",
+      kmAway: "km narida",
+      metersAway: "m narida",
       active: "Faol",
       rented: "Ijaraga berilgan",
       sold: "Sotilgan"
@@ -172,7 +174,11 @@ const translations = {
       allCurrencies: "Barcha valyutalar",
       newest: "Yangi",
       priceAsc: "Narx: arzondan qimmatga",
-      priceDesc: "Narx: qimmatdan arzonga"
+      priceDesc: "Narx: qimmatdan arzonga",
+      nearMe: "Atrofimdagi e'lonlar",
+      locating: "Aniqlanmoqda...",
+      nearMeActive: "Joylashuvim asosida",
+      nearMeError: "Joylashuvni aniqlab bo'lmadi. Brauzer sozlamalarida ruxsat berilganini tekshiring."
     },
     listingDetail: {
       revealContact: "Kirish orqali egasi bilan bog‘laning.",
@@ -396,6 +402,13 @@ const translations = {
         cityNeighborhoodPlaceholder: "Masalan: bozor",
         address: "Manzil",
         addressPlaceholder: "Ko'cha, uy raqami",
+        mapLocation: "Xaritada joylashuv",
+        mapLocationHelper: "Xaritani bosing yoki markerni suring — uyning aniq joylashuvini belgilang.",
+        useMyLocation: "Joriy joylashuvim",
+        locating: "Aniqlanmoqda...",
+        locateError: "Joylashuvni aniqlab bo'lmadi. Xaritada qo'lda belgilang.",
+        mapLocationNotSet: "Hali belgilanmagan — xaritani bosing.",
+        locationRequired: "Iltimos, xaritada uyning joylashuvini belgilang.",
         rooms: "Xonalar",
         area: "Maydon (m²)",
         propertyType: "Uy turi",
@@ -691,6 +704,8 @@ const translations = {
       ownerContact: "Контакт владельца",
       forRentIndicator: "Сдается в аренду",
       forSaleIndicator: "На продажу",
+      kmAway: "км от вас",
+      metersAway: "м от вас",
       active: "Активно",
       rented: "Сдано",
       sold: "Продано"
@@ -746,7 +761,11 @@ const translations = {
       allCurrencies: "Все валюты",
       newest: "Сначала новые",
       priceAsc: "Цена: по возрастанию",
-      priceDesc: "Цена: по убыванию"
+      priceDesc: "Цена: по убыванию",
+      nearMe: "Рядом со мной",
+      locating: "Определяем...",
+      nearMeActive: "По моему местоположению",
+      nearMeError: "Не удалось определить местоположение. Проверьте разрешения браузера."
     },
     listingDetail: {
       revealContact: "Войдите, чтобы связаться с владельцем.",
@@ -969,6 +988,13 @@ const translations = {
         cityNeighborhoodPlaceholder: "Например: рынок",
         address: "Адрес",
         addressPlaceholder: "Улица, номер дома",
+        mapLocation: "Расположение на карте",
+        mapLocationHelper: "Нажмите на карту или переместите маркер — отметьте точное расположение дома.",
+        useMyLocation: "Моё текущее местоположение",
+        locating: "Определяем...",
+        locateError: "Не удалось определить местоположение. Отметьте вручную на карте.",
+        mapLocationNotSet: "Ещё не отмечено — нажмите на карту.",
+        locationRequired: "Пожалуйста, отметьте расположение дома на карте.",
         rooms: "Комнаты",
         area: "Площадь (м²)",
         propertyType: "Тип жилья",

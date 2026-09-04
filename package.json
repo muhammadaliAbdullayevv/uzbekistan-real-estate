@@ -16,8 +16,10 @@
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
+    "@types/leaflet": "^1.9.22",
     "dotenv": "^17.4.2",
     "jose": "^5.9.3",
+    "leaflet": "^1.9.4",
     "next": "^14.2.16",
     "nodemailer": "^8.0.7",
     "react": "^18.3.1",

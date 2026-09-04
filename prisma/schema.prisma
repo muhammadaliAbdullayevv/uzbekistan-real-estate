@@ -35,6 +35,13 @@ enum ListingAvailabilityStatus {
   SOLD
 }
 
+/// EXACT: submitter placed a pin on the map for this specific listing.
+/// APPROXIMATE: backfilled from the district/region centroid, not a real pin.
+enum LocationPrecision {
+  EXACT
+  APPROXIMATE
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -106,6 +113,9 @@ model Listing {
   area             Int
   propertyType     PropertyType
   rentType         RentType?      @default(monthly)
+  latitude         Float?
+  longitude        Float?
+  locationPrecision LocationPrecision @default(APPROXIMATE)
   availabilityStatus ListingAvailabilityStatus @default(ACTIVE)
   phone            String
   telegramUsername String?

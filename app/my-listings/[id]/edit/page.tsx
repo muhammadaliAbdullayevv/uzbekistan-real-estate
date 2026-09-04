@@ -72,6 +72,13 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             cityNeighborhoodPlaceholder: t.addListing.form.cityNeighborhoodPlaceholder,
             address: t.addListing.form.address,
             addressPlaceholder: t.addListing.form.addressPlaceholder,
+            mapLocation: t.addListing.form.mapLocation,
+            mapLocationHelper: t.addListing.form.mapLocationHelper,
+            useMyLocation: t.addListing.form.useMyLocation,
+            locating: t.addListing.form.locating,
+            locateError: t.addListing.form.locateError,
+            mapLocationNotSet: t.addListing.form.mapLocationNotSet,
+            locationRequired: t.addListing.form.locationRequired,
             rooms: t.addListing.form.rooms,
             area: t.addListing.form.area,
             propertyType: t.addListing.form.propertyType,
@@ -109,6 +116,8 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             area: listing.area,
             propertyType: listing.propertyType,
             rentType: listing.rentType,
+            latitude: listing.latitude ?? 41.311158,
+            longitude: listing.longitude ?? 69.279737,
             phone: listing.phone,
             images: listing.images.map((image) => image.url)
           }}

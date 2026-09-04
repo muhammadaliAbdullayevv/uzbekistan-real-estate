@@ -28,7 +28,9 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
     rooms: getFirstParam(searchParams.rooms),
     propertyType: getFirstParam(searchParams.propertyType),
     currency: getFirstParam(searchParams.currency),
-    sort: getFirstParam(searchParams.sort) ?? "newest"
+    sort: getFirstParam(searchParams.sort) ?? "newest",
+    nearLat: getFirstParam(searchParams.nearLat),
+    nearLng: getFirstParam(searchParams.nearLng)
   };
 
   const listings = await getApprovedListings(filters);

@@ -37,6 +37,8 @@ export const listingInputSchema = z
     area: z.coerce.number().int().min(10).max(1000),
     propertyType: z.enum(PROPERTY_TYPES),
     rentType: z.enum(RENT_TYPES).optional().nullable().or(z.literal("")),
+    latitude: z.coerce.number().min(-90, "Location is required.").max(90),
+    longitude: z.coerce.number().min(-180, "Location is required.").max(180),
     phone: z.string().trim().min(7, "Phone number is required.").max(30),
     telegramUsername: z
       .string()

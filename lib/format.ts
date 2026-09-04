@@ -47,6 +47,21 @@ export function formatPrice(
   return `${formatCompactUzbekSom(price, numberLocale)}${suffix}`;
 }
 
+export function formatDistance(distanceKm: number, locale: Locale) {
+  const t = getTranslations(locale);
+  const numberLocale = locale === "ru" ? "ru-RU" : "uz-UZ";
+  // Sub-km distances are shown in meters; coarser than that we don't claim
+  // precision the underlying data (often an approximate district centroid)
+  // doesn't actually have.
+  if (distanceKm < 1) {
+    const meters = Math.max(50, Math.round(distanceKm * 1000 / 50) * 50);
+    return `${meters} ${t.common.metersAway}`;
+  }
+
+  const rounded = distanceKm < 10 ? Math.round(distanceKm * 10) / 10 : Math.round(distanceKm);
+  return `${new Intl.NumberFormat(numberLocale).format(rounded)} ${t.common.kmAway}`;
+}
+
 export function formatDate(date: Date, locale: Locale) {
   return new Intl.DateTimeFormat(getLocaleForDate(locale), {
     year: "numeric",

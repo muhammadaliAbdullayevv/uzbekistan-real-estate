@@ -3,6 +3,7 @@ import type { Locale } from "@/lib/i18n";
 import { getTranslations } from "@/lib/i18n";
 import { getRegionOptions } from "@/lib/locations";
 import { LocationSelect } from "@/components/location-select";
+import { NearMeButton } from "@/components/near-me-button";
 
 type SearchFiltersProps = {
   locale: Locale;
@@ -17,6 +18,8 @@ type SearchFiltersProps = {
     propertyType?: string;
     currency?: string;
     sort?: string;
+    nearLat?: string;
+    nearLng?: string;
   };
 };
 
@@ -32,6 +35,18 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
   );
   return (
     <form className="surface-tint space-y-4 p-3 sm:p-5 md:p-6">
+      <input type="hidden" name="nearLat" defaultValue={values.nearLat ?? ""} />
+      <input type="hidden" name="nearLng" defaultValue={values.nearLng ?? ""} />
+
+      <NearMeButton
+        copy={{
+          nearMe: t.search.nearMe,
+          locating: t.search.locating,
+          nearMeActive: t.search.nearMeActive,
+          nearMeError: t.search.nearMeError
+        }}
+      />
+
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(0,1.5fr)_minmax(180px,220px)_minmax(180px,220px)_minmax(150px,180px)_auto] lg:items-end">
         <div className="col-span-2 lg:col-span-1">
           <label htmlFor="q" className="mb-2 block text-sm font-medium text-ink/80">
