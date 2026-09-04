@@ -33,6 +33,17 @@
     @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink/70;
   }
 
+  /* Hides the scrollbar on swipeable strips (photo galleries, upload
+     previews) while keeping native touch/trackpad scrolling and snap. */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   .input {
     @apply h-12 w-full rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15;
   }

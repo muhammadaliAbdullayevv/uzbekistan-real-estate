@@ -369,17 +369,6 @@ export async function getFavoriteListingIds(userId: string) {
   return new Set(favorites.map((favorite) => favorite.listingId));
 }
 
-export async function isListingFavorited(userId: string, listingId: string) {
-  const rows = await prisma.$queryRaw<Array<{ exists: number }>>`
-    SELECT 1 AS "exists"
-    FROM "FavoriteListing"
-    WHERE "userId" = ${userId} AND "listingId" = ${listingId}
-    LIMIT 1
-  `;
-
-  return rows.length > 0;
-}
-
 export async function addFavoriteListing(userId: string, listingId: string) {
   const rows = await prisma.$queryRaw<Array<{ id: string }>>`
     SELECT "id"
