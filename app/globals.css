@@ -38,7 +38,10 @@
   }
 
   .select {
-    @apply h-12 w-full rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15;
+    @apply h-12 w-full appearance-none rounded-2xl border border-line bg-white bg-no-repeat px-4 pr-10 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2312202F' stroke-opacity='0.5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.9rem center;
+    background-size: 16px 16px;
   }
 
   .textarea {
@@ -61,11 +64,23 @@
       linear-gradient(135deg, #f7fbfc 0%, #ffffff 48%, #eef6f5 100%);
   }
 
-  .auth-showcase {
-    @apply relative overflow-hidden rounded-[32px] px-6 py-7 text-white sm:px-8 sm:py-9;
+  /* Tinted surface: secondary/grouping sections (search bars, results headers) --
+     distinct from the default white panel and the dark hero surface below. */
+  .surface-tint {
+    @apply rounded-[28px] border border-teal-100/70 bg-tint;
+  }
+
+  /* Dark gradient surface: the login page's showcase recipe, generalized so any
+     high-weight hero/CTA moment can reuse it instead of duplicating the gradient. */
+  .surface-dark {
+    @apply relative overflow-hidden text-white;
     background:
       radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 28%),
       linear-gradient(155deg, #12202f 0%, #0f766e 100%);
+  }
+
+  .auth-showcase {
+    @apply surface-dark rounded-[32px] px-6 py-7 sm:px-8 sm:py-9;
   }
 
   .auth-card {

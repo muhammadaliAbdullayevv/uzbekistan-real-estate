@@ -31,7 +31,7 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
       (values.sort && values.sort !== "newest")
   );
   return (
-    <form className="panel space-y-4 p-3 sm:p-5 md:p-6">
+    <form className="surface-tint space-y-4 p-3 sm:p-5 md:p-6">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(0,1.5fr)_minmax(180px,220px)_minmax(180px,220px)_minmax(150px,180px)_auto] lg:items-end">
         <div className="col-span-2 lg:col-span-1">
           <label htmlFor="q" className="mb-2 block text-sm font-medium text-ink/80">
@@ -115,7 +115,7 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
 
       <details
         open={showMoreFilters}
-        className="rounded-[22px] border border-line/70 bg-mist/55 px-3 py-3 sm:rounded-[24px] sm:px-4"
+        className="rounded-[22px] border border-teal-100/60 bg-white/70 px-3 py-3 sm:rounded-[24px] sm:px-4"
       >
         <summary className="cursor-pointer list-none text-sm font-semibold text-ink">
           {t.search.moreFilters}

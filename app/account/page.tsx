@@ -59,7 +59,7 @@ function NavRow({ href, icon, label }: { href: string; icon: string; label: stri
       className="flex items-center justify-between gap-3 py-3 text-sm font-medium text-ink transition hover:text-accent"
     >
       <span className="flex items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mist text-ink/60">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-ink/60 shadow-sm">
           <NavIcon path={icon} />
         </span>
         {label}
@@ -121,7 +121,7 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
         </div>
       ) : null}
 
-      <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+      <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-stretch">
         {isEditMode ? (
           <ProfileEditForm
             name={user.name ?? ""}
@@ -183,52 +183,54 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
           />
         )}
 
-        <div className="panel p-4 sm:p-5 lg:sticky lg:top-24">
-          <Link
-            href="/add-listing"
-            className="flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent"
-          >
-            <NavIcon path="M12 5v14M5 12h14" />
-            {t.account.submitListing}
-          </Link>
-
-          <nav className="mt-2 divide-y divide-line/70 px-1">
-            <NavRow
-              href="/my-listings"
-              label={t.account.trackListings}
-              icon="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
-            />
-            <NavRow
-              href="/favorites"
-              label={t.account.openFavorites}
-              icon="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"
-            />
-            {showOwnerDashboardLink ? (
-              <NavRow
-                href={getOwnerDashboardPath()}
-                label={t.account.ownerDashboard}
-                icon="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"
-              />
-            ) : null}
-            <NavRow
-              href="/account/sessions"
-              label={t.account.manageSessions}
-              icon="M5 11h14v9H5zM8 11V7a4 4 0 0 1 8 0v4"
-            />
-          </nav>
-
-          <form action="/api/auth/logout" method="post" className="mt-2 border-t border-line/70 px-1 pt-2">
-            <input type="hidden" name="next" value="/" />
-            <button
-              type="submit"
-              className="flex w-full items-center gap-3 py-3 text-sm font-medium text-rose-600 transition hover:text-rose-700"
+        <div className="surface-tint flex flex-col p-4 sm:p-5">
+          <div className="lg:sticky lg:top-24">
+            <Link
+              href="/add-listing"
+              className="flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-500">
-                <NavIcon path="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-              </span>
-              {t.common.signOut}
-            </button>
-          </form>
+              <NavIcon path="M12 5v14M5 12h14" />
+              {t.account.submitListing}
+            </Link>
+
+            <nav className="mt-2 divide-y divide-teal-100/70 px-1">
+              <NavRow
+                href="/my-listings"
+                label={t.account.trackListings}
+                icon="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
+              />
+              <NavRow
+                href="/favorites"
+                label={t.account.openFavorites}
+                icon="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"
+              />
+              {showOwnerDashboardLink ? (
+                <NavRow
+                  href={getOwnerDashboardPath()}
+                  label={t.account.ownerDashboard}
+                  icon="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"
+                />
+              ) : null}
+              <NavRow
+                href="/account/sessions"
+                label={t.account.manageSessions}
+                icon="M5 11h14v9H5zM8 11V7a4 4 0 0 1 8 0v4"
+              />
+            </nav>
+
+            <form action="/api/auth/logout" method="post" className="mt-2 border-t border-teal-100/70 px-1 pt-2">
+              <input type="hidden" name="next" value="/" />
+              <button
+                type="submit"
+                className="flex w-full items-center gap-3 py-3 text-sm font-medium text-rose-600 transition hover:text-rose-700"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+                  <NavIcon path="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+                </span>
+                {t.common.signOut}
+              </button>
+            </form>
+          </div>
         </div>
       </section>
     </div>

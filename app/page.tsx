@@ -2,7 +2,7 @@ import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
 import { SearchFilters } from "@/components/search-filters";
 import { WelcomeGuide } from "@/components/welcome-guide";
-import { formatMessage, getLocale, getTranslations } from "@/lib/i18n";
+import { getLocale, getTranslations } from "@/lib/i18n";
 import {
   getApprovedListings,
   getFavoriteListingIds,
@@ -57,8 +57,10 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
         }}
       />
 
-      <section className="rounded-[24px] border border-line/70 bg-white px-4 py-4 shadow-soft sm:rounded-[28px] sm:px-7 sm:py-6">
-        <h1 className="max-w-3xl font-display text-[1.55rem] font-semibold leading-[1.15] text-ink sm:text-[2.1rem] md:text-[2.6rem]">
+      <section className="surface-dark rounded-[24px] px-4 py-8 sm:rounded-[28px] sm:px-8 sm:py-12 lg:py-16">
+        <div className="auth-orb auth-orb-a" />
+        <div className="auth-orb auth-orb-b" />
+        <h1 className="relative max-w-3xl font-display text-3xl font-semibold leading-[1.1] text-white sm:text-5xl lg:text-6xl">
           {t.home.title}
         </h1>
       </section>
@@ -67,16 +69,17 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
 
       <section className="space-y-4">
         <div>
-          <div>
-            <h2 className="font-display text-2xl font-semibold text-ink sm:text-3xl">
-              {formatMessage(t.home.resultsFound, {
-                count: listings.length
-              })}
-            </h2>
-            <p className="mt-2 text-sm text-ink/60">
-              {t.home.resultsNote}
-            </p>
-          </div>
+          <h2 className="flex flex-wrap items-baseline gap-2">
+            <span className="font-sans text-3xl font-extrabold tabular-nums tracking-tight text-ink sm:text-4xl">
+              {listings.length}
+            </span>
+            <span className="font-display text-xl font-normal text-ink/60 sm:text-2xl">
+              {t.home.resultsCountSuffix}
+            </span>
+          </h2>
+          <p className="mt-2 text-sm text-ink/60">
+            {t.home.resultsNote}
+          </p>
         </div>
 
         {listings.length === 0 ? (

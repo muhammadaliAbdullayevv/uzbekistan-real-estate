@@ -124,6 +124,7 @@ const translations = {
       subtitle:
         "Ijaraga olish yoki sotib olish uchun kvartira, uy va xonalarni oson qidiring.",
       resultsFound: "{count} ta e'lon topildi",
+      resultsCountSuffix: "ta e'lon topildi",
       resultsNote: "Faqat tasdiqlangan e'lonlar. Egalar bilan to'g'ridan-to'g'ri bog'laning.",
       emptyTitle: "Bu filtrlarga mos ijara topilmadi",
       emptyDescription:
@@ -662,6 +663,7 @@ const translations = {
       subtitle:
         "Легко ищите квартиры, дома и комнаты для аренды или покупки.",
       resultsFound: "Найдено объявлений: {count}",
+      resultsCountSuffix: "объявлений найдено",
       resultsNote: "Только одобренные объявления. Связывайтесь с владельцами напрямую.",
       emptyTitle: "По этим фильтрам ничего не найдено",
       emptyDescription:

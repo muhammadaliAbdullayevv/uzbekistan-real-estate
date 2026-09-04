@@ -57,7 +57,7 @@ export default async function MyListingsPage({ searchParams = {} }: MyListingsPa
           <span className="pill border-accent/25 bg-accent/5 text-accent">
             {t.myListings.pill}
           </span>
-          <h1 className="mt-4 font-display text-4xl font-semibold text-ink">
+          <h1 className="mt-4 font-display text-2xl font-semibold text-ink sm:text-3xl">
             {t.myListings.emptyTitle}
           </h1>
           <p className="mt-3 max-w-2xl text-base leading-7 text-ink/70">
@@ -76,7 +76,7 @@ export default async function MyListingsPage({ searchParams = {} }: MyListingsPa
               <span className="pill border-accent/25 bg-accent/5 text-accent">
                 {t.myListings.pill}
               </span>
-              <h1 className="mt-4 font-display text-4xl font-semibold text-ink">
+              <h1 className="mt-4 font-display text-2xl font-semibold text-ink sm:text-3xl">
                 {t.myListings.title}
               </h1>
               <p className="mt-3 max-w-2xl text-base leading-7 text-ink/70">{t.myListings.intro}</p>
@@ -87,26 +87,30 @@ export default async function MyListingsPage({ searchParams = {} }: MyListingsPa
               </div>
             </div>
 
-            <div className="panel grid gap-4 p-6 sm:grid-cols-2">
+            <div className="surface-tint grid gap-4 p-6 sm:grid-cols-2">
               <div>
                 <p className="text-sm uppercase tracking-[0.18em] text-ink/45">{t.myListings.total}</p>
-                <p className="mt-2 font-display text-4xl font-semibold text-ink">{listings.length}</p>
+                <p className="mt-2 font-sans text-3xl font-extrabold tabular-nums tracking-tight text-ink">
+                  {listings.length}
+                </p>
               </div>
               <div>
                 <p className="text-sm uppercase tracking-[0.18em] text-ink/45">{t.myListings.pending}</p>
-                <p className="mt-2 text-lg font-semibold text-ink">
+                <p className="mt-2 font-sans text-3xl font-extrabold tabular-nums tracking-tight text-ink">
                   {countByStatus(statuses, "PENDING")}
                 </p>
               </div>
               <div>
                 <p className="text-sm uppercase tracking-[0.18em] text-ink/45">{t.myListings.approved}</p>
-                <p className="mt-2 text-lg font-semibold text-ink">
+                <p className="mt-2 font-sans text-3xl font-extrabold tabular-nums tracking-tight text-ink">
                   {countByStatus(statuses, "APPROVED")}
                 </p>
               </div>
               <div>
                 <p className="text-sm uppercase tracking-[0.18em] text-ink/45">{t.myListings.inactive}</p>
-                <p className="mt-2 text-lg font-semibold text-ink">{inactiveCount}</p>
+                <p className="mt-2 font-sans text-3xl font-extrabold tabular-nums tracking-tight text-ink">
+                  {inactiveCount}
+                </p>
               </div>
             </div>
           </section>

@@ -31,7 +31,7 @@ export default async function FavoritesPage() {
           <span className="pill border-accent/25 bg-accent/5 text-accent">
             {t.favoritesPage.pill}
           </span>
-          <h1 className="mt-4 font-display text-4xl font-semibold text-ink">
+          <h1 className="mt-4 font-display text-2xl font-semibold text-ink sm:text-3xl">
             {t.favoritesPage.title}
           </h1>
           <p className="mt-3 max-w-2xl text-base leading-7 text-ink/70">{t.favoritesPage.intro}</p>

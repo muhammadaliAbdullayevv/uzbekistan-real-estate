@@ -137,7 +137,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               value={listing}
               className="mt-3 text-sm text-ink/60"
             />
-            <p className="mt-4 font-display text-[2.4rem] font-semibold leading-none text-ink">
+            <p className="mt-4 font-sans text-4xl font-extrabold tabular-nums tracking-tight text-ink">
               {formatPrice(
                 listing.price,
                 listing.currency,
