@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type Tab = {
   href: string;
@@ -29,6 +30,22 @@ function TabIcon({ path }: { path: string }) {
 
 export function MobileTabBar({ tabs }: { tabs: Tab[] }) {
   const pathname = usePathname();
+  // Set the instant a tab is tapped so the highlight moves right away,
+  // rather than waiting for the (sometimes slow, force-dynamic) page to
+  // actually finish loading before usePathname() catches up.
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  // CSS :active is unreliable on iOS Safari without a touch listener
+  // present, which is why taps gave no feedback at all — driven via
+  // pointer events instead so the press state is consistent everywhere.
+  const [pressedHref, setPressedHref] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
+
+  function clearPressed(href: string) {
+    setPressedHref((current) => (current === href ? null : current));
+  }
 
   return (
     <nav
@@ -37,15 +54,27 @@ export function MobileTabBar({ tabs }: { tabs: Tab[] }) {
     >
       <div className="flex items-stretch justify-around">
         {tabs.map((tab) => {
-          const isActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+          const currentlyActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+          const isActive = pendingHref ? tab.href === pendingHref : currentlyActive;
+          const isPressed = pressedHref === tab.href;
 
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition ${
+              onClick={() => {
+                if (tab.href !== pathname) {
+                  setPendingHref(tab.href);
+                }
+              }}
+              onPointerDown={() => setPressedHref(tab.href)}
+              onPointerUp={() => clearPressed(tab.href)}
+              onPointerCancel={() => clearPressed(tab.href)}
+              onPointerLeave={() => clearPressed(tab.href)}
+              style={{ WebkitTapHighlightColor: "transparent" }}
+              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-all duration-150 ease-out ${
                 isActive ? "text-accent" : "text-ink/50"
-              }`}
+              } ${isPressed ? "scale-90 opacity-70" : "scale-100"}`}
               aria-current={isActive ? "page" : undefined}
             >
               <span className="relative">

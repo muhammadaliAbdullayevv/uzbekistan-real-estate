@@ -89,7 +89,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             uploadUnable: t.addListing.form.uploadUnable,
             submitUnable: t.addListing.form.submitUnable,
             removeImage: t.common.removeImage,
-            placeholderPreview: t.common.placeholderPreview,
+            imagesRequired: t.addListing.form.imagesRequired,
             perMonth: t.common.perMonth,
             perDay: t.common.perDay,
             updateSubmit: t.addListing.form.updateSubmit,

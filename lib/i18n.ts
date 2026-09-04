@@ -110,7 +110,6 @@ const translations = {
       removeFromSaved: "Saqlanganlardan olib tashlash",
       submit: "Yuborish",
       removeImage: "Rasmni olib tashlash",
-      placeholderPreview: "Namunaviy ko'rinish",
       search: "Qidirish",
       signOut: "Chiqish",
       joinDatePrefix: "Qo'shilgan",
@@ -414,6 +413,7 @@ const translations = {
         uploadPreviewAlt: "E'lon ko'rinishi",
         uploadFailed: "Rasm yuklashda xatolik yuz berdi.",
         uploadUnable: "Rasmlarni yuklab bo'lmadi.",
+        imagesRequired: "Kamida bitta rasm yuklang.",
         submitUnable: "E'lonni yuborib bo'lmadi.",
         updateSubmit: "E'lonni yangilash",
         updating: "E'lon yangilanmoqda..."
@@ -671,7 +671,6 @@ const translations = {
       removeFromSaved: "Убрать из сохранённого",
       submit: "Отправить",
       removeImage: "Удалить фото",
-      placeholderPreview: "Превью заглушки",
       search: "Поиск",
       signOut: "Выйти",
       joinDatePrefix: "Дата регистрации",
@@ -974,6 +973,7 @@ const translations = {
         uploadPreviewAlt: "Превью объявления",
         uploadFailed: "Не удалось загрузить фото.",
         uploadUnable: "Не удалось загрузить фотографии.",
+        imagesRequired: "Загрузите хотя бы одну фотографию.",
         submitUnable: "Не удалось отправить объявление.",
         updateSubmit: "Обновить объявление",
         updating: "Объявление обновляется..."

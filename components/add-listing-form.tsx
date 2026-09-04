@@ -17,7 +17,6 @@ import {
   LISTING_TYPES,
   PROPERTY_TYPES,
   RENT_TYPES,
-  PLACEHOLDER_IMAGE,
   type CurrencyValue,
   type ListingTypeValue,
   type RentTypeValue
@@ -29,6 +28,17 @@ const DRAFT_STORAGE_KEY = "draft-listing";
 function stripUzPrefix(phone: string) {
   return phone.startsWith("+998") ? phone.slice(4) : phone;
 }
+
+function doneUrls(items: PhotoItem[]) {
+  return items.filter((item) => item.status === "done").map((item) => item.previewUrl);
+}
+
+type PhotoItem = {
+  id: string;
+  status: "uploading" | "done";
+  previewUrl: string;
+  progress?: number;
+};
 
 type DraftValues = {
   listingType?: string;
@@ -102,7 +112,7 @@ type AddListingFormProps = {
     uploadUnable: string;
     submitUnable: string;
     removeImage: string;
-    placeholderPreview: string;
+    imagesRequired: string;
     perMonth: string;
     perDay: string;
     updateSubmit?: string;
@@ -157,11 +167,12 @@ export function AddListingForm({
   const [selectedRentType, setSelectedRentType] = useState<RentTypeValue>(
     initialValues?.rentType ?? "monthly"
   );
-  const [imageUrls, setImageUrls] = useState<string[]>(initialValues?.images ?? []);
+  const [photos, setPhotos] = useState<PhotoItem[]>(() =>
+    (initialValues?.images ?? []).map((url) => ({ id: url, status: "done" as const, previewUrl: url }))
+  );
   const [error, setError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [restoredDraft, setRestoredDraft] = useState<DraftValues | null>(null);
   const [hasSavedDraftOnce, setHasSavedDraftOnce] = useState(false);
@@ -200,7 +211,7 @@ export function AddListingForm({
         setSelectedRentType(parsed.rentType);
       }
       if (parsed.images) {
-        setImageUrls(parsed.images);
+        setPhotos(parsed.images.map((url) => ({ id: url, status: "done" as const, previewUrl: url })));
       }
       if (parsed.price) {
         setPriceValue(parsed.price);
@@ -237,7 +248,7 @@ export function AddListingForm({
       propertyType: String(formData.get("propertyType") ?? ""),
       rentType: String(formData.get("rentType") ?? selectedRentType),
       phone: String(formData.get("phone") ?? ""),
-      images: overrideImages ?? imageUrls
+      images: overrideImages ?? doneUrls(photos)
     };
 
     try {
@@ -284,69 +295,106 @@ export function AddListingForm({
         phone: initialValues?.phone || initialPhone
       };
 
-  async function uploadSingleFile(file: File) {
-    const body = new FormData();
-    body.append("file", file);
+  // XHR instead of fetch so upload progress is actually observable per file.
+  function uploadSingleFile(file: File, onProgress: (percent: number) => void): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/upload");
 
-    const response = await fetch("/api/upload", {
-      method: "POST",
-      body
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          onProgress(Math.round((event.loaded / event.total) * 100));
+        }
+      };
+
+      xhr.onload = () => {
+        let payload: { url?: string; error?: string } = {};
+        try {
+          payload = JSON.parse(xhr.responseText);
+        } catch {
+          // Ignore — falls through to the generic error below.
+        }
+
+        if (xhr.status >= 200 && xhr.status < 300 && payload.url) {
+          resolve(payload.url);
+        } else {
+          reject(new Error(payload.error ?? copy.uploadUnable));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error(copy.uploadUnable));
+
+      const body = new FormData();
+      body.append("file", file);
+      xhr.send(body);
     });
-    const payload = await response.json();
-
-    if (!response.ok) {
-      throw new Error(payload.error ?? copy.uploadUnable);
-    }
-
-    return payload.url as string;
   }
 
-  async function processFiles(fileList: FileList | File[]) {
+  function processFiles(fileList: FileList | File[]) {
     const files = Array.from(fileList)
       .filter((file) => file.type.startsWith("image/"))
-      .slice(0, 10 - imageUrls.length);
+      .slice(0, 10 - photos.length);
 
     if (files.length === 0) {
       return;
     }
 
     setUploadError(null);
-    setIsUploading(true);
 
-    try {
-      const uploaded = await Promise.all(files.map((file) => uploadSingleFile(file)));
-      setImageUrls((current) => {
-        const next = [...current, ...uploaded];
-        persistDraft(next);
-        return next;
-      });
-    } catch (uploadIssue) {
-      setUploadError(
-        uploadIssue instanceof Error ? uploadIssue.message : copy.uploadUnable
-      );
-    } finally {
-      setIsUploading(false);
-    }
+    const items: PhotoItem[] = files.map((file) => ({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      status: "uploading",
+      previewUrl: URL.createObjectURL(file),
+      progress: 0
+    }));
+
+    setPhotos((current) => [...current, ...items]);
+
+    files.forEach((file, index) => {
+      const item = items[index];
+
+      uploadSingleFile(file, (percent) => {
+        setPhotos((current) =>
+          current.map((photo) => (photo.id === item.id ? { ...photo, progress: percent } : photo))
+        );
+      })
+        .then((url) => {
+          URL.revokeObjectURL(item.previewUrl);
+          setPhotos((current) => {
+            const next = current.map((photo) =>
+              photo.id === item.id ? { ...photo, status: "done" as const, previewUrl: url } : photo
+            );
+            persistDraft(doneUrls(next));
+            return next;
+          });
+        })
+        .catch((uploadIssue) => {
+          URL.revokeObjectURL(item.previewUrl);
+          setPhotos((current) => current.filter((photo) => photo.id !== item.id));
+          setUploadError(uploadIssue instanceof Error ? uploadIssue.message : copy.uploadUnable);
+        });
+    });
   }
 
-  async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-    await processFiles(event.target.files ?? []);
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    processFiles(event.target.files ?? []);
     event.target.value = "";
   }
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
     setIsDraggingOver(false);
-    if (isUploading) {
-      return;
-    }
-    void processFiles(event.dataTransfer.files);
+    processFiles(event.dataTransfer.files);
   }
 
-  function removeImage(url: string) {
-    setImageUrls((current) => {
-      const next = current.filter((image) => image !== url);
-      persistDraft(next);
+  function removeImage(id: string) {
+    setPhotos((current) => {
+      const target = current.find((photo) => photo.id === id);
+      if (target?.status === "uploading") {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+      const next = current.filter((photo) => photo.id !== id);
+      persistDraft(doneUrls(next));
       return next;
     });
   }
@@ -354,6 +402,14 @@ export function AddListingForm({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    const uploadedImages = doneUrls(photos);
+
+    if (uploadedImages.length === 0) {
+      setError(copy.imagesRequired);
+      return;
+    }
+
     setIsSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
@@ -374,7 +430,7 @@ export function AddListingForm({
       propertyType: getValue("propertyType"),
       rentType: listingType === "rent" ? getValue("rentType") : "",
       phone: getValue("phone") ? `+998${getValue("phone")}` : "",
-      images: imageUrls
+      images: uploadedImages
     };
 
     if (mode === "create") {
@@ -433,6 +489,8 @@ export function AddListingForm({
     selectedDistrict && !baseDistrictOptions.some((option) => option.value === selectedDistrict)
       ? [{ value: selectedDistrict, label: selectedDistrict }, ...baseDistrictOptions]
       : baseDistrictOptions;
+
+  const hasUploadingPhoto = photos.some((photo) => photo.status === "uploading");
 
   return (
     <div className="space-y-6">
@@ -770,17 +828,71 @@ export function AddListingForm({
 
         <section className="space-y-4 rounded-2xl border border-line p-4 sm:p-5">
           <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-ink/50">
-            {copy.sectionPhotos} <span className="normal-case text-ink/35">{copy.optionalSuffix}</span>
+            {copy.sectionPhotos}
           </h2>
+
+          {photos.length > 0 ? (
+            <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1">
+              {photos.map((photo) => (
+                <div
+                  key={photo.id}
+                  className="relative aspect-[4/3] w-[42%] shrink-0 snap-start overflow-hidden rounded-[20px] border bg-white sm:w-[28%] lg:w-[18%]"
+                >
+                  <Image
+                    src={photo.previewUrl}
+                    alt={copy.uploadPreviewAlt}
+                    fill
+                    unoptimized={photo.status === "uploading"}
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 42vw, 18vw"
+                  />
+
+                  {photo.status === "uploading" ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-ink/55 text-white">
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        className="h-6 w-6 animate-spin"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <path d="M12 3a9 9 0 1 0 9 9" strokeLinecap="round" />
+                      </svg>
+                      <span className="text-xs font-semibold tabular-nums">{photo.progress ?? 0}%</span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => removeImage(photo.id)}
+                      aria-label={copy.removeImage}
+                      className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-ink/70 text-white transition hover:bg-ink"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.25"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M18 6 6 18M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           <div>
             <div
               onClick={() => fileInputRef.current?.click()}
               onDragOver={(event) => {
                 event.preventDefault();
-                if (!isUploading) {
-                  setIsDraggingOver(true);
-                }
+                setIsDraggingOver(true);
               }}
               onDragLeave={() => setIsDraggingOver(false)}
               onDrop={handleDrop}
@@ -792,16 +904,16 @@ export function AddListingForm({
               }}
               role="button"
               tabIndex={0}
-              className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-8 text-center transition ${
+              className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-6 text-center transition ${
                 isDraggingOver
                   ? "border-accent bg-accent/5"
                   : "border-line bg-mist/40 hover:border-ink/20 hover:bg-mist/60"
-              } ${isUploading ? "pointer-events-none opacity-60" : ""}`}
+              }`}
             >
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
-                className="h-8 w-8 text-ink/35"
+                className="h-7 w-7 text-ink/35"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.75"
@@ -811,9 +923,7 @@ export function AddListingForm({
                 <path d="M12 16V4M12 4 7 9M12 4l5 5" />
                 <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
               </svg>
-              <p className="mt-3 text-sm font-medium text-ink">
-                {isUploading ? copy.uploading : copy.uploadCta}
-              </p>
+              <p className="mt-2 text-sm font-medium text-ink">{copy.uploadCta}</p>
               <input
                 ref={fileInputRef}
                 id="images"
@@ -825,9 +935,7 @@ export function AddListingForm({
                 className="sr-only"
               />
             </div>
-            <p className="mt-2 text-sm text-ink/60">
-              {copy.uploadNote}
-            </p>
+            <p className="mt-2 text-sm text-ink/60">{copy.uploadNote}</p>
           </div>
 
           {uploadError ? (
@@ -835,36 +943,6 @@ export function AddListingForm({
               {uploadError}
             </div>
           ) : null}
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {(imageUrls.length > 0 ? imageUrls : [PLACEHOLDER_IMAGE]).map((url, index) => (
-              <div key={`${url}-${index}`} className="space-y-3">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] border bg-white">
-                  <Image
-                    src={url}
-                    alt={`${copy.uploadPreviewAlt} ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 50vw, 20vw"
-                  />
-                </div>
-
-                {imageUrls.includes(url) ? (
-                  <button
-                    type="button"
-                    onClick={() => removeImage(url)}
-                    className="btn-secondary w-full py-2.5"
-                  >
-                    {copy.removeImage}
-                  </button>
-                ) : (
-                  <div className="text-center text-xs uppercase tracking-[0.2em] text-ink/45">
-                    {copy.placeholderPreview}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
         </section>
 
         {error ? (
@@ -893,14 +971,14 @@ export function AddListingForm({
 
         <button
           type="submit"
-          disabled={isSubmitting || isUploading}
+          disabled={isSubmitting || hasUploadingPhoto}
           className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting
             ? mode === "edit"
               ? copy.updating ?? copy.submitting
               : copy.submitting
-            : isUploading
+            : hasUploadingPhoto
               ? copy.uploading
               : mode === "edit"
                 ? copy.updateSubmit ?? copy.submit

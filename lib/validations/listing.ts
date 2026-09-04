@@ -54,9 +54,8 @@ export const listingInputSchema = z
             "Image must be a valid upload path or URL."
           )
       )
+      .min(1, "At least one photo is required.")
       .max(10)
-      .optional()
-      .default([])
   })
   .superRefine((value, context) => {
     const rentType = value.rentType ?? null;

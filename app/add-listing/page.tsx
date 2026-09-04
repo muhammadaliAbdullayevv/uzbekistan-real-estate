@@ -75,7 +75,7 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
             uploadUnable: t.addListing.form.uploadUnable,
             submitUnable: t.addListing.form.submitUnable,
             removeImage: t.common.removeImage,
-            placeholderPreview: t.common.placeholderPreview,
+            imagesRequired: t.addListing.form.imagesRequired,
             perMonth: t.common.perMonth,
             perDay: t.common.perDay
           }}
