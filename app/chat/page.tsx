@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export { privatePageMetadata as metadata } from "@/lib/site";
-import { BackLink } from "@/components/back-link";
 import { EmptyState } from "@/components/empty-state";
 import { listConversationsForUser } from "@/lib/conversations";
 import { formatDate } from "@/lib/format";
@@ -25,12 +24,19 @@ export default async function ChatInboxPage() {
   const conversations = await listConversationsForUser(session.userId);
 
   return (
-    <div className="shell space-y-5">
-      <BackLink href="/" label={t.common.backToListings} />
-
-      <h1 className="font-display text-xl font-semibold text-ink sm:text-2xl">
-        {t.chat.inboxTitle}
-      </h1>
+    <div className="shell">
+      <div className="flex items-center gap-3 pb-4">
+        <Link
+          href="/"
+          aria-label={t.common.backToListings}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink/60 transition hover:bg-mist hover:text-ink"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </Link>
+        <h1 className="font-display text-lg font-semibold text-ink">{t.chat.inboxTitle}</h1>
+      </div>
 
       {conversations.length === 0 ? (
         <EmptyState
@@ -44,7 +50,7 @@ export default async function ChatInboxPage() {
           }
         />
       ) : (
-        <div className="panel divide-y divide-line/70 overflow-hidden">
+        <div className="divide-y divide-line/70 border-t border-line/70">
           {conversations.map((conversation) => {
             const initial = (conversation.otherName?.trim()?.[0] || "?").toUpperCase();
             const unread = conversation.unreadCount > 0;
@@ -53,16 +59,16 @@ export default async function ChatInboxPage() {
               <Link
                 key={conversation.id}
                 href={`/chat/${conversation.id}`}
-                className="flex items-center gap-4 px-5 py-4 transition hover:bg-mist/50 sm:px-6"
+                className="flex items-center gap-3 py-3 transition hover:bg-mist/50"
               >
-                <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent/25 bg-accent/10 text-sm font-bold text-accent">
+                <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent/25 bg-accent/10 text-sm font-bold text-accent">
                   {conversation.otherAvatarUrl ? (
                     <Image
                       src={conversation.otherAvatarUrl}
                       alt=""
                       fill
                       unoptimized={isLocalImageUrl(conversation.otherAvatarUrl)}
-                      sizes="48px"
+                      sizes="44px"
                       className="object-cover"
                     />
                   ) : (
@@ -87,7 +93,7 @@ export default async function ChatInboxPage() {
                     {conversation.listingTitle}
                   </span>
                   <span
-                    className={`mt-1 block truncate text-sm ${unread ? "font-medium text-ink" : "text-ink/60"}`}
+                    className={`mt-0.5 block truncate text-sm ${unread ? "font-medium text-ink" : "text-ink/60"}`}
                   >
                     {conversation.lastMessageBody || t.chat.emptyThread}
                   </span>
