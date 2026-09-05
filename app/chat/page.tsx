@@ -25,7 +25,7 @@ export default async function ChatInboxPage() {
 
   return (
     <div className="shell">
-      <div className="flex items-center gap-3 pb-4">
+      <div className="flex items-center gap-3 pb-2">
         <Link
           href="/"
           aria-label={t.common.backToListings}
