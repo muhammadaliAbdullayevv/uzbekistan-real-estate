@@ -20,6 +20,24 @@ export function hasGeminiConfig() {
   return Boolean(process.env.GEMINI_API_KEY?.trim());
 }
 
+// Caps how long a single model attempt can take. Without this, a model that
+// hangs (rather than failing fast with 429/503) could eat the entire
+// request budget by itself, across every round and fallback model, which is
+// what let a real request run past nginx's proxy_read_timeout and come
+// back as an HTML 504 page instead of a JSON response.
+const MODEL_FETCH_TIMEOUT_MS = 20_000;
+
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 function getModelChain(): string[] {
   const primary = process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
   const configuredFallbacks = process.env.GEMINI_MODEL_FALLBACKS?.trim();
@@ -98,14 +116,26 @@ export async function runGeminiConversation(input: {
     ];
 
     for (const model of tryOrder) {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-          body
-        }
-      );
+      let response: Response;
+
+      try {
+        response = await fetchWithTimeout(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+            body
+          },
+          MODEL_FETCH_TIMEOUT_MS
+        );
+      } catch (fetchError) {
+        // Timed out or a network-level failure -- treat the same as a
+        // switchable status and move on to the next model.
+        lastError = `Gemini request to ${model} failed: ${
+          fetchError instanceof Error ? fetchError.message : String(fetchError)
+        }`;
+        continue;
+      }
 
       if (response.ok) {
         payload = await response.json();

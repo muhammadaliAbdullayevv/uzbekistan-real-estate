@@ -148,10 +148,14 @@ export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
         body: JSON.stringify({ messages: nextMessages.map(({ role, text }) => ({ role, text })) })
       });
 
-      const data = await response.json();
+      // A slow AI reply can outlast an upstream proxy's timeout, which
+      // answers with its own HTML error page instead of letting the
+      // request through -- parse defensively so that shows the normal
+      // error message instead of a raw "Unexpected token '<'" crash.
+      const data = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        throw new Error(data.error ?? copy.genericError);
+      if (!response.ok || !data) {
+        throw new Error(data?.error ?? copy.genericError);
       }
 
       setMessages((current) => {
