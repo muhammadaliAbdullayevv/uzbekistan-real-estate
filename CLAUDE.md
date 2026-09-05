@@ -58,8 +58,17 @@ If a change helps one and hurts the other, say so explicitly before implementing
   users).
 - **Listing location / "near me" search:** every listing has `latitude`/`longitude` +
   a `locationPrecision` (`EXACT` | `APPROXIMATE`). New/edited listings require a real
-  pin placed via `components/location-picker.tsx` (Leaflet + OpenStreetMap tiles — free,
-  no API key, matches the free/cheap-infra constraint; no Google Maps). Listings that
+  pin placed via `components/location-picker.tsx` (Leaflet, satellite tiles — no Google
+  Maps). Tile provider is feature-flagged like the Google/Gemini env vars: if
+  `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` is set, uses Mapbox Satellite Streets (real aerial
+  photos with place/street labels and POI icons — chosen over MapTiler/Stadia Maps
+  because their free tiers explicitly forbid commercial use, while Mapbox's doesn't);
+  otherwise falls back to Esri World Imagery (free, no key, real photos but no labels).
+  Deliberately not plain OpenStreetMap tiles or Esri's free street-map style — both were
+  tried and dropped after verifying real tiles: OSM draws building outlines instead of
+  photos, and Esri's free street style has no detail above ~zoom 15 for Uzbekistan.
+  Mapbox tokens are meant to be client-embedded (hence `NEXT_PUBLIC_`), unlike
+  `GEMINI_API_KEY`/`OWNER_EMAIL` which must stay server-only. Listings that
   predate the picker (2026-09) were backfilled with `APPROXIMATE` district/region
   centroids from `lib/district-coordinates.ts` (generated once via free OSM Nominatim
   geocoding, see `scripts/backfill-listing-locations.ts` — re-run with `--apply` if more

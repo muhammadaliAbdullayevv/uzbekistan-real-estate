@@ -85,20 +85,38 @@ export function LocationPicker({
         initialPosition ? 15 : 11
       );
 
-      // Esri World Imagery: free, no API key, real satellite/aerial photos
-      // (actual roofs, trees, gardens) rather than drawn building outlines.
-      // Unlike Esri's free World Street Map (which has no detail above
-      // ~zoom 15 here), the satellite layer's coverage for Tashkent is
-      // genuinely high-resolution at building level -- verified by fetching
-      // real tiles over Amir Temur Square before picking this, not assumed.
-      L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        {
-          attribution:
-            "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
-          maxZoom: 19
-        }
-      ).addTo(map);
+      const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
+      if (mapboxToken) {
+        // Mapbox Satellite Streets: real aerial photos plus street/place
+        // names and business POI icons layered on top -- verified with this
+        // project's own token to have full building-level detail for
+        // Tashkent. Raster tiles from Mapbox's Styles API are natively
+        // 512px (not the usual 256px), hence tileSize/zoomOffset below.
+        L.tileLayer(
+          `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`,
+          {
+            attribution:
+              '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            tileSize: 512,
+            zoomOffset: -1,
+            maxZoom: 20
+          }
+        ).addTo(map);
+      } else {
+        // Esri World Imagery fallback: free, no API key, real satellite/
+        // aerial photos (actual roofs, trees, gardens) rather than drawn
+        // building outlines, but with no place/street labels. Used only
+        // when NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN isn't configured.
+        L.tileLayer(
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          {
+            attribution:
+              "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+            maxZoom: 19
+          }
+        ).addTo(map);
+      }
 
       mapRef.current = map;
 
