@@ -409,11 +409,26 @@ export async function getApprovedListingById(id: string) {
   return rows[0] ?? null;
 }
 
-export async function getPendingListings() {
-  return runListingQuery(
-    Prisma.sql`WHERE l."status" = ${listingStatusSql(ListingStatus.PENDING)}`,
-    Prisma.sql`ORDER BY l."createdAt" DESC`
+export async function getPendingListings(options?: { limit?: number; offset?: number }) {
+  const limitSql =
+    options?.limit !== undefined
+      ? Prisma.sql`LIMIT ${options.limit} OFFSET ${options.offset ?? 0}`
+      : Prisma.sql``;
+
+  const rows = await prisma.$queryRaw<ListingRow[]>(
+    Prisma.sql`
+      ${buildSelectSql()}
+      WHERE l."status" = ${listingStatusSql(ListingStatus.PENDING)}
+      ${groupAndOrderSql(Prisma.sql`ORDER BY l."createdAt" ASC`)}
+      ${limitSql}
+    `
   );
+
+  return rows.map(mapListingRow);
+}
+
+export async function countPendingListings() {
+  return prisma.listing.count({ where: { status: ListingStatus.PENDING } });
 }
 
 export async function countActiveListings() {
@@ -423,6 +438,21 @@ export async function countActiveListings() {
       availabilityStatus: LISTING_AVAILABILITY_STATUS.ACTIVE
     }
   });
+}
+
+/**
+ * Owner-only: fetches a listing by id regardless of status (pending,
+ * approved, or rejected). Never use this for a public-facing route -- see
+ * getApprovedListingById for the public equivalent that enforces the
+ * approved+active filter.
+ */
+export async function getListingByIdForOwner(id: string) {
+  const rows = await runListingQuery(
+    Prisma.sql`WHERE l."id" = ${id}`,
+    Prisma.sql`ORDER BY l."createdAt" DESC`
+  );
+
+  return rows[0] ?? null;
 }
 
 export async function getListingsForUser(userId: string) {

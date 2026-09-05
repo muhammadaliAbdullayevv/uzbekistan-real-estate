@@ -525,7 +525,18 @@ const translations = {
       blockConfirm: "Ushbu foydalanuvchini bloklashni tasdiqlaysizmi?",
       exactAddress: "Aniq manzil",
       viewOnMap: "Xaritada ko'rish",
+      viewListing: "To'liq ko'rish",
+      backToDashboard: "Boshqaruv paneliga qaytish",
       moreResultsHint: "Ko'proq natija bo'lishi mumkin — qidiruvni aniqlashtiring.",
+      selectAll: "Barchasini tanlash",
+      selectedCount: "{count} ta tanlandi",
+      bulkApprove: "Tanlanganlarni tasdiqlash",
+      bulkReject: "Tanlanganlarni rad etish",
+      bulkApproveConfirm: "{count} ta e'lonni tasdiqlaysizmi?",
+      bulkRejectConfirm: "{count} ta e'lonni rad etishni tasdiqlaysizmi?",
+      paginationPage: "Sahifa {current} / {total}",
+      paginationPrev: "Oldingi",
+      paginationNext: "Keyingi",
       seedDemoDataTitle: "Test uchun namunaviy e'lonlar",
       seedDemoDataDescription:
         "Saytni sinab ko'rish uchun O'zbekiston bo'ylab ~100 namunaviy e'lon va demo hisobni yaratadi yoki yangilaydi. Faqat shu namunaviy ma'lumotlarga tegadi, haqiqiy foydalanuvchilar yoki e'lonlarga ta'sir qilmaydi.",
@@ -1117,7 +1128,18 @@ const translations = {
       blockConfirm: "Заблокировать этого пользователя?",
       exactAddress: "Точный адрес",
       viewOnMap: "Посмотреть на карте",
+      viewListing: "Смотреть полностью",
+      backToDashboard: "Назад в панель",
       moreResultsHint: "Возможно, есть ещё результаты — уточните поиск.",
+      selectAll: "Выбрать все",
+      selectedCount: "Выбрано: {count}",
+      bulkApprove: "Одобрить выбранные",
+      bulkReject: "Отклонить выбранные",
+      bulkApproveConfirm: "Одобрить {count} объявлений?",
+      bulkRejectConfirm: "Отклонить {count} объявлений?",
+      paginationPage: "Страница {current} / {total}",
+      paginationPrev: "Назад",
+      paginationNext: "Далее",
       seedDemoDataTitle: "Тестовые демо-объявления",
       seedDemoDataDescription:
         "Создаёт или обновляет ~100 демо-объявлений по всему Узбекистану и демо-аккаунт для проверки сайта. Затрагивает только эти демо-данные, не влияет на реальных пользователей и объявления.",
@@ -1225,12 +1247,4 @@ export function getLocaleForOpenGraph(locale: Locale) {
   return locale === "ru" ? "ru_RU" : "uz_UZ";
 }
 
-export function formatMessage(
-  template: string,
-  values: Record<string, string | number> = {}
-) {
-  return Object.entries(values).reduce(
-    (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
-    template
-  );
-}
+export { formatMessage } from "@/lib/format-message";
