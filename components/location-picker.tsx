@@ -85,17 +85,20 @@ export function LocationPicker({
         initialPosition ? 15 : 11
       );
 
-      // Plain OSM "Standard" tiles: not the prettiest style, but verified to
-      // be the only free/keyless option with real building-level detail for
-      // Uzbekistan at high zoom -- CARTO's nicer-looking Voyager style now
-      // requires a paid API key, and Esri's free World Street Map (nicer at
-      // city zoom) goes blank above ~zoom 15 here since Tashkent isn't in
-      // its detailed coverage area. Both were checked by fetching real
-      // tiles before picking this, not assumed.
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19
-      }).addTo(map);
+      // Esri World Imagery: free, no API key, real satellite/aerial photos
+      // (actual roofs, trees, gardens) rather than drawn building outlines.
+      // Unlike Esri's free World Street Map (which has no detail above
+      // ~zoom 15 here), the satellite layer's coverage for Tashkent is
+      // genuinely high-resolution at building level -- verified by fetching
+      // real tiles over Amir Temur Square before picking this, not assumed.
+      L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution:
+            "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+          maxZoom: 19
+        }
+      ).addTo(map);
 
       mapRef.current = map;
 
