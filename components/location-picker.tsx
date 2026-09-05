@@ -10,7 +10,7 @@ type LatLng = { lat: number; lng: number };
 type LocationPickerProps = {
   initialPosition?: LatLng | null;
   defaultCenter: LatLng;
-  onChange: (position: LatLng) => void;
+  onChange: (position: LatLng | null) => void;
   copy: {
     helper: string;
     useMyLocation: string;
@@ -144,13 +144,35 @@ export function LocationPicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const isFirstDefaultCenterRun = useRef(true);
+
   useEffect(() => {
-    if (position || !mapRef.current) {
+    if (!mapRef.current) {
       return;
     }
-    // No pin placed yet -- keep the view centered on the selected
-    // region/district as the user changes it, without dropping a pin.
+
+    // Skip the run that fires on mount -- the map is already centered
+    // correctly (on initialPosition or this same defaultCenter) when it's
+    // created. This effect only handles the user changing region/district
+    // *after* the map already exists.
+    if (isFirstDefaultCenterRun.current) {
+      isFirstDefaultCenterRun.current = false;
+      return;
+    }
+
     mapRef.current.setView([defaultCenter.lat, defaultCenter.lng], 11);
+
+    // A pin placed for the previous region/district (including one set via
+    // "use my location") almost certainly no longer matches the new
+    // selection, and submitting it as-is would silently save a listing
+    // whose coordinates contradict its region/district text fields. Clear
+    // it so the user places a fresh pin in the right area instead.
+    if (markerRef.current) {
+      markerRef.current.remove();
+      markerRef.current = null;
+    }
+    setPosition(null);
+    onChange(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultCenter.lat, defaultCenter.lng]);
 
