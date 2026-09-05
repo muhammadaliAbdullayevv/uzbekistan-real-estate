@@ -459,7 +459,6 @@ const translations = {
         "Birinchi kvartira, xona yoki hovli e'loningizni admin ko'rib chiqishi uchun Add Listing sahifasidan yuboring."
     },
     chat: {
-      pill: "Xabarlar",
       inboxTitle: "Suhbatlar",
       inboxEmptyTitle: "Hozircha suhbat yo'q",
       inboxEmptyDescription:
@@ -1044,7 +1043,6 @@ const translations = {
         "Используйте Add Listing, чтобы отправить свою первую квартиру, комнату или дом на проверку."
     },
     chat: {
-      pill: "Сообщения",
       inboxTitle: "Переписки",
       inboxEmptyTitle: "Пока нет переписок",
       inboxEmptyDescription: "Когда вы напишете владельцу объявления, переписка появится здесь.",

@@ -25,15 +25,12 @@ export default async function ChatInboxPage() {
   const conversations = await listConversationsForUser(session.userId);
 
   return (
-    <div className="shell space-y-8">
+    <div className="shell space-y-5">
       <BackLink href="/" label={t.common.backToListings} />
 
-      <section className="panel flex flex-col gap-3 p-6 sm:p-8">
-        <span className="pill border-accent/25 bg-accent/5 text-accent">{t.chat.pill}</span>
-        <h1 className="font-display text-2xl font-semibold text-ink sm:text-3xl">
-          {t.chat.inboxTitle}
-        </h1>
-      </section>
+      <h1 className="font-display text-xl font-semibold text-ink sm:text-2xl">
+        {t.chat.inboxTitle}
+      </h1>
 
       {conversations.length === 0 ? (
         <EmptyState

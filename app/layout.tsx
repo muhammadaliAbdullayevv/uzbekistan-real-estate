@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import "@/app/globals.css";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
+import { HideFooterOnChatRoutes } from "@/components/route-visibility";
 import { SiteFooter } from "@/components/site-footer";
 import { SessionRefresher } from "@/components/session-refresher";
 import { SiteHeader } from "@/components/site-header";
@@ -96,7 +97,9 @@ export default async function RootLayout({
         <SessionRefresher />
         <SiteHeader />
         <main className="pb-24 pt-8 sm:pb-20">{children}</main>
-        <SiteFooter />
+        <HideFooterOnChatRoutes>
+          <SiteFooter />
+        </HideFooterOnChatRoutes>
         <MobileTabBar tabs={tabs} />
       </body>
     </html>
