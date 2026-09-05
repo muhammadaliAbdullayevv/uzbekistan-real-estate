@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { ListingGallery } from "@/components/listing-gallery";
 import { LocationSection, LocationSummary } from "@/components/location-display";
+import { SmartBackLink } from "@/components/smart-back-link";
 import { TrackListingView } from "@/components/track-listing-view";
 import {
   formatDate,
@@ -97,9 +98,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     <div className="shell space-y-8">
       <TrackListingView listingId={listing.id} enabled={Boolean(session)} />
 
-      <Link href="/" className="inline-flex items-center text-sm font-medium text-accent">
-        {t.common.backToListings}
-      </Link>
+      <SmartBackLink label={t.common.backToListings} fallbackHref="/" />
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1.3fr)_420px]">
         <div className="space-y-6">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { PropertyImage } from "@/components/property-image";
 
@@ -47,6 +47,37 @@ function formatTime(locale: Locale) {
     hour: "2-digit",
     minute: "2-digit"
   }).format(new Date());
+}
+
+// Session-only (not localStorage): the conversation isn't persisted server
+// side at all, so this is just enough to survive tapping into a
+// recommended listing and back, not a real chat history -- it should not
+// outlive the browser tab.
+const STORAGE_KEY = "ai-uychi-thread-v1";
+
+type StoredThread = {
+  messages: ChatMessage[];
+  listingsByMessage: Record<number, RecommendedListing[]>;
+};
+
+function loadStoredThread(): StoredThread | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw) as Partial<StoredThread>;
+    return {
+      messages: Array.isArray(parsed.messages) ? parsed.messages : [],
+      listingsByMessage: parsed.listingsByMessage ?? {}
+    };
+  } catch {
+    return null;
+  }
 }
 
 // Kept in sync with the [[listing:ID]] convention the model is instructed
@@ -120,12 +151,35 @@ function BotAvatar() {
 }
 
 export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [listingsByMessage, setListingsByMessage] = useState<Record<number, RecommendedListing[]>>({});
+  const [messages, setMessages] = useState<ChatMessage[]>(() => loadStoredThread()?.messages ?? []);
+  const [listingsByMessage, setListingsByMessage] = useState<Record<number, RecommendedListing[]>>(
+    () => loadStoredThread()?.listingsByMessage ?? {}
+  );
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const hasRestoredScroll = useRef(false);
+
+  // Persist so navigating to a recommended listing and back (or just
+  // switching tabs) doesn't silently reset the conversation -- this is
+  // sessionStorage, not a real saved chat history.
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ messages, listingsByMessage }));
+    } catch {
+      // Best-effort -- losing the restore is better than crashing the chat.
+    }
+  }, [messages, listingsByMessage]);
+
+  useEffect(() => {
+    if (hasRestoredScroll.current || messages.length === 0) {
+      return;
+    }
+    hasRestoredScroll.current = true;
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSend(event: FormEvent) {
     event.preventDefault();
