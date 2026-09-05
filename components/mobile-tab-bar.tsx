@@ -47,6 +47,15 @@ export function MobileTabBar({ tabs }: { tabs: Tab[] }) {
     setPressedHref((current) => (current === href ? null : current));
   }
 
+  // AI Uychi is a full-screen chat, like Telegram/WhatsApp -- no persistent
+  // nav bar while it's open. Keeping it around also caused a real bug: with
+  // both this (fixed bottom-0) and the chat's own input bar fixed-
+  // positioned, opening the on-screen keyboard on Android desynced them,
+  // leaving this bar floating above the keyboard with a gap beneath it.
+  if (pathname === "/ai-uychi") {
+    return null;
+  }
+
   return (
     <nav
       aria-label="Primary"
