@@ -24,8 +24,12 @@ export default async function ChatInboxPage() {
   const conversations = await listConversationsForUser(session.userId);
 
   return (
-    <div className="shell">
-      <div className="flex items-center gap-3 pb-2">
+    <>
+      {/* Full-bleed app bar, same idea as the chat thread's own header: the
+          back arrow sits on the left edge and the title is truly centered
+          (a right-side spacer balances the arrow's width) so the arrow
+          reads as "go back", not as if it's labelling the title next to it. */}
+      <div className="sticky top-[61px] z-20 -mt-8 flex items-center border-b border-line/70 bg-white/95 px-3 py-3 backdrop-blur sm:px-6">
         <Link
           href="/"
           aria-label={t.common.backToListings}
@@ -35,78 +39,92 @@ export default async function ChatInboxPage() {
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </Link>
-        <h1 className="font-display text-lg font-semibold text-ink">{t.chat.inboxTitle}</h1>
+        <h1 className="flex-1 text-center font-display text-base font-semibold text-ink">
+          {t.chat.inboxTitle}
+        </h1>
+        <span className="h-9 w-9 shrink-0" aria-hidden="true" />
       </div>
 
-      {conversations.length === 0 ? (
-        <EmptyState
-          eyebrow={t.common.noResults}
-          title={t.chat.inboxEmptyTitle}
-          description={t.chat.inboxEmptyDescription}
-          action={
-            <Link href="/" className="btn-primary">
-              {t.chat.browseListings}
-            </Link>
-          }
-        />
-      ) : (
-        <div className="divide-y divide-line/70 border-t border-line/70">
-          {conversations.map((conversation) => {
-            const initial = (conversation.otherName?.trim()?.[0] || "?").toUpperCase();
-            const unread = conversation.unreadCount > 0;
+      <div className="shell pt-4">
+        {conversations.length === 0 ? (
+          <EmptyState
+            eyebrow={t.common.noResults}
+            title={t.chat.inboxEmptyTitle}
+            description={t.chat.inboxEmptyDescription}
+            action={
+              <Link href="/" className="btn-primary">
+                {t.chat.browseListings}
+              </Link>
+            }
+          />
+        ) : (
+          <div>
+            {conversations.map((conversation, index) => {
+              const initial = (conversation.otherName?.trim()?.[0] || "?").toUpperCase();
+              const unread = conversation.unreadCount > 0;
+              const isLast = index === conversations.length - 1;
 
-            return (
-              <Link
-                key={conversation.id}
-                href={`/chat/${conversation.id}`}
-                className="flex items-center gap-3 py-3 transition hover:bg-mist/50"
-              >
-                <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent/25 bg-accent/10 text-sm font-bold text-accent">
-                  {conversation.otherAvatarUrl ? (
-                    <Image
-                      src={conversation.otherAvatarUrl}
-                      alt=""
-                      fill
-                      unoptimized={isLocalImageUrl(conversation.otherAvatarUrl)}
-                      sizes="44px"
-                      className="object-cover"
-                    />
-                  ) : (
-                    initial
-                  )}
-                </span>
+              return (
+                <Link
+                  key={conversation.id}
+                  href={`/chat/${conversation.id}`}
+                  className="flex items-center gap-3 transition hover:bg-mist/50"
+                >
+                  <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent/25 bg-accent/10 text-sm font-bold text-accent">
+                    {conversation.otherAvatarUrl ? (
+                      <Image
+                        src={conversation.otherAvatarUrl}
+                        alt=""
+                        fill
+                        unoptimized={isLocalImageUrl(conversation.otherAvatarUrl)}
+                        sizes="44px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      initial
+                    )}
+                  </span>
 
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center justify-between gap-2">
-                    <span
-                      className={`truncate text-sm ${unread ? "font-semibold text-ink" : "font-medium text-ink/80"}`}
-                    >
-                      {conversation.otherName || t.chat.you}
-                    </span>
-                    {conversation.lastMessageAt ? (
-                      <span className="shrink-0 text-xs text-ink/45">
-                        {formatDate(conversation.lastMessageAt, locale)}
+                  {/* The divider only spans the text column (starts after the
+                      avatar), not the full row width -- the same inset-divider
+                      detail iOS/Telegram-style lists use instead of a full-bleed
+                      line under every row. */}
+                  <span
+                    className={`flex min-w-0 flex-1 items-center justify-between gap-2 py-3 ${isLast ? "" : "border-b border-line/70"}`}
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center justify-between gap-2">
+                        <span
+                          className={`truncate text-sm ${unread ? "font-semibold text-ink" : "font-medium text-ink/80"}`}
+                        >
+                          {conversation.otherName || t.chat.you}
+                        </span>
+                        {conversation.lastMessageAt ? (
+                          <span className="shrink-0 text-xs text-ink/45">
+                            {formatDate(conversation.lastMessageAt, locale)}
+                          </span>
+                        ) : null}
                       </span>
+                      <span className="mt-0.5 block truncate text-xs text-ink/50">
+                        {conversation.listingTitle}
+                      </span>
+                      <span
+                        className={`mt-0.5 block truncate text-sm ${unread ? "font-medium text-ink" : "text-ink/60"}`}
+                      >
+                        {conversation.lastMessageBody || t.chat.emptyThread}
+                      </span>
+                    </span>
+
+                    {unread ? (
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
                     ) : null}
                   </span>
-                  <span className="mt-0.5 block truncate text-xs text-ink/50">
-                    {conversation.listingTitle}
-                  </span>
-                  <span
-                    className={`mt-0.5 block truncate text-sm ${unread ? "font-medium text-ink" : "text-ink/60"}`}
-                  >
-                    {conversation.lastMessageBody || t.chat.emptyThread}
-                  </span>
-                </span>
-
-                {unread ? (
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
-                ) : null}
-              </Link>
-            );
-          })}
-        </div>
-      )}
-    </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
