@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export { privatePageMetadata as metadata } from "@/lib/site";
+import { BackIconButton } from "@/components/back-icon-button";
 import { EmptyState } from "@/components/empty-state";
 import { listConversationsForUser } from "@/lib/conversations";
 import { formatDate } from "@/lib/format";
@@ -30,15 +31,7 @@ export default async function ChatInboxPage() {
           (a right-side spacer balances the arrow's width) so the arrow
           reads as "go back", not as if it's labelling the title next to it. */}
       <div className="sticky top-[61px] z-20 -mt-8 flex items-center border-b border-line/70 bg-white/95 px-3 py-3 backdrop-blur sm:px-6">
-        <Link
-          href="/"
-          aria-label={t.common.backToListings}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink/60 transition hover:bg-mist hover:text-ink"
-        >
-          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </Link>
+        <BackIconButton href="/" label={t.common.backToListings} />
         <h1 className="flex-1 text-center font-display text-base font-semibold text-ink">
           {t.chat.inboxTitle}
         </h1>

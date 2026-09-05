@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
-import Link from "next/link";
 
 export { privatePageMetadata as metadata } from "@/lib/site";
 
+import { BackIconButton } from "@/components/back-icon-button";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { hashToken, getActiveUserSessions } from "@/lib/session-store";
 import { requireUser } from "@/lib/session-auth";
@@ -24,25 +24,7 @@ export default async function SessionsPage() {
     <div className="shell space-y-8">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link
-          href="/account"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-ink/60 shadow-soft transition hover:border-ink hover:text-ink"
-          aria-label="Back to account"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </Link>
+        <BackIconButton href="/account" label="Back to account" />
         <div>
           <p className="text-sm uppercase tracking-[0.18em] text-ink/45">Security</p>
           <h1 className="font-display text-3xl font-semibold text-ink">Active Sessions</h1>

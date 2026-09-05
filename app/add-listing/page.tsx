@@ -1,6 +1,6 @@
 export { privatePageMetadata as metadata } from "@/lib/site";
 import { AddListingForm } from "@/components/add-listing-form";
-import { BackLink } from "@/components/back-link";
+import { SmartBackLink } from "@/components/smart-back-link";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { getDistrictOptionsByRegion, getRegionOptions } from "@/lib/locations";
 import { getCurrentUser } from "@/lib/session-auth";
@@ -17,7 +17,7 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
 
   return (
     <div className="shell space-y-6">
-      <BackLink href="/" label={t.common.backToListings} />
+      <SmartBackLink label={t.common.backToListings} fallbackHref="/" />
 
       <div className="mx-auto max-w-3xl space-y-6">
         <div>

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
+import { BackIconButton } from "@/components/back-icon-button";
 import { isLocalImageUrl } from "@/lib/image-url";
 
 type Locale = "uz" | "ru";
@@ -121,15 +122,7 @@ export function ChatThread({
   return (
     <div className="fixed inset-x-0 top-[61px] bottom-0 flex flex-col bg-mist sm:static sm:top-auto sm:bottom-auto sm:mx-auto sm:mt-6 sm:h-[75vh] sm:max-h-[720px] sm:max-w-2xl sm:overflow-hidden sm:rounded-[28px] sm:border sm:border-line/70 sm:shadow-soft">
       <div className="flex shrink-0 items-center gap-3 border-b border-line/70 bg-white px-3 py-2.5 sm:px-5">
-        <Link
-          href="/chat"
-          aria-label={copy.backLabel}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink/60 transition hover:bg-mist hover:text-ink"
-        >
-          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </Link>
+        <BackIconButton href="/chat" label={copy.backLabel} />
         <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent/25 bg-accent/10 text-sm font-bold text-accent">
           {otherAvatarUrl ? (
             <Image
