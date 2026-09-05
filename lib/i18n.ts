@@ -103,16 +103,15 @@ const translations = {
       logInToContact: "Kirish orqali egasi bilan bog‘laning",
       overview: "Umumiy ma'lumot",
       fullDescription: "To'liq tavsif",
-      save: "Saqlash",
-      saved: "Saqlangan",
-      saveListing: "E'lonni saqlash",
-      removeFromSaved: "Saqlanganlardan olib tashlash",
       submit: "Yuborish",
       removeImage: "Rasmni olib tashlash",
       search: "Qidirish",
       signOut: "Chiqish",
       joinDatePrefix: "Qo'shilgan",
       owner: "Egasi",
+      paginationPrev: "Oldingi",
+      paginationNext: "Keyingi",
+      paginationPage: "Sahifa {current} / {total}",
       propertyInfo: "Uy haqida",
       ownerContact: "Egasi bilan aloqa",
       forRentIndicator: "Ijaraga beriladi",
@@ -337,30 +336,21 @@ const translations = {
       securityTitle: "Hisob xavfsizligi",
       securityDescription:
         "Faol sessiyalarni kuzating va kerak bo‘lsa boshqa qurilmalardagi kirishlarni yakunlang.",
-      openFavorites: "Saqlanganlar",
       trackListings: "E'lonlarim",
       submitListing: "E'lon yuborish",
       manageSessions: "Sessiyalarni boshqarish",
       overview: "Kabinet",
       overviewTitle: "Kabinet bo‘limlari",
       overviewDescription:
-        "Bu yerda e’lonlaringiz, saqlangan uy-joylar va hisob xavfsizligiga oid asosiy bo‘limlar jamlangan.",
+        "Bu yerda e’lonlaringiz va hisob xavfsizligiga oid asosiy bo‘limlar jamlangan.",
       myListingsTitle: "Yuborgan e’lonlaringiz",
       myListingsDescription:
         "E’lonlaringiz holatini kuzating, kerak bo‘lsa tahrirlang va bozordagi statusini boshqaring.",
-      savedTitle: "Saqlangan uy-joylar",
-      savedListingsDescription:
-        "Keyinroq ko‘rmoqchi bo‘lgan uy-joylarni bir joyda oching va qulay tarzda taqqoslang.",
       recentTitle: "Yaqinda ko‘rilganlar",
       recentlyViewedDescription:
         "Oxirgi ochilgan e’lonlar pastdagi bo‘limda ko‘rinadi, shu yerda esa kabinetning umumiy ko‘rinishi beriladi.",
       name: "Ism",
       phone: "Telefon",
-      favorites: "Saqlanganlar",
-      savedListings: "Saqlangan e'lonlar",
-      noFavoritesTitle: "Hozircha saqlangan e’lon yo‘q",
-      noFavorites:
-        "Yoqtirgan uy-joylaringizni keyinroq ko‘rish uchun saqlab qo‘ying.",
       recentActivity: "So'nggi faollik",
       recentlyViewed: "Yaqinda ko'rilganlar",
       noRecentViewsTitle: "Hozircha ko‘rilgan e’lon yo‘q",
@@ -430,16 +420,6 @@ const translations = {
         updateSubmit: "E'lonni yangilash",
         updating: "E'lon yangilanmoqda..."
       }
-    },
-    favoritesPage: {
-      pill: "Saqlanganlar",
-      title: "Saqlangan ijaralar",
-      intro:
-        "Narxlar, reja va aloqa variantlarini taqqoslayotganingizda qisqa ro'yxatni shu yerda saqlang.",
-      browseMore: "Yana e'lonlarni ko'rish",
-      emptyTitle: "Hozircha saqlangan ijara yo'q",
-      emptyDescription:
-        "Qisqa ro'yxat tuzish uchun kartalar yoki batafsil sahifalarda Saqlash tugmasidan foydalaning."
     },
     myListings: {
       pill: "Mening e'lonlarim",
@@ -718,6 +698,9 @@ const translations = {
       signOut: "Выйти",
       joinDatePrefix: "Дата регистрации",
       owner: "Владелец",
+      paginationPrev: "Назад",
+      paginationNext: "Далее",
+      paginationPage: "Страница {current} / {total}",
       propertyInfo: "О жилье",
       ownerContact: "Контакт владельца",
       forRentIndicator: "Сдается в аренду",
@@ -941,30 +924,21 @@ const translations = {
       securityTitle: "Безопасность аккаунта",
       securityDescription:
         "Следите за активными сессиями и при необходимости завершайте входы на других устройствах.",
-      openFavorites: "Избранное",
       trackListings: "Мои объявления",
       submitListing: "Подать объявление",
       manageSessions: "Управление сессиями",
       overview: "Кабинет",
       overviewTitle: "Разделы кабинета",
       overviewDescription:
-        "Здесь собраны основные разделы для ваших объявлений, сохранённого жилья и безопасности аккаунта.",
+        "Здесь собраны основные разделы для ваших объявлений и безопасности аккаунта.",
       myListingsTitle: "Ваши объявления",
       myListingsDescription:
         "Следите за состоянием объявлений, редактируйте их и управляйте рыночным статусом.",
-      savedTitle: "Сохранённое жильё",
-      savedListingsDescription:
-        "Быстро возвращайтесь к понравившимся объектам и сравнивайте их в одном месте.",
       recentTitle: "Недавно просмотренные",
       recentlyViewedDescription:
         "Последние открытые объявления показываются в отдельном блоке ниже, а здесь находится общий обзор кабинета.",
       name: "Имя",
       phone: "Телефон",
-      favorites: "Избранное",
-      savedListings: "Сохранённые объявления",
-      noFavoritesTitle: "Пока нет сохранённых объявлений",
-      noFavorites:
-        "Сохраняйте понравившееся жильё, чтобы позже быстро к нему вернуться.",
       recentActivity: "Недавняя активность",
       recentlyViewed: "Недавно просмотренные",
       noRecentViewsTitle: "Пока нет просмотренных объявлений",
@@ -1034,16 +1008,6 @@ const translations = {
         updateSubmit: "Обновить объявление",
         updating: "Объявление обновляется..."
       }
-    },
-    favoritesPage: {
-      pill: "Избранное",
-      title: "Сохранённые варианты",
-      intro:
-        "Держите здесь короткий список, пока сравниваете цены, планировки и способы связи.",
-      browseMore: "Смотреть ещё",
-      emptyTitle: "Пока нет сохранённых вариантов",
-      emptyDescription:
-        "Открывайте карточки или страницы объявлений и используйте Сохранить, чтобы собрать свой список."
     },
     myListings: {
       pill: "Мои объявления",

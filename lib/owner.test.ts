@@ -88,7 +88,7 @@ describe("resolvePostAuthPath", () => {
   });
 
   it("preserves an explicit next path regardless of owner status", () => {
-    expect(resolvePostAuthPath({ email: "owner@example.com" }, "/favorites")).toBe("/favorites");
+    expect(resolvePostAuthPath({ email: "owner@example.com" }, "/some-page")).toBe("/some-page");
     expect(resolvePostAuthPath({ email: "someone@example.com" }, "/my-listings")).toBe(
       "/my-listings"
     );

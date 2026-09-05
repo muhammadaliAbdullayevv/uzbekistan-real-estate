@@ -9,7 +9,6 @@ import { listingInputSchema } from "@/lib/validations/listing";
 function revalidateListingPaths(id: string) {
   revalidatePath("/");
   revalidatePath("/account");
-  revalidatePath("/favorites");
   revalidatePath("/my-listings");
   revalidatePath(`/my-listings/${id}/edit`);
   revalidatePath(`/listings/${id}`);

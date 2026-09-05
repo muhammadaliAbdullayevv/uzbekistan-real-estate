@@ -29,6 +29,8 @@ export type ListingSearchParams = {
   sort?: string;
   nearLat?: string;
   nearLng?: string;
+  limit?: number;
+  offset?: number;
 };
 
 export type ListingImageRecord = {
@@ -68,11 +70,6 @@ export type ListingWithImages = {
 
 type ListingRow = Omit<ListingWithImages, "images"> & {
   images: unknown;
-};
-
-type FavoriteRow = {
-  listingId: string;
-  createdAt: Date;
 };
 
 type ViewRow = {
@@ -299,9 +296,14 @@ function buildOrderBySql(sort?: string, near?: NearPoint) {
   return Prisma.sql`ORDER BY l."createdAt" DESC`;
 }
 
-async function runListingQuery(whereSql: Prisma.Sql, orderBySql: Prisma.Sql, near?: NearPoint) {
+async function runListingQuery(
+  whereSql: Prisma.Sql,
+  orderBySql: Prisma.Sql,
+  near?: NearPoint,
+  limitSql: Prisma.Sql = Prisma.sql``
+) {
   const rows = await prisma.$queryRaw<ListingRow[]>(
-    Prisma.sql`${buildSelectSql(near)} ${whereSql} ${groupAndOrderSql(orderBySql)}`
+    Prisma.sql`${buildSelectSql(near)} ${whereSql} ${groupAndOrderSql(orderBySql)} ${limitSql}`
   );
 
   return rows.map(mapListingRow);
@@ -331,25 +333,6 @@ async function getApprovedListingsByIds(ids: string[]) {
   );
 
   return orderListingsByIds(rows.map(mapListingRow), ids);
-}
-
-async function getFavoriteRows(userId: string, limit?: number) {
-  if (limit) {
-    return prisma.$queryRaw<FavoriteRow[]>`
-      SELECT "listingId", "createdAt"
-      FROM "FavoriteListing"
-      WHERE "userId" = ${userId}
-      ORDER BY "createdAt" DESC
-      LIMIT ${limit}
-    `;
-  }
-
-  return prisma.$queryRaw<FavoriteRow[]>`
-    SELECT "listingId", "createdAt"
-    FROM "FavoriteListing"
-    WHERE "userId" = ${userId}
-    ORDER BY "createdAt" DESC
-  `;
 }
 
 async function getViewRows(userId: string, limit?: number) {
@@ -397,7 +380,26 @@ function toPositiveNumber(value?: string) {
 
 export async function getApprovedListings(filters: ListingSearchParams) {
   const near = parseNearPoint(filters);
-  return runListingQuery(buildWhereSql(filters, near), buildOrderBySql(filters.sort, near), near);
+  const limitSql =
+    filters.limit !== undefined
+      ? Prisma.sql`LIMIT ${filters.limit} OFFSET ${filters.offset ?? 0}`
+      : Prisma.sql``;
+
+  return runListingQuery(
+    buildWhereSql(filters, near),
+    buildOrderBySql(filters.sort, near),
+    near,
+    limitSql
+  );
+}
+
+export async function countApprovedListings(filters: ListingSearchParams) {
+  const near = parseNearPoint(filters);
+  const rows = await prisma.$queryRaw<{ count: bigint }[]>(
+    Prisma.sql`SELECT COUNT(*) AS count FROM "Listing" l ${buildWhereSql(filters, near)}`
+  );
+
+  return Number(rows[0]?.count ?? 0);
 }
 
 export async function getApprovedListingById(id: string) {
@@ -469,49 +471,6 @@ export async function getListingForUserById(userId: string, listingId: string) {
   );
 
   return rows[0] ?? null;
-}
-
-export async function getFavoriteListingIds(userId: string) {
-  const favorites = await getFavoriteRows(userId);
-
-  return new Set(favorites.map((favorite) => favorite.listingId));
-}
-
-export async function addFavoriteListing(userId: string, listingId: string) {
-  const rows = await prisma.$queryRaw<Array<{ id: string }>>`
-    SELECT "id"
-    FROM "Listing"
-    WHERE
-      "id" = ${listingId}
-      AND "status" = CAST(${ListingStatus.APPROVED} AS "ListingStatus")
-      AND "availabilityStatus" = CAST(${LISTING_AVAILABILITY_STATUS.ACTIVE} AS "ListingAvailabilityStatus")
-    LIMIT 1
-  `;
-
-  if (rows.length === 0) {
-    return false;
-  }
-
-  await prisma.$executeRaw`
-    INSERT INTO "FavoriteListing" ("id", "userId", "listingId", "createdAt")
-    VALUES (${randomUUID()}, ${userId}, ${listingId}, ${new Date()})
-    ON CONFLICT ("userId", "listingId") DO NOTHING
-  `;
-
-  return true;
-}
-
-export async function removeFavoriteListing(userId: string, listingId: string) {
-  await prisma.$executeRaw`
-    DELETE FROM "FavoriteListing"
-    WHERE "userId" = ${userId} AND "listingId" = ${listingId}
-  `;
-}
-
-export async function getFavoriteListingsForUser(userId: string) {
-  const favorites = await getFavoriteRows(userId);
-
-  return getApprovedListingsByIds(favorites.map((favorite) => favorite.listingId));
 }
 
 export async function getRecentViewedListingsForUser(userId: string, limit = 6) {
@@ -642,137 +601,3 @@ export async function deleteListingForUser(userId: string, listingId: string) {
   return rows.length > 0;
 }
 
-function incrementCounter(map: Map<string, number>, key: string | null | undefined, amount: number) {
-  if (!key) {
-    return;
-  }
-
-  map.set(key, (map.get(key) ?? 0) + amount);
-}
-
-function getRangeBonus(price: number, minPrice?: number | null, maxPrice?: number | null) {
-  if (!minPrice && !maxPrice) {
-    return 0;
-  }
-
-  if (minPrice && price < minPrice) {
-    return Math.max(-3, -((minPrice - price) / Math.max(minPrice, 1)) * 4);
-  }
-
-  if (maxPrice && price > maxPrice) {
-    return Math.max(-3, -((price - maxPrice) / Math.max(maxPrice, 1)) * 4);
-  }
-
-  return 3;
-}
-
-function scoreListing(
-  listing: ListingWithImages,
-  user: {
-    preferredRegion: string | null;
-    preferredDistrict: string | null;
-    preferredPropertyType: PropertyType | null;
-    preferredRentType: string | null;
-    preferredMinPrice: number | null;
-    preferredMaxPrice: number | null;
-  },
-  counters: {
-    region: Map<string, number>;
-    district: Map<string, number>;
-    propertyType: Map<string, number>;
-    rentType: Map<string, number>;
-  }
-) {
-  let score = 0;
-
-  if (user.preferredRegion && listing.region === user.preferredRegion) {
-    score += 4;
-  }
-
-  if (user.preferredDistrict && listing.district === user.preferredDistrict) {
-    score += 5;
-  }
-
-  if (user.preferredPropertyType && listing.propertyType === user.preferredPropertyType) {
-    score += 4;
-  }
-
-  if (user.preferredRentType && listing.rentType === user.preferredRentType) {
-    score += 3;
-  }
-
-  score += getRangeBonus(listing.price, user.preferredMinPrice, user.preferredMaxPrice);
-  score += counters.region.get(listing.region) ?? 0;
-  score += counters.district.get(listing.district) ?? 0;
-  score += counters.propertyType.get(listing.propertyType) ?? 0;
-
-  if (listing.rentType) {
-    score += counters.rentType.get(listing.rentType) ?? 0;
-  }
-
-  const ageInDays =
-    (Date.now() - new Date(listing.createdAt).getTime()) / (1000 * 60 * 60 * 24);
-  score += Math.max(0, 2 - ageInDays * 0.1);
-
-  return score;
-}
-
-export async function getPersonalizedListings(userId: string, limit = 4) {
-  const [user, favoriteRows, viewRows, listings] = await Promise.all([
-    getUserProfileById(userId),
-    getFavoriteRows(userId, 24),
-    getViewRows(userId, 40),
-    runListingQuery(
-      Prisma.sql`WHERE l."status" = ${listingStatusSql(ListingStatus.APPROVED)} AND l."availabilityStatus" = CAST(${LISTING_AVAILABILITY_STATUS.ACTIVE} AS "ListingAvailabilityStatus")`,
-      Prisma.sql`ORDER BY l."createdAt" DESC`
-    )
-  ]);
-
-  if (!user) {
-    return [];
-  }
-
-  const favoriteListings = await getApprovedListingsByIds(
-    favoriteRows.map((favorite) => favorite.listingId)
-  );
-  const viewedListings = await getApprovedListingsByIds(viewRows.map((view) => view.listingId));
-  const favoriteIds = new Set(favoriteListings.map((favorite) => favorite.id));
-  const counters = {
-    region: new Map<string, number>(),
-    district: new Map<string, number>(),
-    propertyType: new Map<string, number>(),
-    rentType: new Map<string, number>()
-  };
-
-  for (const favorite of favoriteListings) {
-    incrementCounter(counters.region, favorite.region, 1.8);
-    incrementCounter(counters.district, favorite.district, 2.4);
-    incrementCounter(counters.propertyType, favorite.propertyType, 2);
-    incrementCounter(counters.rentType, favorite.rentType, 1.5);
-  }
-
-  for (const view of viewedListings) {
-    incrementCounter(counters.region, view.region, 0.5);
-    incrementCounter(counters.district, view.district, 0.8);
-    incrementCounter(counters.propertyType, view.propertyType, 0.6);
-    incrementCounter(counters.rentType, view.rentType, 0.4);
-  }
-
-  const scored = listings
-    .filter((listing) => !favoriteIds.has(listing.id))
-    .map((listing) => ({
-      listing,
-      score: scoreListing(listing, user, counters)
-    }))
-    .sort((a, b) => b.score - a.score);
-
-  const recommendations = scored.filter((item) => item.score > 0).slice(0, limit);
-
-  if (recommendations.length > 0) {
-    return recommendations.map((item) => item.listing);
-  }
-
-  return [...listings]
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, limit);
-}

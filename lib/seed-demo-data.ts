@@ -581,25 +581,6 @@ export async function seedDemoData(prisma: PrismaClient) {
     }
   });
 
-  await prisma.favoriteListing.deleteMany({
-    where: {
-      OR: [
-        existingSampleListingIds.length > 0
-          ? {
-              listingId: {
-                in: existingSampleListingIds
-              }
-            }
-          : { id: "__no_sample_favorites__" },
-        existingDemoUser
-          ? {
-              userId: existingDemoUser.id
-            }
-          : { id: "__no_demo_favorites__" }
-      ]
-    }
-  });
-
   await prisma.listingView.deleteMany({
     where: {
       OR: [
@@ -794,13 +775,6 @@ export async function seedDemoData(prisma: PrismaClient) {
     if (listingData.status === "APPROVED") {
       approvedListingIds.push(listingId);
     }
-  }
-
-  for (const listingId of approvedListingIds.slice(0, 3)) {
-    await prisma.$executeRaw`
-      INSERT INTO "FavoriteListing" ("id", "userId", "listingId", "createdAt")
-      VALUES (${randomUUID()}, ${freshDemoUser.id}, ${listingId}, ${new Date()})
-    `;
   }
 
   for (const listingId of approvedListingIds.slice(3, 8)) {

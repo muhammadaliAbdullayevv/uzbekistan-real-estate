@@ -89,7 +89,6 @@ model User {
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
   listings              Listing[]
-  favorites             FavoriteListing[]
   sessions              AuthSession[]
   tokens                UserToken[]
   views                 ListingView[]
@@ -125,7 +124,6 @@ model Listing {
   userId           String?
   user             User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   images           ListingImage[]
-  favorites        FavoriteListing[]
   views            ListingView[]
   conversations    Conversation[]
 
@@ -146,19 +144,6 @@ model ListingImage {
   listingId String
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
-  @@index([listingId])
-}
-
-model FavoriteListing {
-  id        String   @id @default(cuid())
-  userId    String
-  listingId String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, listingId])
-  @@index([userId, createdAt])
   @@index([listingId])
 }
 

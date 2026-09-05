@@ -78,7 +78,6 @@ export async function POST(request: Request, { params }: RouteContext) {
   revalidatePath("/admin");
   revalidatePath("/");
   revalidatePath("/account");
-  revalidatePath("/favorites");
   revalidatePath("/my-listings");
 
   return NextResponse.redirect(
