@@ -66,7 +66,7 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
   ]);
 
   return (
-    <div className="shell -mt-8 space-y-3 sm:space-y-4">
+    <div className="shell -mt-8 space-y-2 sm:space-y-3">
       <WelcomeGuide
         copy={{
           steps: [

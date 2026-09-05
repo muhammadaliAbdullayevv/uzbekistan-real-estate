@@ -35,7 +35,12 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
   const currentListingType = values.listingType ?? "";
 
   return (
-    <form className="surface-tint space-y-3 p-3 sm:p-4">
+    <form className="surface-tint flex flex-col gap-2.5 p-2.5 sm:p-3">
+      {/* type="hidden" inputs still count as siblings for a space-y-*
+          selector (only a literal hidden attribute is skipped), which was
+          stacking an extra margin onto NearMeButton below -- flex+gap
+          instead, since gap only applies between elements actually still
+          in flow (these are display:none by default). */}
       <input type="hidden" name="nearLat" defaultValue={values.nearLat ?? ""} />
       <input type="hidden" name="nearLng" defaultValue={values.nearLng ?? ""} />
 
@@ -48,9 +53,9 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
         }}
       />
 
-      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-[minmax(0,1.5fr)_minmax(180px,220px)_minmax(180px,220px)]">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-[minmax(0,1.5fr)_minmax(180px,220px)_minmax(180px,220px)]">
         <div className="col-span-2 lg:col-span-1">
-          <label htmlFor="q" className="mb-1.5 block text-sm font-medium text-ink/80">
+          <label htmlFor="q" className="mb-1 block text-sm font-medium text-ink/80">
             {t.search.searchLabel}
           </label>
           <div className="relative">
@@ -88,7 +93,7 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
         />
 
         <div>
-          <label htmlFor="district" className="mb-1.5 block text-sm font-medium text-ink/80">
+          <label htmlFor="district" className="mb-1 block text-sm font-medium text-ink/80">
             {t.search.districtCity}
           </label>
           <input
@@ -103,7 +108,7 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
 
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-end">
         <div className="flex-1">
-          <p className="mb-1.5 text-sm font-medium text-ink/80">{t.common.listingType}</p>
+          <p className="mb-1 text-sm font-medium text-ink/80">{t.common.listingType}</p>
           <div className="grid grid-cols-3 gap-2">
             {listingTypeOptions.map((option) => (
               <label key={option.value || "all"} className="cursor-pointer">
