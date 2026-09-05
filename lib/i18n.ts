@@ -415,7 +415,7 @@ const translations = {
         rentType: "Ijara turi",
         phone: "Telefon raqami",
         images: "Rasmlar",
-        uploadNote: "10 tagacha rasm yuklang. Yuklamasangiz, standart rasm ishlatiladi.",
+        uploadNote: "10 tagacha rasm yuklang. Kamida bitta rasm talab qilinadi.",
         uploadCta: "Rasmlarni shu yerga tashlang yoki tanlash uchun bosing",
         optionalSuffix: "(ixtiyoriy)",
         draftSaved: "Ma'lumotlaringiz avtomatik saqlanmoqda",
@@ -456,7 +456,7 @@ const translations = {
       statusUpdated: "E'lon holati yangilandi.",
       emptyTitle: "Hali e'lon yubormagansiz",
       emptyDescription:
-        "Birinchi kvartira, xona yoki hovli e'loningizni admin ko'rib chiqishi uchun Add Listing sahifasidan yuboring."
+        "Birinchi kvartira, xona yoki hovli e'loningizni admin ko'rib chiqishi uchun \"E'lon qo'shish\" sahifasidan yuboring."
     },
     chat: {
       inboxTitle: "Suhbatlar",
@@ -1019,7 +1019,7 @@ const translations = {
         rentType: "Тип аренды",
         phone: "Номер телефона",
         images: "Фотографии",
-        uploadNote: "Загрузите до 10 изображений. Если пропустите этот шаг, будет использована заглушка.",
+        uploadNote: "Загрузите до 10 изображений. Требуется хотя бы одна фотография.",
         uploadCta: "Перетащите фото сюда или нажмите, чтобы выбрать",
         optionalSuffix: "(необязательно)",
         draftSaved: "Ваши данные сохраняются автоматически",
@@ -1060,7 +1060,7 @@ const translations = {
       statusUpdated: "Статус объявления обновлен.",
       emptyTitle: "Вы ещё не отправляли объявления",
       emptyDescription:
-        "Используйте Add Listing, чтобы отправить свою первую квартиру, комнату или дом на проверку."
+        "Используйте страницу «Добавить объявление», чтобы отправить свою первую квартиру, комнату или дом на проверку."
     },
     chat: {
       inboxTitle: "Переписки",
