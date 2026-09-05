@@ -6,6 +6,7 @@ import { getPublicAdminPath } from "@/lib/admin-path";
 import { prisma } from "@/lib/db";
 import { getOwnerLoginPath, isOwner } from "@/lib/owner";
 import { redirectUrl } from "@/lib/site";
+import { notifySubmitterOfRejection } from "@/lib/telegram-notify";
 import { getUserSession } from "@/lib/user-session";
 import { listingStatusSchema } from "@/lib/validations/listing";
 
@@ -43,7 +44,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     );
   }
 
-  await prisma.listing.update({
+  const updated = await prisma.listing.update({
     where: {
       id: params.id
     },
@@ -55,6 +56,14 @@ export async function POST(request: Request, { params }: RouteContext) {
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath(`/listings/${params.id}`);
+
+  if (updated.status === ListingStatus.REJECTED) {
+    notifySubmitterOfRejection({ title: updated.title, userId: updated.userId }).catch(
+      (notifyError) => {
+        console.error("Rejection notify failed:", notifyError);
+      }
+    );
+  }
 
   return NextResponse.redirect(redirectUrl(ownerDashboardPath), { status: 303 });
 }

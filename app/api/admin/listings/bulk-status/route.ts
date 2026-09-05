@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/db";
 import { isOwner } from "@/lib/owner";
+import { notifySubmitterOfRejection } from "@/lib/telegram-notify";
 import { getUserSession } from "@/lib/user-session";
 
 const bulkStatusSchema = z.object({
@@ -31,16 +32,37 @@ export async function POST(request: Request) {
   // Only touches listings that are still PENDING -- a listing already
   // approved/rejected by a concurrent action (e.g. a second tab) is left
   // alone rather than silently overwritten by a stale bulk selection.
-  const result = await prisma.listing.updateMany({
+  // Selected before updating (rather than updateMany alone) so the
+  // rejected ones can each be passed to the notify helper below.
+  const targets = await prisma.listing.findMany({
     where: { id: { in: ids }, status: ListingStatus.PENDING },
+    select: { id: true, title: true, userId: true }
+  });
+
+  if (targets.length === 0) {
+    return NextResponse.json({ updated: 0 });
+  }
+
+  await prisma.listing.updateMany({
+    where: { id: { in: targets.map((listing) => listing.id) } },
     data: { status: status as ListingStatus }
   });
 
   revalidatePath("/");
   revalidatePath("/admin");
-  for (const id of ids) {
-    revalidatePath(`/listings/${id}`);
+  for (const listing of targets) {
+    revalidatePath(`/listings/${listing.id}`);
   }
 
-  return NextResponse.json({ updated: result.count });
+  if (status === "REJECTED") {
+    for (const listing of targets) {
+      notifySubmitterOfRejection({ title: listing.title, userId: listing.userId }).catch(
+        (notifyError) => {
+          console.error("Rejection notify failed:", notifyError);
+        }
+      );
+    }
+  }
+
+  return NextResponse.json({ updated: targets.length });
 }
