@@ -85,6 +85,13 @@ export function LocationPicker({
         initialPosition ? 15 : 11
       );
 
+      // Plain OSM "Standard" tiles: not the prettiest style, but verified to
+      // be the only free/keyless option with real building-level detail for
+      // Uzbekistan at high zoom -- CARTO's nicer-looking Voyager style now
+      // requires a paid API key, and Esri's free World Street Map (nicer at
+      // city zoom) goes blank above ~zoom 15 here since Tashkent isn't in
+      // its detailed coverage area. Both were checked by fetching real
+      // tiles before picking this, not assumed.
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         maxZoom: 19
