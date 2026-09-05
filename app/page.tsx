@@ -1,10 +1,8 @@
-import Link from "next/link";
-
 import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
 import { SearchFilters } from "@/components/search-filters";
 import { WelcomeGuide } from "@/components/welcome-guide";
-import { formatMessage, getLocale, getTranslations } from "@/lib/i18n";
+import { getLocale, getTranslations } from "@/lib/i18n";
 import {
   countApprovedListings,
   getApprovedListings,
@@ -14,37 +12,18 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const LISTINGS_PAGE_SIZE = 24;
+// Size of the "recently added" swipeable teaser row shown above the full
+// listing grid on the default (nothing searched yet) view.
+const RECENTLY_ADDED_LIMIT = 12;
 
 type HomePageProps = {
   searchParams?: Record<string, string | string[] | undefined>;
 };
 
-function buildHomeHref(page: number, searchParams: Record<string, string | string[] | undefined>) {
-  const params = new URLSearchParams();
-
-  for (const [key, value] of Object.entries(searchParams)) {
-    if (key === "page") {
-      continue;
-    }
-    const first = getFirstParam(value);
-    if (first) {
-      params.set(key, first);
-    }
-  }
-
-  if (page > 1) {
-    params.set("page", String(page));
-  }
-
-  const qs = params.toString();
-  return qs ? `/?${qs}` : "/";
-}
-
 export default async function HomePage({ searchParams = {} }: HomePageProps) {
   const locale = getLocale();
   const t = getTranslations(locale);
-  const page = Math.max(1, Number.parseInt(getFirstParam(searchParams.page) ?? "1", 10) || 1);
+  const rawSort = getFirstParam(searchParams.sort);
   const filters: ListingSearchParams = {
     q: getFirstParam(searchParams.q),
     listingType: getFirstParam(searchParams.listingType),
@@ -55,21 +34,36 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
     rooms: getFirstParam(searchParams.rooms),
     propertyType: getFirstParam(searchParams.propertyType),
     currency: getFirstParam(searchParams.currency),
-    sort: getFirstParam(searchParams.sort) ?? "newest",
+    sort: rawSort ?? "newest",
     nearLat: getFirstParam(searchParams.nearLat),
     nearLng: getFirstParam(searchParams.nearLng)
   };
 
-  const [listings, totalCount] = await Promise.all([
-    getApprovedListings({
-      ...filters,
-      limit: LISTINGS_PAGE_SIZE,
-      offset: (page - 1) * LISTINGS_PAGE_SIZE
-    }),
-    countApprovedListings(filters)
-  ]);
+  // The "recently added" teaser is a welcome-view convenience -- once the
+  // user has actually searched or filtered, showing site-wide newest
+  // listings above their results would just be noise.
+  const hasActiveFilters = Boolean(
+    filters.q ||
+      filters.listingType ||
+      filters.region ||
+      filters.district ||
+      filters.minPrice ||
+      filters.maxPrice ||
+      filters.rooms ||
+      filters.propertyType ||
+      filters.currency ||
+      filters.nearLat ||
+      filters.nearLng ||
+      (rawSort && rawSort !== "newest")
+  );
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / LISTINGS_PAGE_SIZE));
+  const [totalCount, listings, recentListings] = await Promise.all([
+    countApprovedListings(filters),
+    getApprovedListings(filters),
+    hasActiveFilters
+      ? Promise.resolve([])
+      : getApprovedListings({ sort: "newest", limit: RECENTLY_ADDED_LIMIT })
+  ]);
 
   return (
     <div className="shell space-y-3 sm:space-y-4">
@@ -97,6 +91,24 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
 
       <SearchFilters locale={locale} values={filters} />
 
+      {recentListings.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="font-display text-lg font-semibold text-ink sm:text-xl">
+            {t.home.recentlyAddedTitle}
+          </h2>
+          <div className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1 sm:gap-4">
+            {recentListings.map((listing) => (
+              <div
+                key={listing.id}
+                className="w-[80%] shrink-0 snap-start sm:w-[45%] lg:w-[300px]"
+              >
+                <ListingCard locale={locale} listing={listing} />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="space-y-4">
         <div>
           <h2 className="flex flex-wrap items-baseline gap-2">
@@ -107,9 +119,7 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
               {t.home.resultsCountSuffix}
             </span>
           </h2>
-          <p className="mt-2 text-sm text-ink/60">
-            {t.home.resultsNote}
-          </p>
+          <p className="mt-2 text-sm text-ink/60">{t.home.resultsNote}</p>
         </div>
 
         {listings.length === 0 ? (
@@ -119,35 +129,11 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
             description={t.home.emptyDescription}
           />
         ) : (
-          <>
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-6 lg:grid-cols-3">
-              {listings.map((listing) => (
-                <ListingCard key={listing.id} locale={locale} listing={listing} />
-              ))}
-            </div>
-
-            {totalPages > 1 ? (
-              <div className="flex items-center justify-between gap-3 text-sm">
-                {page > 1 ? (
-                  <Link href={buildHomeHref(page - 1, searchParams)} className="btn-secondary">
-                    {t.common.paginationPrev}
-                  </Link>
-                ) : (
-                  <span />
-                )}
-                <span className="text-ink/60">
-                  {formatMessage(t.common.paginationPage, { current: page, total: totalPages })}
-                </span>
-                {page < totalPages ? (
-                  <Link href={buildHomeHref(page + 1, searchParams)} className="btn-secondary">
-                    {t.common.paginationNext}
-                  </Link>
-                ) : (
-                  <span />
-                )}
-              </div>
-            ) : null}
-          </>
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-6 lg:grid-cols-3">
+            {listings.map((listing) => (
+              <ListingCard key={listing.id} locale={locale} listing={listing} />
+            ))}
+          </div>
         )}
       </section>
     </div>

@@ -109,9 +109,6 @@ const translations = {
       signOut: "Chiqish",
       joinDatePrefix: "Qo'shilgan",
       owner: "Egasi",
-      paginationPrev: "Oldingi",
-      paginationNext: "Keyingi",
-      paginationPage: "Sahifa {current} / {total}",
       propertyInfo: "Uy haqida",
       ownerContact: "Egasi bilan aloqa",
       forRentIndicator: "Ijaraga beriladi",
@@ -129,6 +126,7 @@ const translations = {
       resultsFound: "{count} ta e'lon topildi",
       resultsCountSuffix: "ta e'lon topildi",
       resultsNote: "Faqat tasdiqlangan e'lonlar. Egalar bilan to'g'ridan-to'g'ri bog'laning.",
+      recentlyAddedTitle: "Yangi qo'shilgan e'lonlar",
       emptyTitle: "Bu filtrlarga mos ijara topilmadi",
       emptyDescription:
         "Narx oralig'ini kengaytiring, xona sonini tozalang yoki boshqa ko'cha va mo'ljalni qidiring.",
@@ -140,7 +138,7 @@ const translations = {
         "Bosh sahifadagi qidiruv qatori va filtrlar yordamida hudud, narx va turga qarab kerakli uy-joyni bir necha soniyada toping.",
       welcomeStep3Title: "Bog'laning va foydalaning",
       welcomeStep3Body:
-        "Yoqtirgan e'loningizni oching va uy egasi bilan to'g'ridan-to'g'ri bog'laning. E'lonlarni saqlashingiz, o'zingiz e'lon joylashtirishingiz va kabinetingizni boshqarishingiz ham mumkin.",
+        "Yoqtirgan e'loningizni oching va uy egasi bilan to'g'ridan-to'g'ri bog'laning. O'zingiz ham e'lon joylashtirishingiz va kabinetingizni boshqarishingiz mumkin.",
       welcomeNext: "Keyingi",
       welcomeFinish: "Boshladik",
       profileCtaTitle: "Profilingizni to'ldiring",
@@ -187,7 +185,7 @@ const translations = {
       loginPill: "Foydalanuvchi kirishi",
       loginTitle: "Kirish",
       loginDescription:
-        "Saqlanganlarni boshqarish, tavsiyalar olish va ijara afzalliklarini bir joyda saqlash uchun kiring.",
+        "E'lonlaringizni boshqarish va ijara afzalliklaringizni bir joyda saqlash uchun kiring.",
       email: "Email",
       password: "Parol",
       phoneOptional: "Telefon raqami (ixtiyoriy)",
@@ -211,7 +209,7 @@ const translations = {
       registerPill: "Ro‘yxatdan o‘tish",
       registerTitle: "Ro‘yxatdan o‘tish",
       registerDescription:
-        "Saqlanganlar ro'yxatini tuzish, yaqinda ko'rilganlarni saqlash va O‘zbekiston bo‘yicha tavsiyalar olish uchun hisob yarating.",
+        "Yaqinda ko'rilgan e'lonlaringizni kuzatib borish va o'z e'loningizni joylashtirish uchun hisob yarating.",
       fullName: "To'liq ism",
       createAccount: "Hisob yaratish",
       alreadyRegistered: "Hisobingiz bormi?",
@@ -235,7 +233,7 @@ const translations = {
       featureSecurityTitle: "Xavfsiz kirish",
       featureSecurityCopy: "Sessiyalar bazada saqlanadi va kerak bo‘lsa tezda bekor qilinadi.",
       featureSavedTitle: "Tezkor qaytish",
-      featureSavedCopy: "Kirishdan so‘ng saqlangan e’lonlar va ko‘rilgan uylar siz bilan qoladi.",
+      featureSavedCopy: "Kirishdan so‘ng ko‘rilgan uylar tarixi siz bilan qoladi.",
       recoveryFeatureTitle: "Xavfsiz tiklash",
       recoveryFeatureCopy: "Parolni yangilash havolasi faqat bitta akkaunt sessiyasini qayta tiklash uchun ishlatiladi.",
       recoverySupportTitle: "Tezkor davom etish",
@@ -287,8 +285,6 @@ const translations = {
       pill: "Mening kabinetim",
       title: "Mening kabinetim",
       memberSince: "Ro‘yxatdan o‘tgan sana:",
-      intro:
-        "E’lonlaringiz, saqlangan uy-joylaringiz va hisob xavfsizligini bir joyda boshqaring.",
       loggedInAs: "Kirish qilingan email",
       emailNotVerified:
         "Email manzilingiz hali tasdiqlanmagan. Ro'yxatdan o'tganda yuborilgan havolani oching.",
@@ -354,11 +350,7 @@ const translations = {
       recentActivity: "So'nggi faollik",
       recentlyViewed: "Yaqinda ko'rilganlar",
       noRecentViewsTitle: "Hozircha ko‘rilgan e’lon yo‘q",
-      noRecentViews: "E’lon sahifalarini ochganingizda ular shu yerda paydo bo‘ladi.",
-      gettingStartedTitle: "Hali hech narsa yo'q",
-      gettingStartedDescription:
-        "E'lonlarni ko'rib chiqing, yoqtirgan uy-joylaringizni saqlang yoki birinchi e'loningizni joylashtiring.",
-      gettingStartedEyebrow: "Boshlash uchun"
+      noRecentViews: "E’lon sahifalarini ochganingizda ular shu yerda paydo bo‘ladi."
     },
     addListing: {
       title: "Uy-joy e’lonini joylashtirish",
@@ -688,19 +680,12 @@ const translations = {
       logInToContact: "Войдите, чтобы связаться с владельцем",
       overview: "Обзор",
       fullDescription: "Полное описание",
-      save: "Сохранить",
-      saved: "Сохранено",
-      saveListing: "Сохранить объявление",
-      removeFromSaved: "Убрать из сохранённого",
       submit: "Отправить",
       removeImage: "Удалить фото",
       search: "Поиск",
       signOut: "Выйти",
       joinDatePrefix: "Дата регистрации",
       owner: "Владелец",
-      paginationPrev: "Назад",
-      paginationNext: "Далее",
-      paginationPage: "Страница {current} / {total}",
       propertyInfo: "О жилье",
       ownerContact: "Контакт владельца",
       forRentIndicator: "Сдается в аренду",
@@ -718,6 +703,7 @@ const translations = {
       resultsFound: "Найдено объявлений: {count}",
       resultsCountSuffix: "объявлений найдено",
       resultsNote: "Только одобренные объявления. Связывайтесь с владельцами напрямую.",
+      recentlyAddedTitle: "Недавно добавленные объявления",
       emptyTitle: "По этим фильтрам ничего не найдено",
       emptyDescription:
         "Расширьте диапазон цены, уберите фильтр по комнатам или попробуйте другой адрес и ориентир.",
@@ -729,7 +715,7 @@ const translations = {
         "С помощью строки поиска и фильтров на главной странице быстро находите нужное жильё по региону, цене и типу.",
       welcomeStep3Title: "Связывайтесь и пользуйтесь",
       welcomeStep3Body:
-        "Откройте понравившееся объявление и свяжитесь с владельцем напрямую. Также можно сохранять объявления, размещать свои и управлять кабинетом.",
+        "Откройте понравившееся объявление и свяжитесь с владельцем напрямую. Также можно размещать свои объявления и управлять кабинетом.",
       welcomeNext: "Далее",
       welcomeFinish: "Начать",
       profileCtaTitle: "Заполните профиль",
@@ -776,7 +762,7 @@ const translations = {
       loginPill: "Вход",
       loginTitle: "Вход",
       loginDescription:
-        "Войдите, чтобы сохранять понравившиеся варианты, получать рекомендации и хранить свои предпочтения по аренде в одном месте.",
+        "Войдите, чтобы управлять своими объявлениями и хранить свои предпочтения по аренде в одном месте.",
       email: "Email",
       password: "Пароль",
       phoneOptional: "Номер телефона (необязательно)",
@@ -799,7 +785,7 @@ const translations = {
       registerPill: "Регистрация",
       registerTitle: "Регистрация",
       registerDescription:
-        "Создайте аккаунт, чтобы собирать избранное, отслеживать просмотренные варианты и получать рекомендации по Узбекистану.",
+        "Создайте аккаунт, чтобы отслеживать просмотренные объявления и разместить своё собственное.",
       fullName: "Полное имя",
       createAccount: "Создать аккаунт",
       alreadyRegistered: "Уже есть аккаунт?",
@@ -823,7 +809,7 @@ const translations = {
       featureSecurityTitle: "Безопасный вход",
       featureSecurityCopy: "Сессии хранятся в базе и при необходимости быстро отзываются.",
       featureSavedTitle: "Быстрый возврат",
-      featureSavedCopy: "После входа сохранённые объявления и просмотренные варианты остаются с вами.",
+      featureSavedCopy: "После входа история просмотренных объявлений остаётся с вами.",
       recoveryFeatureTitle: "Безопасное восстановление",
       recoveryFeatureCopy: "Ссылка для смены пароля используется только для безопасного возврата в аккаунт.",
       recoverySupportTitle: "Быстрое продолжение",
@@ -875,8 +861,6 @@ const translations = {
       pill: "Мой кабинет",
       title: "Мой кабинет",
       memberSince: "Дата регистрации:",
-      intro:
-        "Управляйте своими объявлениями, сохранённым жильём и безопасностью аккаунта в одном месте.",
       loggedInAs: "Вы вошли как",
       emailNotVerified:
         "Ваш email еще не подтвержден. Откройте ссылку, отправленную при регистрации.",
@@ -942,11 +926,7 @@ const translations = {
       recentActivity: "Недавняя активность",
       recentlyViewed: "Недавно просмотренные",
       noRecentViewsTitle: "Пока нет просмотренных объявлений",
-      noRecentViews: "Когда вы откроете карточки объявлений, они появятся здесь.",
-      gettingStartedTitle: "Пока здесь пусто",
-      gettingStartedDescription:
-        "Просмотрите объявления, сохраните понравившееся жильё или разместите своё первое объявление.",
-      gettingStartedEyebrow: "Для начала"
+      noRecentViews: "Когда вы откроете карточки объявлений, они появятся здесь."
     },
     addListing: {
       title: "Разместить объявление о жилье",
