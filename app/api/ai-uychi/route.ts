@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 
 import {
   AI_UYCHI_MAX_MESSAGES_PER_HOUR,
-  aiUychiTools,
-  buildSystemInstruction
+  aiUychiExtractionSchema,
+  buildExtractionInstruction,
+  buildPhrasingInstruction,
+  searchListingsForAi,
+  type AiUychiExtraction
 } from "@/lib/ai-uychi";
 import { isAiRateLimited } from "@/lib/ai-rate-limit";
-import { hasGeminiConfig, runGeminiConversation, type GeminiContent } from "@/lib/gemini";
+import { hasGeminiConfig, runGeminiJson, runGeminiText, type GeminiContent } from "@/lib/gemini";
 import { getLocale, getTranslations } from "@/lib/i18n";
-import { getApprovedListingById } from "@/lib/listings";
 import { getUserSession } from "@/lib/user-session";
 
 const MAX_HISTORY_MESSAGES = 20;
@@ -57,18 +59,54 @@ export async function POST(request: Request) {
   }));
 
   try {
-    const result = await runGeminiConversation({
-      systemInstruction: buildSystemInstruction(locale),
+    const extraction = await runGeminiJson<AiUychiExtraction>({
+      systemInstruction: buildExtractionInstruction(locale),
       contents,
-      tools: aiUychiTools
+      responseSchema: aiUychiExtractionSchema
     });
 
-    const listings = (
-      await Promise.all(result.listingIds.map((id) => getApprovedListingById(id)))
-    ).filter((listing): listing is NonNullable<typeof listing> => Boolean(listing));
+    if (extraction.action !== "search" || !extraction.filters) {
+      return NextResponse.json({
+        text: extraction.replyText?.trim() || t.aiUychi.emptyResponse,
+        listings: []
+      });
+    }
+
+    const listings = await searchListingsForAi(extraction.filters);
+
+    const phrasingContents: GeminiContent[] = [
+      ...contents,
+      {
+        role: "user",
+        parts: [
+          {
+            text: `Search results (JSON, use ONLY these -- never invent others):\n${JSON.stringify(
+              listings.map((listing) => ({
+                id: listing.id,
+                title: listing.title,
+                listingType: listing.listingType,
+                rentType: listing.rentType,
+                price: listing.price,
+                currency: listing.currency,
+                region: listing.region,
+                district: listing.district,
+                rooms: listing.rooms,
+                area: listing.area,
+                propertyType: listing.propertyType
+              }))
+            )}`
+          }
+        ]
+      }
+    ];
+
+    const text = await runGeminiText({
+      systemInstruction: buildPhrasingInstruction(locale),
+      contents: phrasingContents
+    });
 
     return NextResponse.json({
-      text: result.text || t.aiUychi.emptyResponse,
+      text: text || t.aiUychi.emptyResponse,
       listings: listings.map((listing) => ({
         id: listing.id,
         title: listing.title,

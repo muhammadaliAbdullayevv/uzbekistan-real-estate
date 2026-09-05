@@ -20,12 +20,15 @@ export function hasGeminiConfig() {
   return Boolean(process.env.GEMINI_API_KEY?.trim());
 }
 
-// Caps how long a single model attempt can take. Without this, a model that
-// hangs (rather than failing fast with 429/503) could eat the entire
-// request budget by itself, across every round and fallback model, which is
-// what let a real request run past nginx's proxy_read_timeout and come
-// back as an HTML 504 page instead of a JSON response.
-const MODEL_FETCH_TIMEOUT_MS = 20_000;
+// Caps how long a single model attempt can take. A live test against
+// production's key/network caught gemini-3.1-flash-lite hanging for 23s
+// before failing with a 503 (not a fast error) -- Google's API doesn't
+// always fail fast under load, so this timeout is what actually bounds a
+// stuck attempt instead of it eating the whole request budget. Kept well
+// under nginx's proxy_read_timeout for this endpoint (120s, see
+// deploy/nginx-uzbekistan-rentals.conf) with room for two calls (extraction
+// + phrasing) to each burn through a few stuck models in the worst case.
+const MODEL_FETCH_TIMEOUT_MS = 8_000;
 
 async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number) {
   const controller = new AbortController();
@@ -54,148 +57,118 @@ function isSwitchableStatus(status: number) {
   return status === 429 || status === 503 || status === 404;
 }
 
-export type GeminiPart =
-  | { text: string }
-  | { functionCall: { name: string; args: Record<string, unknown> } }
-  | { functionResponse: { name: string; response: Record<string, unknown> } };
+export type GeminiPart = { text: string };
 
 export type GeminiContent = {
   role: "user" | "model";
   parts: GeminiPart[];
 };
 
-export type FunctionDeclaration = {
-  name: string;
-  description: string;
-  parameters: Record<string, unknown>;
-};
-
-type ToolHandler = (args: Record<string, unknown>) => Promise<Record<string, unknown>>;
-
-// Multi-search conversations (the model retrying search_listings with looser
-// filters before giving a final answer) can easily use 3+ rounds on their
-// own, so this leaves headroom beyond that for a real final-text round.
-const MAX_TOOL_ROUNDS = 6;
-
 /**
- * Runs a Gemini generateContent conversation, executing any function calls
- * the model requests (via `tools.handlers`) and feeding results back until
- * the model produces a final text answer or MAX_TOOL_ROUNDS is hit.
+ * Sends one generateContent request, walking the model fallback chain on
+ * quota/availability errors or a stuck attempt. Returns the first
+ * candidate's parts. Used by both runGeminiText and runGeminiJson -- neither
+ * needs a multi-round conversation loop since each caller sends exactly one
+ * request and gets exactly one answer back.
  */
-export async function runGeminiConversation(input: {
-  systemInstruction: string;
-  contents: GeminiContent[];
-  tools: { declarations: FunctionDeclaration[]; handlers: Record<string, ToolHandler> };
-}) {
+async function callGeminiModelChain(requestBody: Record<string, unknown>): Promise<GeminiPart[]> {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
 
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured.");
   }
 
-  let contents = [...input.contents];
-  const listingIds = new Set<string>();
-  const modelChain = getModelChain();
-  // Once a model responds successfully, keep trying it first on later
-  // rounds of the same conversation instead of re-paying the latency of a
-  // currently-overloaded model at the front of the chain every round.
-  let preferredIndex = 0;
+  const body = JSON.stringify(requestBody);
+  let lastError: string | null = null;
 
-  for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-    const body = JSON.stringify({
-      systemInstruction: { parts: [{ text: input.systemInstruction }] },
-      contents,
-      tools: [{ functionDeclarations: input.tools.declarations }]
-    });
+  for (const model of getModelChain()) {
+    let response: Response;
 
-    let payload: { candidates?: Array<{ content?: { parts?: GeminiPart[] } }> } | null = null;
-    let lastError: string | null = null;
-    const tryOrder = [
-      ...modelChain.slice(preferredIndex),
-      ...modelChain.slice(0, preferredIndex)
-    ];
-
-    for (const model of tryOrder) {
-      let response: Response;
-
-      try {
-        response = await fetchWithTimeout(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-            body
-          },
-          MODEL_FETCH_TIMEOUT_MS
-        );
-      } catch (fetchError) {
-        // Timed out or a network-level failure -- treat the same as a
-        // switchable status and move on to the next model.
-        lastError = `Gemini request to ${model} failed: ${
-          fetchError instanceof Error ? fetchError.message : String(fetchError)
-        }`;
-        continue;
-      }
-
-      if (response.ok) {
-        payload = await response.json();
-        preferredIndex = modelChain.indexOf(model);
-        break;
-      }
-
-      const errorBody = await response.text().catch(() => "");
-      lastError = `Gemini API error (${response.status}) on ${model}: ${errorBody.slice(0, 300)}`;
-
-      if (!isSwitchableStatus(response.status)) {
-        // Not a quota/availability issue (e.g. a bad request) -- retrying
-        // with a different model won't help, so stop here.
-        throw new Error(lastError);
-      }
-      // Otherwise fall through and try the next model in the chain.
+    try {
+      response = await fetchWithTimeout(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+          body
+        },
+        MODEL_FETCH_TIMEOUT_MS
+      );
+    } catch (fetchError) {
+      // Timed out or a network-level failure -- treat the same as a
+      // switchable status and move on to the next model.
+      lastError = `Gemini request to ${model} failed: ${
+        fetchError instanceof Error ? fetchError.message : String(fetchError)
+      }`;
+      continue;
     }
 
-    if (!payload) {
-      throw new Error(lastError ?? "All configured Gemini models are unavailable.");
-    }
-    const parts: GeminiPart[] = payload.candidates?.[0]?.content?.parts ?? [];
-    const functionCalls = parts.filter(
-      (part): part is { functionCall: { name: string; args: Record<string, unknown> } } =>
-        "functionCall" in part
-    );
-
-    if (functionCalls.length === 0) {
-      const text = parts
-        .map((part) => ("text" in part ? part.text : ""))
-        .join("")
-        .trim();
-      return { text, listingIds: [...listingIds] };
+    if (response.ok) {
+      const payload = (await response.json()) as {
+        candidates?: Array<{ content?: { parts?: GeminiPart[] } }>;
+      };
+      return payload.candidates?.[0]?.content?.parts ?? [];
     }
 
-    contents = [...contents, { role: "model", parts }];
+    const errorBody = await response.text().catch(() => "");
+    lastError = `Gemini API error (${response.status}) on ${model}: ${errorBody.slice(0, 300)}`;
 
-    const responseParts: GeminiPart[] = [];
-    for (const call of functionCalls) {
-      const handler = input.tools.handlers[call.functionCall.name];
-      const result = handler
-        ? await handler(call.functionCall.args ?? {})
-        : { error: "Unknown function." };
-
-      const ids = result.listingIds;
-      if (Array.isArray(ids)) {
-        for (const id of ids) {
-          if (typeof id === "string") {
-            listingIds.add(id);
-          }
-        }
-      }
-
-      responseParts.push({ functionResponse: { name: call.functionCall.name, response: result } });
+    if (!isSwitchableStatus(response.status)) {
+      // Not a quota/availability issue (e.g. a bad request) -- retrying
+      // with a different model won't help, so stop here.
+      throw new Error(lastError);
     }
-
-    // The Gemini REST API only recognizes "user" and "model" roles; function
-    // results go back as a "user" turn.
-    contents = [...contents, { role: "user", parts: responseParts }];
+    // Otherwise fall through and try the next model in the chain.
   }
 
-  return { text: "", listingIds: [...listingIds] };
+  throw new Error(lastError ?? "All configured Gemini models are unavailable.");
+}
+
+function partsToText(parts: GeminiPart[]) {
+  return parts
+    .map((part) => part.text ?? "")
+    .join("")
+    .trim();
+}
+
+/** One-shot plain-text completion -- no function calling, no multi-round loop. */
+export async function runGeminiText(input: {
+  systemInstruction: string;
+  contents: GeminiContent[];
+}): Promise<string> {
+  const parts = await callGeminiModelChain({
+    systemInstruction: { parts: [{ text: input.systemInstruction }] },
+    contents: input.contents
+  });
+
+  return partsToText(parts);
+}
+
+/**
+ * One-shot structured completion using Gemini's JSON response mode. Used for
+ * intent classification + filter extraction: the model outputs data that
+ * conforms to responseSchema instead of free text, so the result can be
+ * parsed directly without a function-calling round trip.
+ */
+export async function runGeminiJson<T>(input: {
+  systemInstruction: string;
+  contents: GeminiContent[];
+  responseSchema: Record<string, unknown>;
+}): Promise<T> {
+  const parts = await callGeminiModelChain({
+    systemInstruction: { parts: [{ text: input.systemInstruction }] },
+    contents: input.contents,
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: input.responseSchema
+    }
+  });
+
+  const text = partsToText(parts);
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(`Gemini returned invalid JSON: ${text.slice(0, 300)}`);
+  }
 }
