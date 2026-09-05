@@ -41,8 +41,17 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
           stacking an extra margin onto NearMeButton below -- flex+gap
           instead, since gap only applies between elements actually still
           in flow (these are display:none by default). */}
-      <input type="hidden" name="nearLat" defaultValue={values.nearLat ?? ""} />
-      <input type="hidden" name="nearLng" defaultValue={values.nearLng ?? ""} />
+      {/* Only rendered when a real "near me" search is active -- otherwise
+          every ordinary search submit (e.g. just picking a listing type)
+          would carry an empty nearLat/nearLng pair into the URL, which
+          made the near-me button visually show "active" for a search that
+          never used location at all. */}
+      {values.nearLat && values.nearLng ? (
+        <>
+          <input type="hidden" name="nearLat" defaultValue={values.nearLat} />
+          <input type="hidden" name="nearLng" defaultValue={values.nearLng} />
+        </>
+      ) : null}
 
       <NearMeButton
         copy={{

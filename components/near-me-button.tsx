@@ -19,7 +19,12 @@ export function NearMeButton({ copy }: NearMeButtonProps) {
   const [isLocating, setIsLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isActive = searchParams.has("nearLat") && searchParams.has("nearLng");
+  // .has() alone would also be true for the hidden nearLat/nearLng inputs
+  // that ride along on every normal search submit as empty strings -- the
+  // button would then show "active" even though no location was ever set
+  // (the backend already guards the same empty-string case, see
+  // parseNearPoint in lib/listings.ts).
+  const isActive = Boolean(searchParams.get("nearLat")) && Boolean(searchParams.get("nearLng"));
 
   function navigateWithParams(mutate: (params: URLSearchParams) => void) {
     const next = new URLSearchParams(searchParams.toString());
