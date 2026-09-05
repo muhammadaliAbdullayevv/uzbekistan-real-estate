@@ -47,12 +47,14 @@ export function MobileTabBar({ tabs }: { tabs: Tab[] }) {
     setPressedHref((current) => (current === href ? null : current));
   }
 
-  // AI Uychi is a full-screen chat, like Telegram/WhatsApp -- no persistent
-  // nav bar while it's open. Keeping it around also caused a real bug: with
-  // both this (fixed bottom-0) and the chat's own input bar fixed-
-  // positioned, opening the on-screen keyboard on Android desynced them,
-  // leaving this bar floating above the keyboard with a gap beneath it.
-  if (pathname === "/ai-uychi") {
+  // AI Uychi and an open buyer/owner chat thread are full-screen chats,
+  // like Telegram/WhatsApp -- no persistent nav bar while one is open.
+  // (The /chat inbox list itself keeps the nav, same as Telegram's own
+  // chat list does.) Keeping it around also caused a real bug: with both
+  // this (fixed bottom-0) and the chat's own input bar fixed-positioned,
+  // opening the on-screen keyboard on Android desynced them, leaving this
+  // bar floating above the keyboard with a gap beneath it.
+  if (pathname === "/ai-uychi" || pathname.startsWith("/chat/")) {
     return null;
   }
 
