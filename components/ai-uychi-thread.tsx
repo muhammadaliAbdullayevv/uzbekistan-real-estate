@@ -10,6 +10,7 @@ type Locale = "uz" | "ru";
 type ChatMessage = {
   role: "user" | "model";
   text: string;
+  time: string;
 };
 
 type RecommendedListing = {
@@ -29,15 +30,24 @@ type RecommendedListing = {
 type AiUychiThreadProps = {
   locale: Locale;
   copy: {
+    title: string;
+    subtitle: string;
+    backLabel: string;
     placeholder: string;
     send: string;
     sending: string;
     emptyState: string;
-    disclaimer: string;
     viewListing: string;
     genericError: string;
   };
 };
+
+function formatTime(locale: Locale) {
+  return new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "uz-UZ", {
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date());
+}
 
 // Kept in sync with the [[listing:ID]] convention the model is instructed
 // to use in lib/ai-uychi.ts (not imported directly -- that file pulls in
@@ -80,7 +90,7 @@ function ListingChip({ id, listings, locale, viewLabel }: { id: string; listings
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="flex items-center gap-3 rounded-2xl border border-line bg-white p-2.5 transition hover:border-accent/40"
+      className="flex items-center gap-3 rounded-2xl border border-line bg-white p-2.5 shadow-sm transition hover:border-accent/40"
     >
       <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-mist">
         <PropertyImage src={listing.image} alt={listing.title} fill className="object-cover" sizes="56px" />
@@ -96,6 +106,16 @@ function ListingChip({ id, listings, locale, viewLabel }: { id: string; listings
       </span>
       <span className="shrink-0 text-xs font-medium text-accent">{viewLabel}</span>
     </Link>
+  );
+}
+
+function BotAvatar() {
+  return (
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ink to-accent text-white">
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+        <path d="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3z" />
+      </svg>
+    </span>
   );
 }
 
@@ -116,7 +136,7 @@ export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
     }
 
     setError(null);
-    const nextMessages = [...messages, { role: "user" as const, text }];
+    const nextMessages = [...messages, { role: "user" as const, text, time: formatTime(locale) }];
     setMessages(nextMessages);
     setDraft("");
     setIsSending(true);
@@ -125,7 +145,7 @@ export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
       const response = await fetch("/api/ai-uychi", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages })
+        body: JSON.stringify({ messages: nextMessages.map(({ role, text }) => ({ role, text })) })
       });
 
       const data = await response.json();
@@ -135,7 +155,7 @@ export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
       }
 
       setMessages((current) => {
-        const updated = [...current, { role: "model" as const, text: data.text }];
+        const updated = [...current, { role: "model" as const, text: data.text, time: formatTime(locale) }];
         setListingsByMessage((prevListings) => ({
           ...prevListings,
           [updated.length - 1]: data.listings ?? []
@@ -154,53 +174,82 @@ export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
   }
 
   return (
-    <div className="panel flex flex-col overflow-hidden p-0">
-      <div ref={scrollRef} className="h-[60vh] max-h-[560px] min-h-[320px] space-y-3 overflow-y-auto px-4 py-4 sm:px-6">
-        {messages.length === 0 ? (
-          <p className="py-10 text-center text-sm text-ink/50">{copy.emptyState}</p>
-        ) : (
-          messages.map((message, index) => (
-            <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] space-y-2 ${message.role === "user" ? "" : "w-full"}`}>
-                <div
-                  className={`rounded-2xl px-4 py-2.5 text-sm leading-6 ${
-                    message.role === "user" ? "bg-accent text-white" : "bg-mist text-ink"
-                  }`}
-                >
-                  {message.role === "model"
-                    ? splitResponse(message.text).map((part, partIndex) =>
-                        part.type === "text" ? (
-                          <span key={partIndex} className="whitespace-pre-line">
-                            {part.value}
-                          </span>
-                        ) : null
-                      )
-                    : <span className="whitespace-pre-line">{message.text}</span>}
-                </div>
+    <div className="fixed inset-x-0 top-[61px] bottom-24 flex flex-col bg-mist sm:static sm:top-auto sm:bottom-auto sm:mx-auto sm:mt-6 sm:h-[75vh] sm:max-h-[720px] sm:max-w-2xl sm:overflow-hidden sm:rounded-[28px] sm:border sm:border-line/70 sm:shadow-soft">
+      <div className="flex shrink-0 items-center gap-3 border-b border-line/70 bg-white px-3 py-2.5 sm:px-5">
+        <Link
+          href="/"
+          aria-label={copy.backLabel}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink/60 transition hover:bg-mist hover:text-ink"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </Link>
+        <BotAvatar />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-display text-base font-semibold text-ink">{copy.title}</p>
+          <p className="truncate text-xs text-ink/50">{copy.subtitle}</p>
+        </div>
+      </div>
 
-                {message.role === "model"
-                  ? splitResponse(message.text)
-                      .filter((part) => part.type === "listing")
-                      .map((part) =>
-                        part.type === "listing" ? (
-                          <ListingChip
-                            key={part.id}
-                            id={part.id}
-                            listings={listingsByMessage[index] ?? []}
-                            locale={locale}
-                            viewLabel={copy.viewListing}
-                          />
-                        ) : null
-                      )
-                  : null}
-              </div>
+      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-3 py-3 sm:px-5">
+        {messages.length === 0 ? (
+          <div className="flex justify-start">
+            <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 text-[14.5px] leading-[1.45] text-ink shadow-sm">
+              {copy.emptyState}
             </div>
-          ))
+          </div>
+        ) : (
+          messages.map((message, index) => {
+            const isUser = message.role === "user";
+            return (
+              <div key={index} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+                <div className={`flex max-w-[85%] flex-col space-y-1.5 ${isUser ? "items-end" : "items-start"}`}>
+                  <div
+                    className={`rounded-2xl px-3.5 py-2 text-[14.5px] leading-[1.45] shadow-sm ${
+                      isUser
+                        ? "rounded-br-md bg-accent text-white"
+                        : "rounded-bl-md bg-white text-ink"
+                    }`}
+                  >
+                    {message.role === "model"
+                      ? splitResponse(message.text).map((part, partIndex) =>
+                          part.type === "text" ? (
+                            <span key={partIndex} className="whitespace-pre-line">
+                              {part.value}
+                            </span>
+                          ) : null
+                        )
+                      : <span className="whitespace-pre-line">{message.text}</span>}
+                    <span className={`mt-1 block text-right text-[10px] ${isUser ? "text-white/70" : "text-ink/35"}`}>
+                      {message.time}
+                    </span>
+                  </div>
+
+                  {message.role === "model"
+                    ? splitResponse(message.text)
+                        .filter((part) => part.type === "listing")
+                        .map((part) =>
+                          part.type === "listing" ? (
+                            <ListingChip
+                              key={part.id}
+                              id={part.id}
+                              listings={listingsByMessage[index] ?? []}
+                              locale={locale}
+                              viewLabel={copy.viewListing}
+                            />
+                          ) : null
+                        )
+                    : null}
+                </div>
+              </div>
+            );
+          })
         )}
 
         {isSending ? (
           <div className="flex justify-start">
-            <div className="flex items-center gap-1.5 rounded-2xl bg-mist px-4 py-3">
+            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-sm">
               <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink/40 [animation-delay:-0.3s]" />
               <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink/40 [animation-delay:-0.15s]" />
               <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink/40" />
@@ -210,30 +259,29 @@ export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
       </div>
 
       {error ? (
-        <div className="border-t border-coral/20 bg-coral/10 px-4 py-2.5 text-sm text-coral">{error}</div>
+        <div className="shrink-0 border-t border-coral/20 bg-coral/10 px-4 py-2 text-sm text-coral">{error}</div>
       ) : null}
 
-      <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-line/70 px-4 py-3 sm:px-5">
+      <form onSubmit={handleSend} className="flex shrink-0 items-center gap-2 border-t border-line/70 bg-white px-3 py-2.5 sm:px-4">
         <input
           type="text"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           placeholder={copy.placeholder}
           maxLength={2000}
-          className="input flex-1"
+          className="h-11 flex-1 rounded-full border border-line bg-mist px-4 text-sm text-ink outline-none transition focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
         />
         <button
           type="submit"
           disabled={isSending || !draft.trim()}
-          className="btn-primary shrink-0 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label={copy.send}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent text-white transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {isSending ? copy.sending : copy.send}
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 -translate-x-px translate-y-px" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" />
+          </svg>
         </button>
       </form>
-
-      <p className="border-t border-line/70 px-4 py-2 text-center text-[11px] text-ink/40 sm:px-6">
-        {copy.disclaimer}
-      </p>
     </div>
   );
 }
