@@ -1,4 +1,5 @@
 export { privatePageMetadata as metadata } from "@/lib/site";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { EmptyState } from "@/components/empty-state";
 import { PropertyImage } from "@/components/property-image";
 import {
@@ -9,9 +10,9 @@ import {
 } from "@/lib/format";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { formatLocationSummary } from "@/lib/locations";
-import { getPendingListings } from "@/lib/listings";
+import { countActiveListings, getPendingListings } from "@/lib/listings";
 import { isOwner } from "@/lib/owner";
-import { searchUsersByEmail } from "@/lib/user-data";
+import { countUsersByStatus, searchUsersByEmail } from "@/lib/user-data";
 import { requireOwnerSession } from "@/lib/session-auth";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,23 @@ type OwnerPageProps = {
 
 function getFirstParam(value?: string | string[]) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function StatCard({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
+  return (
+    <div
+      className={
+        accent
+          ? "rounded-2xl border border-accent/25 bg-accent/5 px-4 py-3"
+          : "rounded-2xl border border-line/70 bg-mist/60 px-4 py-3"
+      }
+    >
+      <p className={accent ? "text-2xl font-semibold text-accent" : "text-2xl font-semibold text-ink"}>
+        {value}
+      </p>
+      <p className="text-xs text-ink/60">{label}</p>
+    </div>
+  );
 }
 
 export default async function OwnerPage({ searchParams = {} }: OwnerPageProps) {
@@ -35,58 +53,181 @@ export default async function OwnerPage({ searchParams = {} }: OwnerPageProps) {
   const seeded = getFirstParam(searchParams.seeded) === "1";
   const seedError = getFirstParam(searchParams.seedError) === "1";
 
-  const [pendingListings, users] = await Promise.all([
+  const [pendingListings, users, activeListingsCount, userStats] = await Promise.all([
     getPendingListings(),
-    userQuery ? searchUsersByEmail(userQuery) : Promise.resolve([])
+    userQuery ? searchUsersByEmail(userQuery) : Promise.resolve([]),
+    countActiveListings(),
+    countUsersByStatus()
   ]);
+
+  const showMoreUsersHint = users.length === 20;
 
   return (
     <div className="shell space-y-8">
-      <section className="flex flex-col gap-4 rounded-[32px] border bg-white/85 px-6 py-8 shadow-soft sm:flex-row sm:items-end sm:justify-between sm:px-8">
-        <div>
-          <span className="pill border-accent/25 bg-accent/5 text-accent">
-            {t.owner.dashboardPill}
-          </span>
-          <h1 className="mt-4 font-display text-4xl font-semibold text-ink">{t.owner.title}</h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-ink/70">{t.owner.intro}</p>
+      <section className="flex flex-col gap-6 rounded-[32px] border bg-white/85 px-6 py-8 shadow-soft sm:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <span className="pill border-accent/25 bg-accent/5 text-accent">
+              {t.owner.dashboardPill}
+            </span>
+            <h1 className="mt-4 font-display text-4xl font-semibold text-ink">{t.owner.title}</h1>
+            <p className="mt-3 max-w-2xl text-base leading-7 text-ink/70">{t.owner.intro}</p>
+          </div>
+
+          <form action="/api/auth/logout" method="post">
+            <input type="hidden" name="next" value="/login" />
+            <button type="submit" className="btn-secondary">
+              {t.common.signOut}
+            </button>
+          </form>
         </div>
 
-        <form action="/api/auth/logout" method="post">
-          <input type="hidden" name="next" value="/login" />
-          <button type="submit" className="btn-secondary">
-            {t.common.signOut}
-          </button>
-        </form>
-      </section>
-
-      <section className="panel space-y-4 p-6 sm:p-8">
-        <div>
-          <h2 className="font-display text-2xl font-semibold text-ink">
-            {t.owner.seedDemoDataTitle}
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-ink/70">
-            {t.owner.seedDemoDataDescription}
-          </p>
+        <div className="grid grid-cols-2 gap-3 sm:max-w-xl sm:grid-cols-4">
+          <StatCard label={t.owner.statsPending} value={pendingListings.length} accent />
+          <StatCard label={t.owner.statsActive} value={activeListingsCount} />
+          <StatCard label={t.owner.statsUsers} value={userStats.total} />
+          <StatCard label={t.owner.statsBlocked} value={userStats.blocked} />
         </div>
-
-        {seeded ? (
-          <div className="rounded-2xl border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-accent">
-            {t.owner.seedDemoDataSuccess}
-          </div>
-        ) : null}
-
-        {seedError ? (
-          <div className="rounded-2xl border border-coral/20 bg-coral/10 px-4 py-3 text-sm text-coral">
-            {t.owner.seedDemoDataError}
-          </div>
-        ) : null}
-
-        <form action="/api/admin/seed-demo-listings" method="post">
-          <button type="submit" className="btn-primary">
-            {t.owner.seedDemoDataButton}
-          </button>
-        </form>
       </section>
+
+      {pendingListings.length === 0 ? (
+        <EmptyState
+          eyebrow={t.common.noResults}
+          title={t.owner.emptyTitle}
+          description={t.owner.emptyDescription}
+        />
+      ) : (
+        <div className="grid gap-6">
+          {pendingListings.map((listing) => {
+            const [mainImage, ...restImages] = listing.images;
+            const hasCoordinates = listing.latitude !== null && listing.longitude !== null;
+
+            return (
+              <article key={listing.id} className="panel grid gap-6 p-5 lg:grid-cols-[300px_1fr]">
+                <div className="space-y-2">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] border bg-mist">
+                    <PropertyImage
+                      src={mainImage?.url}
+                      alt={listing.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 320px"
+                    />
+                  </div>
+
+                  {restImages.length > 0 ? (
+                    <div className="grid grid-cols-4 gap-2">
+                      {restImages.map((image) => (
+                        <div
+                          key={image.id}
+                          className="relative aspect-square overflow-hidden rounded-lg border bg-mist"
+                        >
+                          <PropertyImage
+                            src={image.url}
+                            alt={listing.title}
+                            fill
+                            className="object-cover"
+                            sizes="80px"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="space-y-5">
+                  <div>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="pill">{t.enums.listingStatuses.PENDING}</span>
+                      <span className="pill">{getListingTypeLabel(listing.listingType, locale)}</span>
+                      {listing.listingType === "rent" && listing.rentType ? (
+                        <span className="pill border-accent/25 bg-accent/5 text-accent">
+                          {getRentTypeLabel(listing.rentType, locale)}
+                        </span>
+                      ) : null}
+                    </div>
+                    <h2 className="mt-4 font-display text-3xl font-semibold text-ink">
+                      {listing.title}
+                    </h2>
+                    <p className="mt-2 text-lg font-semibold text-ink">
+                      {formatPrice(
+                        listing.price,
+                        listing.currency,
+                        listing.listingType,
+                        listing.rentType,
+                        locale
+                      )}
+                    </p>
+                  </div>
+
+                  <p className="max-w-3xl text-sm leading-7 text-ink/70">{listing.description}</p>
+
+                  <div className="grid gap-3 text-sm text-ink/70 md:grid-cols-2 xl:grid-cols-4">
+                    <div className="rounded-2xl bg-mist px-4 py-3">
+                      <strong className="mr-2 text-ink">{t.common.location}:</strong>
+                      {formatLocationSummary(listing, locale)}
+                    </div>
+                    <div className="rounded-2xl bg-mist px-4 py-3">
+                      <strong className="mr-2 text-ink">{t.common.rooms}:</strong>
+                      {listing.rooms}
+                    </div>
+                    <div className="rounded-2xl bg-mist px-4 py-3">
+                      <strong className="mr-2 text-ink">{t.common.area}:</strong>
+                      {listing.area} m²
+                    </div>
+                    <div className="rounded-2xl bg-mist px-4 py-3">
+                      <strong className="mr-2 text-ink">{t.common.created}:</strong>
+                      {formatDate(listing.createdAt, locale)}
+                    </div>
+                    <div className="rounded-2xl bg-mist px-4 py-3 md:col-span-2 xl:col-span-4">
+                      <strong className="mr-2 text-ink">{t.owner.exactAddress}:</strong>
+                      {listing.address}
+                      {hasCoordinates ? (
+                        <>
+                          {" "}
+                          ·{" "}
+                          <a
+                            href={`https://www.openstreetmap.org/?mlat=${listing.latitude}&mlon=${listing.longitude}#map=17/${listing.latitude}/${listing.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-accent hover:underline"
+                          >
+                            {t.owner.viewOnMap}
+                          </a>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <form
+                      action={`/api/admin/listings/${listing.id}/status`}
+                      method="post"
+                      className="flex-1"
+                    >
+                      <input type="hidden" name="status" value="APPROVED" />
+                      <button type="submit" className="btn-primary w-full">
+                        {t.owner.approve}
+                      </button>
+                    </form>
+
+                    <form
+                      action={`/api/admin/listings/${listing.id}/status`}
+                      method="post"
+                      className="flex-1"
+                    >
+                      <input type="hidden" name="status" value="REJECTED" />
+                      <ConfirmSubmitButton confirmMessage={t.owner.rejectConfirm} className="btn-secondary w-full">
+                        {t.owner.reject}
+                      </ConfirmSubmitButton>
+                    </form>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
 
       <section className="panel space-y-6 p-6 sm:p-8">
         <div className="space-y-3">
@@ -190,18 +331,18 @@ export default async function OwnerPage({ searchParams = {} }: OwnerPageProps) {
                             value={user.status === "BLOCKED" ? "UNBLOCK" : "BLOCK"}
                           />
                           <input type="hidden" name="search" value={userQuery} />
-                          <button
-                            type="submit"
-                            className={
-                              user.status === "BLOCKED"
-                                ? "btn-secondary w-full"
-                                : "btn-primary w-full"
-                            }
-                          >
-                            {user.status === "BLOCKED"
-                              ? t.owner.unblockUser
-                              : t.owner.blockUser}
-                          </button>
+                          {user.status === "BLOCKED" ? (
+                            <button type="submit" className="btn-secondary w-full">
+                              {t.owner.unblockUser}
+                            </button>
+                          ) : (
+                            <ConfirmSubmitButton
+                              confirmMessage={t.owner.blockConfirm}
+                              className="btn-primary w-full"
+                            >
+                              {t.owner.blockUser}
+                            </ConfirmSubmitButton>
+                          )}
                         </form>
                       )}
                     </div>
@@ -209,108 +350,44 @@ export default async function OwnerPage({ searchParams = {} }: OwnerPageProps) {
                 </article>
               );
             })}
+
+            {showMoreUsersHint ? (
+              <p className="text-sm text-ink/60">{t.owner.moreResultsHint}</p>
+            ) : null}
           </div>
         )}
       </section>
 
-      {pendingListings.length === 0 ? (
-        <EmptyState
-          eyebrow={t.common.noResults}
-          title={t.owner.emptyTitle}
-          description={t.owner.emptyDescription}
-        />
-      ) : (
-        <div className="grid gap-6">
-          {pendingListings.map((listing) => {
-            const image = listing.images[0]?.url;
+      {process.env.NODE_ENV !== "production" ? (
+        <section className="panel space-y-4 p-6 sm:p-8">
+          <div>
+            <h2 className="font-display text-2xl font-semibold text-ink">
+              {t.owner.seedDemoDataTitle}
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-ink/70">
+              {t.owner.seedDemoDataDescription}
+            </p>
+          </div>
 
-            return (
-              <article key={listing.id} className="panel grid gap-6 p-5 lg:grid-cols-[300px_1fr]">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] border bg-mist">
-                  <PropertyImage
-                    src={image}
-                    alt={listing.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 320px"
-                  />
-                </div>
+          {seeded ? (
+            <div className="rounded-2xl border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-accent">
+              {t.owner.seedDemoDataSuccess}
+            </div>
+          ) : null}
 
-                <div className="space-y-5">
-                  <div>
-                    <div className="flex flex-wrap gap-2">
-                      <span className="pill">{t.enums.listingStatuses.PENDING}</span>
-                      <span className="pill">{getListingTypeLabel(listing.listingType, locale)}</span>
-                      {listing.listingType === "rent" && listing.rentType ? (
-                        <span className="pill border-accent/25 bg-accent/5 text-accent">
-                          {getRentTypeLabel(listing.rentType, locale)}
-                        </span>
-                      ) : null}
-                    </div>
-                    <h2 className="mt-4 font-display text-3xl font-semibold text-ink">
-                      {listing.title}
-                    </h2>
-                    <p className="mt-2 text-lg font-semibold text-ink">
-                      {formatPrice(
-                        listing.price,
-                        listing.currency,
-                        listing.listingType,
-                        listing.rentType,
-                        locale
-                      )}
-                    </p>
-                  </div>
+          {seedError ? (
+            <div className="rounded-2xl border border-coral/20 bg-coral/10 px-4 py-3 text-sm text-coral">
+              {t.owner.seedDemoDataError}
+            </div>
+          ) : null}
 
-                  <p className="max-w-3xl text-sm leading-7 text-ink/70">{listing.description}</p>
-
-                  <div className="grid gap-3 text-sm text-ink/70 md:grid-cols-2 xl:grid-cols-4">
-                    <div className="rounded-2xl bg-mist px-4 py-3">
-                      <strong className="mr-2 text-ink">{t.common.location}:</strong>
-                      {formatLocationSummary(listing, locale)}
-                    </div>
-                    <div className="rounded-2xl bg-mist px-4 py-3">
-                      <strong className="mr-2 text-ink">{t.common.rooms}:</strong>
-                      {listing.rooms}
-                    </div>
-                    <div className="rounded-2xl bg-mist px-4 py-3">
-                      <strong className="mr-2 text-ink">{t.common.area}:</strong>
-                      {listing.area} m²
-                    </div>
-                    <div className="rounded-2xl bg-mist px-4 py-3">
-                      <strong className="mr-2 text-ink">{t.common.created}:</strong>
-                      {formatDate(listing.createdAt, locale)}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <form
-                      action={`/api/admin/listings/${listing.id}/status`}
-                      method="post"
-                      className="flex-1"
-                    >
-                      <input type="hidden" name="status" value="APPROVED" />
-                      <button type="submit" className="btn-primary w-full">
-                        {t.owner.approve}
-                      </button>
-                    </form>
-
-                    <form
-                      action={`/api/admin/listings/${listing.id}/status`}
-                      method="post"
-                      className="flex-1"
-                    >
-                      <input type="hidden" name="status" value="REJECTED" />
-                      <button type="submit" className="btn-secondary w-full">
-                        {t.owner.reject}
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
+          <form action="/api/admin/seed-demo-listings" method="post">
+            <button type="submit" className="btn-primary">
+              {t.owner.seedDemoDataButton}
+            </button>
+          </form>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -416,6 +416,15 @@ export async function getPendingListings() {
   );
 }
 
+export async function countActiveListings() {
+  return prisma.listing.count({
+    where: {
+      status: ListingStatus.APPROVED,
+      availabilityStatus: LISTING_AVAILABILITY_STATUS.ACTIVE
+    }
+  });
+}
+
 export async function getListingsForUser(userId: string) {
   return runListingQuery(
     Prisma.sql`WHERE l."userId" = ${userId}`,

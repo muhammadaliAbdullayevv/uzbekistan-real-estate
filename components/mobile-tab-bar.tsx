@@ -54,7 +54,10 @@ export function MobileTabBar({ tabs }: { tabs: Tab[] }) {
   // this (fixed bottom-0) and the chat's own input bar fixed-positioned,
   // opening the on-screen keyboard on Android desynced them, leaving this
   // bar floating above the keyboard with a gap beneath it.
-  if (pathname === "/ai-uychi" || pathname.startsWith("/chat/")) {
+  // The owner control panel is a moderation tool, not a browsing screen --
+  // the consumer tab bar (listings/add/AI Uychi/messages/account) doesn't
+  // belong there either.
+  if (pathname === "/ai-uychi" || pathname.startsWith("/chat/") || pathname.startsWith("/admin")) {
     return null;
   }
 

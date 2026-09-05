@@ -291,6 +291,15 @@ export async function createUserFromGoogle(input: {
   return user;
 }
 
+export async function countUsersByStatus() {
+  const [total, blocked] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { status: "BLOCKED" } })
+  ]);
+
+  return { total, blocked };
+}
+
 export async function searchUsersByEmail(query: string) {
   const term = query.trim();
 
