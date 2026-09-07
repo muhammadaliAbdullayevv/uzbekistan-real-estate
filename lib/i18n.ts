@@ -539,9 +539,9 @@ const translations = {
       eyebrow: "Maxfiylik",
       title: "Maxfiylik siyosati",
       body1:
-        "Biz akkaunt yaratish, e'lonlarni boshqarish, saqlanganlar, parolni tiklash va emailni tasdiqlash uchun zarur bo'lgan ma'lumotlarni saqlaymiz.",
+        "Biz akkaunt yaratish, e'lonlarni boshqarish, parolni tiklash va emailni tasdiqlash uchun zarur bo'lgan ma'lumotlarni saqlaymiz.",
       body2:
-        "Yuklangan rasmlar bulutli media saqlashga yuboriladi, akkaunt sessiyalari va moderatsiya holatlari esa PostgreSQL da saqlanadi.",
+        "Yuklangan rasmlar serverimizdagi xavfsiz saqlash joyida, akkaunt sessiyalari va moderatsiya holatlari esa PostgreSQL da saqlanadi.",
       body3:
         "Telefon raqamlari faqat tizimga kirgan foydalanuvchilarga ko'rsatiladi. Xizmat ma'lumotlarni xavfsizlik, xizmat sifati va qonuniy majburiyatlar uchun qayta ishlaydi."
     },
@@ -1099,9 +1099,9 @@ const translations = {
       eyebrow: "Конфиденциальность",
       title: "Политика конфиденциальности",
       body1:
-        "Мы храним данные, необходимые для регистрации, управления объявлениями, избранного, сброса пароля и подтверждения email.",
+        "Мы храним данные, необходимые для регистрации, управления объявлениями, сброса пароля и подтверждения email.",
       body2:
-        "Загруженные изображения отправляются в облачное хранилище медиа, а сессии и статусы модерации сохраняются в PostgreSQL.",
+        "Загруженные изображения хранятся в защищённом хранилище на нашем сервере, а сессии и статусы модерации сохраняются в PostgreSQL.",
       body3:
         "Телефоны владельцев доступны только авторизованным пользователям. Данные обрабатываются для безопасности, качества сервиса и выполнения законных обязанностей."
     },
