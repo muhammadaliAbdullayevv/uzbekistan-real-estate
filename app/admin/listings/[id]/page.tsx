@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 export { privatePageMetadata as metadata } from "@/lib/site";
+import { getPublicAdminPath } from "@/lib/admin-path";
 import { BackIconButton } from "@/components/back-icon-button";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { ListingGallery } from "@/components/listing-gallery";
@@ -44,7 +45,7 @@ export default async function AdminListingPreviewPage({ params }: AdminListingPr
 
   return (
     <div className="shell space-y-8">
-      <BackIconButton href="/admin" label={t.owner.backToDashboard} />
+      <BackIconButton href={getPublicAdminPath()} label={t.owner.backToDashboard} />
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1.3fr)_420px]">
         <div className="space-y-6">

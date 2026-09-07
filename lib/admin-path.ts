@@ -1,5 +1,16 @@
 const INTERNAL_ADMIN_PATH = "/admin";
 
+/**
+ * Set by middleware on requests that resolve to the admin page (whether via
+ * the literal /admin path with no ADMIN_PATH override, or a rewritten
+ * custom path), read by the root layout via next/headers. Carries only a
+ * boolean signal, never the actual public admin path string -- that value
+ * must never reach a client bundle shipped on every page (mobile tab bar /
+ * footer visibility are rendered globally), or the custom path stops being
+ * hidden from anyone who views source on the homepage.
+ */
+export const ADMIN_PAGE_HEADER = "x-is-admin-page";
+
 function normalizeAdminPath(value?: string | null) {
   const raw = value?.trim();
 

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
 
+import { getPublicAdminPath, isInternalAdminPath } from "@/lib/admin-path";
 import {
   createStoredSession,
   deleteStoredSession,
@@ -84,7 +85,16 @@ export function getSafeUserNextPath(nextPath?: string | null) {
     return "/";
   }
 
-  if (nextPath.startsWith("/admin")) {
+  // Reject both the literal internal path and the current public (possibly
+  // customized) one -- a non-owner landing on either is harmless
+  // (requireOwnerSession bounces them to /account regardless), but there's
+  // no reason to expose either path in a client-visible next= param.
+  const publicAdminPath = getPublicAdminPath();
+  if (
+    isInternalAdminPath(nextPath) ||
+    nextPath === publicAdminPath ||
+    nextPath.startsWith(`${publicAdminPath}/`)
+  ) {
     return "/";
   }
 

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
 import "@/app/globals.css";
+import { ADMIN_PAGE_HEADER } from "@/lib/admin-path";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { HideFooterOnChatRoutes } from "@/components/route-visibility";
 import { SiteFooter } from "@/components/site-footer";
@@ -57,6 +59,10 @@ export default async function RootLayout({
   const t = getTranslations(locale);
   const session = await getUserSession();
   const hasUnread = session ? await hasUnreadMessages(session.userId) : false;
+  // Set by middleware -- never the actual admin path string, just whether
+  // this request is the admin page, so the real (possibly customized) path
+  // never has to appear in a client bundle shipped on every page.
+  const isAdminPage = headers().get(ADMIN_PAGE_HEADER) === "1";
 
   const tabs = [
     {
@@ -97,10 +103,10 @@ export default async function RootLayout({
         <SessionRefresher />
         <SiteHeader />
         <main className="pb-24 pt-8 sm:pb-20">{children}</main>
-        <HideFooterOnChatRoutes>
+        <HideFooterOnChatRoutes isAdminPage={isAdminPage}>
           <SiteFooter />
         </HideFooterOnChatRoutes>
-        <MobileTabBar tabs={tabs} />
+        <MobileTabBar tabs={tabs} isAdminPage={isAdminPage} />
       </body>
     </html>
   );

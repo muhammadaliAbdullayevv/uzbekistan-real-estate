@@ -1,6 +1,7 @@
 export { privatePageMetadata as metadata } from "@/lib/site";
 import Link from "next/link";
 
+import { getPublicAdminPath } from "@/lib/admin-path";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { EmptyState } from "@/components/empty-state";
 import { PendingListingsManager } from "@/components/pending-listings-manager";
@@ -42,7 +43,8 @@ function buildAdminHref(page: number, userQuery: string) {
     params.set("user", userQuery);
   }
   const qs = params.toString();
-  return qs ? `/admin?${qs}` : "/admin";
+  const adminPath = getPublicAdminPath();
+  return qs ? `${adminPath}?${qs}` : adminPath;
 }
 
 function StatCard({ label, value, accent }: { label: string; value: number; accent?: boolean }) {

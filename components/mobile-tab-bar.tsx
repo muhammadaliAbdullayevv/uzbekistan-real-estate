@@ -28,7 +28,7 @@ function TabIcon({ path }: { path: string }) {
   );
 }
 
-export function MobileTabBar({ tabs }: { tabs: Tab[] }) {
+export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: boolean }) {
   const pathname = usePathname();
   // Set the instant a tab is tapped so the highlight moves right away,
   // rather than waiting for the (sometimes slow, force-dynamic) page to
@@ -56,8 +56,12 @@ export function MobileTabBar({ tabs }: { tabs: Tab[] }) {
   // bar floating above the keyboard with a gap beneath it.
   // The owner control panel is a moderation tool, not a browsing screen --
   // the consumer tab bar (listings/add/AI Uychi/messages/account) doesn't
-  // belong there either.
-  if (pathname === "/ai-uychi" || pathname.startsWith("/chat/") || pathname.startsWith("/admin")) {
+  // belong there either. isAdminPage comes from a header middleware sets
+  // (see app/layout.tsx), not a pathname check -- the admin path can be
+  // customized via ADMIN_PATH, and middleware rewrites (not redirects) that
+  // custom path to /admin internally, so the browser's own pathname here
+  // would still show the custom path, never the literal "/admin" string.
+  if (pathname === "/ai-uychi" || pathname.startsWith("/chat/") || isAdminPage) {
     return null;
   }
 
