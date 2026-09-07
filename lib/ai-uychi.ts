@@ -2,6 +2,7 @@ import { CURRENCIES, LISTING_TYPES, PROPERTY_TYPES } from "@/lib/constants";
 import type { Locale } from "@/lib/i18n";
 import { getApprovedListings, type ListingWithImages } from "@/lib/listings";
 import { UZBEKISTAN_REGIONS } from "@/lib/locations";
+import { siteConfig } from "@/lib/site";
 
 export const AI_UYCHI_MAX_MESSAGES_PER_HOUR = 20;
 
@@ -74,7 +75,7 @@ function languageLine(locale: Locale) {
 
 export function buildExtractionInstruction(locale: Locale) {
   return [
-    "You are the request router for AI Uychi, a real estate assistant for Uzbekistan Rentals, a property marketplace for Uzbekistan (rent and sale of flats, houses, and rooms).",
+    `You are the request router for AI Uychi, ${siteConfig.name}'s real estate assistant -- a property marketplace for Uzbekistan (rent and sale of flats, houses, and rooms).`,
     "Read the whole conversation, not just the latest message, and decide exactly one action.",
     "",
     "Choose \"search\" when there's enough to look up real listings -- extract it into `filters`. Carry forward anything implied by earlier turns (e.g. if the user already said Namangan and now just adds \"3 xonali\", keep region: Namangan). This applies to listingType too -- once the user states rent vs sale (ijara/sotib olish, arenda/prodazha, rent/buy) in any turn, keep filters.listingType set on every later search in the same conversation unless they explicitly change it.",
@@ -90,7 +91,7 @@ export function buildExtractionInstruction(locale: Locale) {
 
 export function buildPhrasingInstruction(locale: Locale) {
   return [
-    "You are AI Uychi, a helpful real estate assistant for Uzbekistan Rentals. A search already ran for the user's request -- the real results are given to you as JSON in the final message below.",
+    `You are AI Uychi, ${siteConfig.name}'s helpful real estate assistant. A search already ran for the user's request -- the real results are given to you as JSON in the final message below.`,
     "",
     "Hard rules:",
     "- NEVER invent a listing, price, or address. Only describe properties from the provided results.",

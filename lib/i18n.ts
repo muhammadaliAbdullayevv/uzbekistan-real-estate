@@ -237,20 +237,20 @@ const translations = {
         "Akkauntingiz uchun yangi parol tanlang. Havola faqat bir marta ishlaydi.",
       resetPassword: "Parolni yangilash",
       invalidOrExpiredToken: "Havola yaroqsiz yoki muddati tugagan.",
-      passwordResetEmailSubject: "Uzbekistan Rentals parolini tiklash",
+      passwordResetEmailSubject: "Uychi parolini tiklash",
       passwordResetEmailEyebrow: "Parolni tiklash",
       passwordResetEmailTitle: "Yangi parol tanlang",
       passwordResetEmailIntro:
-        "Uzbekistan Rentals akkauntingiz uchun parolni tiklash so‘rovi oldik. Yangi parol o‘rnatish uchun quyidagi tugmadan foydalaning.",
+        "Uychi akkauntingiz uchun parolni tiklash so‘rovi oldik. Yangi parol o‘rnatish uchun quyidagi tugmadan foydalaning.",
       passwordResetEmailAction: "Parolni yangilash",
       passwordResetEmailNote:
         "Ushbu havola 60 daqiqa davomida amal qiladi va faqat bir marta ishlatiladi. Agar siz parolni tiklashni so‘ramagan bo‘lsangiz, bu xatni e’tiborsiz qoldirishingiz mumkin.",
       passwordResetEmailFooter:
-        "Bu xat Uzbekistan Rentals akkauntingiz uchun parolni tiklash so‘rovi yuborilgani sababli jo‘natildi.",
-      verifyEmailSubject: "Uzbekistan Rentals: emailingizni tasdiqlang",
+        "Bu xat Uychi akkauntingiz uchun parolni tiklash so‘rovi yuborilgani sababli jo‘natildi.",
+      verifyEmailSubject: "Uychi: emailingizni tasdiqlang",
       verifyEmailEyebrow: "Emailni tasdiqlash",
       verifyEmailIntro:
-        "Uzbekistan Rentals'da ro'yxatdan o'tganingiz uchun rahmat. Hisobingizni faollashtirish uchun quyidagi tugmani bosing.",
+        "Uychi'da ro'yxatdan o'tganingiz uchun rahmat. Hisobingizni faollashtirish uchun quyidagi tugmani bosing.",
       verifyEmailAction: "Emailni tasdiqlash",
       verifyEmailNote:
         "Ushbu havola 24 soat davomida amal qiladi. Agar siz ro'yxatdan o'tmagan bo'lsangiz, bu xatni e’tiborsiz qoldirishingiz mumkin.",
@@ -798,20 +798,20 @@ const translations = {
         "Выберите новый пароль для аккаунта. Ссылка работает только один раз.",
       resetPassword: "Обновить пароль",
       invalidOrExpiredToken: "Ссылка недействительна или срок ее действия истек.",
-      passwordResetEmailSubject: "Сброс пароля Uzbekistan Rentals",
+      passwordResetEmailSubject: "Сброс пароля Uychi",
       passwordResetEmailEyebrow: "Сброс пароля",
       passwordResetEmailTitle: "Установите новый пароль",
       passwordResetEmailIntro:
-        "Мы получили запрос на сброс пароля для вашего аккаунта Uzbekistan Rentals. Используйте кнопку ниже, чтобы установить новый пароль.",
+        "Мы получили запрос на сброс пароля для вашего аккаунта Uychi. Используйте кнопку ниже, чтобы установить новый пароль.",
       passwordResetEmailAction: "Сменить пароль",
       passwordResetEmailNote:
         "Эта ссылка действует 60 минут и может быть использована только один раз. Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо.",
       passwordResetEmailFooter:
-        "Вы получили это письмо, потому что для вашего аккаунта Uzbekistan Rentals был запрошен сброс пароля.",
-      verifyEmailSubject: "Uzbekistan Rentals: подтвердите email",
+        "Вы получили это письмо, потому что для вашего аккаунта Uychi был запрошен сброс пароля.",
+      verifyEmailSubject: "Uychi: подтвердите email",
       verifyEmailEyebrow: "Подтверждение email",
       verifyEmailIntro:
-        "Спасибо за регистрацию в Uzbekistan Rentals. Нажмите кнопку ниже, чтобы активировать аккаунт.",
+        "Спасибо за регистрацию в Uychi. Нажмите кнопку ниже, чтобы активировать аккаунт.",
       verifyEmailAction: "Подтвердить email",
       verifyEmailNote:
         "Эта ссылка действует 24 часа. Если вы не регистрировались, просто проигнорируйте это письмо.",

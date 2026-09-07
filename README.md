@@ -1,4 +1,4 @@
-# Uzbekistan Rentals
+# Uychi
 
 Real estate marketplace for Uzbekistan. Built with Next.js App Router, TypeScript, Tailwind CSS, Prisma, and PostgreSQL.
 

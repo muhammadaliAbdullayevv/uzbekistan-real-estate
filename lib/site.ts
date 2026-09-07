@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const siteConfig = {
-  name: "Uzbekistan Rentals",
-  shortName: "Uzbekistan Rentals",
+  name: "Uychi",
+  shortName: "Uychi",
   location: "Uzbekistan",
   description:
     "Browse approved flats, houses, and rooms across Uzbekistan for rent or sale with clear prices and direct owner contact.",

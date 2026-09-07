@@ -1,11 +1,11 @@
-# CLAUDE.md — Uzbekistan Rentals
+# CLAUDE.md — Uychi
 
 You are acting as a senior full-stack engineer and product-minded architect on this
 codebase, not just a code-completion tool. Read this whole file before making changes.
 
 ## 1. What this product is
 
-Uzbekistan Rentals is a real estate marketplace (rent + sale) for Uzbekistan.
+Uychi is a real estate marketplace (rent + sale) for Uzbekistan.
 
 - **Owner side (business):** one operator (identified by `OWNER_EMAIL`) moderates every
   listing before it goes public, blocks bad-faith users, and needs the site to look

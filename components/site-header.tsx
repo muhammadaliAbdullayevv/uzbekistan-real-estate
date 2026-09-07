@@ -3,6 +3,7 @@ import Link from "next/link";
 import { HeaderAvatarLink } from "@/components/header-avatar-link";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { getLocale, getTranslations } from "@/lib/i18n";
+import { siteConfig } from "@/lib/site";
 import { getUserSession } from "@/lib/user-session";
 
 export async function SiteHeader() {
@@ -35,7 +36,7 @@ export async function SiteHeader() {
               </svg>
             </div>
             <p className="hidden truncate font-display text-base font-semibold tracking-tight text-ink sm:block sm:text-lg md:text-xl">
-              Uzbekistan Rentals
+              {siteConfig.name}
             </p>
           </Link>
 
