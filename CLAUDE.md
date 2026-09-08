@@ -33,7 +33,7 @@ If a change helps one and hurts the other, say so explicitly before implementing
   password account — never creates a duplicate account for the same email.
 - **Image storage:** local VPS disk (`public/uploads/listings`) is the primary/production
   path, enabled via `ALLOW_LOCAL_UPLOADS=true`. Served directly by **nginx**
-  (`location /uploads/` in `deploy/nginx-uzbekistan-rentals.conf`, aliased to the real
+  (`location /uploads/` in `deploy/nginx-uychi.conf`, aliased to the real
   path on disk), not proxied through Next.js — confirmed empirically that `next start`
   does not reliably serve files added to `public/` after the process has already
   started (a freshly uploaded file 404'd until the app was restarted), so routing

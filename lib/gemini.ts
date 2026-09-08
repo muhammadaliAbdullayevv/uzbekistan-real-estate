@@ -26,7 +26,7 @@ export function hasGeminiConfig() {
 // always fail fast under load, so this timeout is what actually bounds a
 // stuck attempt instead of it eating the whole request budget. Kept well
 // under nginx's proxy_read_timeout for this endpoint (120s, see
-// deploy/nginx-uzbekistan-rentals.conf) with room for two calls (extraction
+// deploy/nginx-uychi.conf) with room for two calls (extraction
 // + phrasing) to each burn through a few stuck models in the worst case.
 const MODEL_FETCH_TIMEOUT_MS = 8_000;
 

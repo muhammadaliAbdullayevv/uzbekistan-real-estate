@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-const DEFAULT_FOLDER = "uzbekistan-rentals/listings";
+const DEFAULT_FOLDER = "uychi/listings";
 
 function getCloudinaryConfig() {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
