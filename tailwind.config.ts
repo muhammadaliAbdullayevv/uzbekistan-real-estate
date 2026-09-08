@@ -15,6 +15,9 @@ const config: Config = {
         accent: "#0F766E",
         saffron: "#EAB308",
         coral: "#F97316",
+        pine: "#1D3B34",
+        brass: "#B07D2B",
+        "brass-light": "#D8A557",
         line: "#D7E0E7",
         teal: {
           50: "#F0FDFA",
