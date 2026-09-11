@@ -14,6 +14,7 @@ import {
   getRentTypeLabel
 } from "@/lib/format";
 import { getLocale, getTranslations } from "@/lib/i18n";
+import { buildListingJsonLd, serializeJsonLd } from "@/lib/listing-json-ld";
 import { formatLocationSummary } from "@/lib/locations";
 import { getApprovedListingById } from "@/lib/listings";
 import { siteConfig } from "@/lib/site";
@@ -93,9 +94,15 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       ? "border-amber-200 bg-amber-50 text-amber-800"
       : "border-emerald-200 bg-emerald-50 text-emerald-800";
   const canMessageOwner = listing.userId && (!session || session.userId !== listing.userId);
+  const jsonLd = buildListingJsonLd(listing);
 
   return (
     <div className="shell space-y-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+      />
+
       <TrackListingView listingId={listing.id} enabled={Boolean(session)} />
 
       <SmartBackLink label={t.common.backToListings} fallbackHref="/" />
