@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import "@/app/globals.css";
 import { ADMIN_PAGE_HEADER } from "@/lib/admin-path";
+import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { HideFooterOnChatRoutes } from "@/components/route-visibility";
 import { SiteFooter } from "@/components/site-footer";
@@ -99,8 +100,9 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body>
+      <body className={isAdminPage ? undefined : "sm:pl-56"}>
         <SessionRefresher />
+        <DesktopSidebar tabs={tabs} isAdminPage={isAdminPage} />
         <SiteHeader />
         <main className="pb-24 pt-8 sm:pb-20">{children}</main>
         <HideFooterOnChatRoutes isAdminPage={isAdminPage}>
