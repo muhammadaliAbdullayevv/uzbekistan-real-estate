@@ -29,18 +29,20 @@ export function AuthShell({
         <div className="auth-orb auth-orb-b" />
 
         <div className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr] lg:items-stretch">
-          <section className="order-2 auth-showcase auth-raise lg:order-1">
-            <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/80">
-              {pill}
-            </span>
-            <h1 className="mt-5 max-w-xl font-display text-3xl font-semibold leading-[1.05] text-white sm:text-4xl lg:text-5xl">
-              {title}
-            </h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-white/75">
-              {description}
-            </p>
+          <section className="order-2 auth-showcase auth-raise flex flex-col lg:order-1">
+            <div>
+              <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/80">
+                {pill}
+              </span>
+              <h1 className="mt-5 max-w-xl font-display text-3xl font-semibold leading-[1.05] text-white sm:text-4xl lg:text-5xl">
+                {title}
+              </h1>
+              <p className="mt-4 max-w-xl text-base leading-7 text-white/75">
+                {description}
+              </p>
+            </div>
 
-            <div className="mt-8 rounded-[30px] border border-white/10 bg-white/10 p-5 backdrop-blur-sm">
+            <div className="mt-8 rounded-[30px] border border-white/10 bg-white/10 p-5 backdrop-blur-sm lg:mt-auto">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">
                 {primaryFeature.title}
               </p>

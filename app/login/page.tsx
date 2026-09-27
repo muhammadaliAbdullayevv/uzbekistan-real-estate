@@ -68,17 +68,11 @@ export default async function LoginPage({ searchParams = {} }: LoginPageProps) {
         }
       ]}
     >
-      <div>
-        <span className="inline-flex rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-accent">
-          {t.auth.loginPill}
-        </span>
-        <h2 className="mt-4 font-display text-3xl font-semibold text-ink sm:text-[2.1rem]">
-          {t.auth.logIn}
-        </h2>
-        <p className="mt-3 text-sm leading-6 text-ink/60">{t.auth.loginDescription}</p>
-      </div>
+      <h2 className="font-display text-2xl font-semibold text-ink sm:text-[1.75rem]">
+        {t.auth.logIn}
+      </h2>
 
-      <div className="mt-8">
+      <div className="mt-6">
         <GoogleSignInButton
           nextPath={nextPath}
           label={t.auth.continueWithGoogle}
