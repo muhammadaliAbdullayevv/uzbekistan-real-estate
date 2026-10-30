@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import Script from "next/script";
 import type { ReactNode } from "react";
 
 import "@/app/globals.css";
@@ -10,6 +11,7 @@ import { HideFooterOnChatRoutes } from "@/components/route-visibility";
 import { SiteFooter } from "@/components/site-footer";
 import { SessionRefresher } from "@/components/session-refresher";
 import { SiteHeader } from "@/components/site-header";
+import { TelegramWebAppInit } from "@/components/telegram-webapp-init";
 import { hasUnreadMessages } from "@/lib/conversations";
 import { hasGeminiConfig } from "@/lib/gemini";
 import {
@@ -101,6 +103,8 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={isAdminPage ? undefined : "sm:pl-56"}>
+        <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
+        <TelegramWebAppInit />
         <SessionRefresher />
         <DesktopSidebar tabs={tabs} isAdminPage={isAdminPage} />
         <SiteHeader />
