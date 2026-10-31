@@ -129,23 +129,7 @@ const translations = {
       recentlyAddedTitle: "Yangi qo'shilgan e'lonlar",
       emptyTitle: "Bu filtrlarga mos ijara topilmadi",
       emptyDescription:
-        "Narx oralig'ini kengaytiring, xona sonini tozalang yoki boshqa ko'cha va mo'ljalni qidiring.",
-      welcomeStep1Title: "Xush kelibsiz!",
-      welcomeStep1Body:
-        "Bu — O'zbekiston bo'ylab ijaraga va sotuvga qo'yilgan uy-joylarni topish uchun sayt. Keling, asosiy imkoniyatlar bilan tanishtiramiz.",
-      welcomeStep2Title: "Qidiruv orqali toping",
-      welcomeStep2Body:
-        "Bosh sahifadagi qidiruv qatori va filtrlar yordamida hudud, narx va turga qarab kerakli uy-joyni bir necha soniyada toping.",
-      welcomeStep3Title: "Bog'laning va foydalaning",
-      welcomeStep3Body:
-        "Yoqtirgan e'loningizni oching va uy egasi bilan to'g'ridan-to'g'ri bog'laning. O'zingiz ham e'lon joylashtirishingiz va kabinetingizni boshqarishingiz mumkin.",
-      welcomeNext: "Keyingi",
-      welcomeFinish: "Boshladik",
-      profileCtaTitle: "Profilingizni to'ldiring",
-      profileCtaBody:
-        "Barcha imkoniyatlardan to'liq foydalanish uchun ism, telefon raqami va joylashuvingizni kiriting.",
-      profileCtaButton: "Profilni to'ldirish",
-      profileCtaSkip: "Keyinroq"
+        "Narx oralig'ini kengaytiring, xona sonini tozalang yoki boshqa ko'cha va mo'ljalni qidiring."
     },
     search: {
       searchLabel: "Qidiruv",
@@ -693,23 +677,7 @@ const translations = {
       recentlyAddedTitle: "Недавно добавленные объявления",
       emptyTitle: "По этим фильтрам ничего не найдено",
       emptyDescription:
-        "Расширьте диапазон цены, уберите фильтр по комнатам или попробуйте другой адрес и ориентир.",
-      welcomeStep1Title: "Добро пожаловать!",
-      welcomeStep1Body:
-        "Это сайт для поиска жилья в аренду и на продажу по всему Узбекистану. Покажем основные возможности.",
-      welcomeStep2Title: "Ищите через поиск",
-      welcomeStep2Body:
-        "С помощью строки поиска и фильтров на главной странице быстро находите нужное жильё по региону, цене и типу.",
-      welcomeStep3Title: "Связывайтесь и пользуйтесь",
-      welcomeStep3Body:
-        "Откройте понравившееся объявление и свяжитесь с владельцем напрямую. Также можно размещать свои объявления и управлять кабинетом.",
-      welcomeNext: "Далее",
-      welcomeFinish: "Начать",
-      profileCtaTitle: "Заполните профиль",
-      profileCtaBody:
-        "Укажите имя, номер телефона и местоположение, чтобы пользоваться всеми возможностями.",
-      profileCtaButton: "Заполнить профиль",
-      profileCtaSkip: "Позже"
+        "Расширьте диапазон цены, уберите фильтр по комнатам или попробуйте другой адрес и ориентир."
     },
     search: {
       searchLabel: "Поиск",

@@ -105,7 +105,7 @@ export default async function RootLayout({
       <body className={isAdminPage ? undefined : "sm:pl-56"}>
         <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
         <TelegramWebAppInit />
-        <SessionRefresher />
+        {session ? <SessionRefresher /> : null}
         <DesktopSidebar tabs={tabs} isAdminPage={isAdminPage} />
         <SiteHeader />
         <main className="pb-24 pt-8 sm:pb-20">{children}</main>

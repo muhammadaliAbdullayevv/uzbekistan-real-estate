@@ -1,7 +1,6 @@
 import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
 import { SearchFilters } from "@/components/search-filters";
-import { WelcomeGuide } from "@/components/welcome-guide";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import {
   countApprovedListings,
@@ -67,22 +66,6 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
 
   return (
     <div className="shell -mt-8 space-y-2 sm:space-y-3">
-      <WelcomeGuide
-        copy={{
-          steps: [
-            { title: t.home.welcomeStep1Title, body: t.home.welcomeStep1Body },
-            { title: t.home.welcomeStep2Title, body: t.home.welcomeStep2Body },
-            { title: t.home.welcomeStep3Title, body: t.home.welcomeStep3Body }
-          ],
-          next: t.home.welcomeNext,
-          finish: t.home.welcomeFinish,
-          profileCtaTitle: t.home.profileCtaTitle,
-          profileCtaBody: t.home.profileCtaBody,
-          profileCtaButton: t.home.profileCtaButton,
-          profileCtaSkip: t.home.profileCtaSkip
-        }}
-      />
-
       <section className="flex items-center gap-3 rounded-b-[24px] bg-gradient-to-r from-ink to-accent px-4 py-2.5 shadow-[0_12px_30px_-16px_rgba(15,23,42,0.5)] sm:gap-4 sm:px-6 sm:py-3.5">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-white sm:h-9 sm:w-9">
           <svg
