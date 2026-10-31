@@ -71,28 +71,7 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
   ]);
 
   return (
-    <div className="shell -mt-8 space-y-2 sm:space-y-3">
-      <section className="flex items-center gap-3 rounded-b-[24px] bg-gradient-to-r from-ink to-accent px-4 py-2.5 shadow-[0_12px_30px_-16px_rgba(15,23,42,0.5)] sm:gap-4 sm:px-6 sm:py-3.5">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-white sm:h-9 sm:w-9">
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="h-4 w-4 sm:h-[18px] sm:w-[18px]"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.5-3.5" />
-          </svg>
-        </span>
-        <h1 className="text-sm font-medium leading-snug text-white sm:text-base">
-          {t.home.title}
-        </h1>
-      </section>
-
+    <div className="shell space-y-2 sm:space-y-3">
       <SearchFilters locale={locale} values={filters} />
 
       {recentListings.length > 0 ? (

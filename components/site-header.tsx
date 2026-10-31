@@ -59,22 +59,7 @@ export async function SiteHeader() {
                   label={t.nav.account}
                 />
               </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="rounded-full border border-line/80 bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-ink/20 hover:bg-mist/60 sm:px-4 sm:py-2.5 sm:text-sm"
-                >
-                  {t.nav.login}
-                </Link>
-                <Link
-                  href="/register"
-                  className="rounded-full bg-ink px-3 py-2 text-xs font-semibold text-white transition hover:bg-accent sm:px-4 sm:py-2.5 sm:text-sm"
-                >
-                  {t.nav.register}
-                </Link>
-              </>
-            )}
+            ) : null}
           </nav>
         </div>
       </div>

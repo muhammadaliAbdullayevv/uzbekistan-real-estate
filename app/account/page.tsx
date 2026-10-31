@@ -5,7 +5,7 @@ import { BackLink } from "@/components/back-link";
 import { ProfileEditForm } from "@/components/profile-edit-form";
 import { ProfileSummary } from "@/components/profile-summary";
 import { hasUnreadMessages } from "@/lib/conversations";
-import { getVisitorId } from "@/lib/favorites";
+import { getFavoriteListingIds, getVisitorId } from "@/lib/favorites";
 import { hasGeminiConfig } from "@/lib/gemini";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { getRegionLabel, getRegionOptions } from "@/lib/locations";
@@ -96,33 +96,45 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
   if (!user) {
     const visitorId = getVisitorId();
     const displayId = visitorId ? visitorId.replace(/-/g, "").slice(0, 8).toUpperCase() : "——————";
+    const savedCount = (await getFavoriteListingIds(visitorId, null)).size;
 
     return (
       <div className="shell space-y-8">
         <BackLink href="/" label={t.common.backToListings} />
 
-        <section className="panel flex flex-col items-center gap-4 p-10 text-center">
-          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-mist text-ink/35">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="h-10 w-10"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0" />
-            </svg>
-          </span>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink/40">
+        <section className="panel overflow-hidden p-0">
+          <div className="h-20 bg-gradient-to-r from-ink to-accent sm:h-24" />
+          <div className="flex flex-col items-center px-6 pb-8">
+            <span className="-mt-12 flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-mist text-ink/35 shadow-md sm:-mt-14 sm:h-28 sm:w-28">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="h-12 w-12 sm:h-14 sm:w-14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0" />
+              </svg>
+            </span>
+
+            <p className="mt-3 font-display text-xl font-semibold tabular-nums text-ink">
+              @{displayId}
+            </p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink/40">
               {t.account.guestIdLabel}
             </p>
-            <p className="mt-1 font-display text-xl font-semibold tabular-nums text-ink">
-              {displayId}
-            </p>
+
+            <div className="mt-6 flex items-center gap-10 border-t border-line/70 pt-5">
+              <Link href="/saved" className="flex flex-col items-center gap-0.5 text-center">
+                <span className="font-display text-xl font-semibold tabular-nums text-ink">
+                  {savedCount}
+                </span>
+                <span className="text-xs text-ink/50">{t.nav.saved}</span>
+              </Link>
+            </div>
           </div>
         </section>
       </div>
