@@ -1,26 +1,47 @@
 /**
- * Standalone long-polling Telegram bot that verifies a user's phone number.
+ * Standalone long-polling Telegram bot. Two independent flows:
  *
- * Flow:
- * 1. The website creates a short-lived PHONE_VERIFY token and sends the user
- *    to https://t.me/<bot>?start=<token>.
- * 2. This bot receives /start <token>, checks it's valid (without consuming
- *    it yet), and asks the user to share their Telegram-account contact via
- *    a native "request_contact" button -- this is what actually proves the
- *    phone number, not just that some Telegram account clicked the link.
- * 3. Once the user taps share, the bot consumes the token and compares the
- *    shared phone number against the one already saved on the website for
- *    that user. Only an exact match (digits only) gets marked verified --
- *    a mismatch sends guidance back instead of silently accepting it.
+ * 1. Phone verification: the website creates a short-lived PHONE_VERIFY
+ *    token and sends the user to https://t.me/<bot>?start=<token>. The bot
+ *    asks them to share their Telegram-account contact via a native
+ *    "request_contact" button -- this is what actually proves the phone
+ *    number, not just that some Telegram account clicked the link. Only an
+ *    exact match against the number already saved on the website gets
+ *    marked verified.
+ *
+ * 2. Listing submission (/addlisting): lets a property owner post their own
+ *    listing by chatting with the bot instead of using the website form --
+ *    they describe the property in their own words and send photos, Gemini
+ *    parses that into structured fields, the bot shows a summary for them
+ *    to confirm, and only then creates a PENDING listing (the same
+ *    moderation queue every other submission goes through -- nothing from
+ *    this flow bypasses owner review). Created ownerless (ListingId's
+ *    userId is nullable) since the submitter doesn't need a website
+ *    account; contact info lives on the listing row itself, same as any
+ *    other listing.
  *
  * Run standalone (not part of the Next.js process): `npm run telegram-bot`.
  * Requires TELEGRAM_BOT_TOKEN in the environment (see .env.example).
  */
 import "dotenv/config";
 
+import { randomUUID } from "node:crypto";
+
+import { ListingStatus, Prisma } from "@prisma/client";
+
+import { prisma } from "../lib/db";
+import { getDistrictCentroid } from "../lib/district-coordinates";
+import { CURRENCIES, LISTING_TYPES, PROPERTY_TYPES, RENT_TYPES } from "../lib/constants";
+import { runGeminiJson } from "../lib/gemini";
+import { saveUploadedImageLocally } from "../lib/local-upload";
+import { UZBEKISTAN_REGIONS } from "../lib/locations";
+import { getOwnerDashboardPath, getOwnerEmail } from "../lib/owner";
+import { getAbsoluteUrl } from "../lib/site";
+import { sendTelegramNotification } from "../lib/telegram-notify";
 import { normalizePhoneDigits } from "../lib/telegram-verification";
-import { getUserProfileById, markPhoneVerifiedByTelegram } from "../lib/user-data";
+import { getUserByEmail, getUserProfileById, markPhoneVerifiedByTelegram } from "../lib/user-data";
 import { consumeUserToken, getUserTokenStatus } from "../lib/user-tokens";
+import { listingInputSchema } from "../lib/validations/listing";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN?.trim();
 
@@ -32,6 +53,7 @@ if (!BOT_TOKEN) {
 }
 
 const API_BASE = `https://api.telegram.org/bot${BOT_TOKEN}`;
+const FILE_BASE = `https://api.telegram.org/file/bot${BOT_TOKEN}`;
 
 // Bridges "/start <token>" to the contact-share that follows it. In-memory
 // only: if the process restarts mid-flow, the user just taps the link again.
@@ -39,10 +61,12 @@ const pendingByChat = new Map<number, string>();
 
 type TelegramChat = { id: number };
 type TelegramContact = { phone_number: string };
+type TelegramPhotoSize = { file_id: string; width: number; height: number };
 type TelegramMessage = {
   chat: TelegramChat;
   text?: string;
   contact?: TelegramContact;
+  photo?: TelegramPhotoSize[];
 };
 type TelegramUpdate = {
   update_id: number;
@@ -146,6 +170,422 @@ async function handleContact(chatId: number, contact: TelegramContact) {
     reply_markup: { remove_keyboard: true }
   });
 }
+
+// --- Listing submission flow -----------------------------------------
+
+const DONE_LABEL = "✅ Tayyor";
+const CANCEL_LABEL = "❌ Bekor qilish";
+const CONFIRM_LABEL = "✅ Tasdiqlash va joylashtirish";
+const SHARE_PHONE_LABEL = "📱 Telefon raqamimni ulashish";
+
+type ListingDraft = {
+  stage: "collecting" | "awaiting_phone" | "confirming";
+  texts: string[];
+  photoFileIds: string[];
+  parsed?: ParsedListing;
+};
+
+type ParsedListing = {
+  title: string;
+  description: string;
+  listingType: (typeof LISTING_TYPES)[number];
+  propertyType: (typeof PROPERTY_TYPES)[number];
+  rentType: (typeof RENT_TYPES)[number] | null;
+  currency: (typeof CURRENCIES)[number];
+  price: number;
+  region: (typeof UZBEKISTAN_REGIONS)[number];
+  district: string;
+  address: string;
+  rooms: number;
+  area: number;
+  phone: string | null;
+};
+
+const listingDraftByChat = new Map<number, ListingDraft>();
+
+const listingExtractionSchema = {
+  type: "object",
+  properties: {
+    title: { type: "string", description: "Short listing title, e.g. '3-room flat for rent in Chilonzor'." },
+    description: {
+      type: "string",
+      description: "A cleaned-up, complete description in the same language the user wrote in -- expand abbreviations, keep it natural, at least a few sentences. Never invent details the user didn't mention."
+    },
+    listingType: { type: "string", enum: [...LISTING_TYPES], description: "rent or sale" },
+    propertyType: { type: "string", enum: [...PROPERTY_TYPES] },
+    rentType: {
+      type: "string",
+      enum: [...RENT_TYPES],
+      description: "Required when listingType is rent -- monthly unless the user specifically says daily/short-term."
+    },
+    currency: { type: "string", enum: [...CURRENCIES] },
+    price: { type: "number" },
+    region: {
+      type: "string",
+      enum: [...UZBEKISTAN_REGIONS],
+      description: "Map the user's region/city name to exactly one of these enum values, e.g. 'Toshkent shahri'/'Tashkent' -> 'Tashkent City', 'Toshkent viloyati' -> 'Tashkent Region'."
+    },
+    district: { type: "string", description: "District or city/town name, free text." },
+    address: {
+      type: "string",
+      description: "Street/landmark if mentioned. If the user gave no specific address, repeat the district name here -- never invent a street."
+    },
+    rooms: { type: "number" },
+    area: { type: "number", description: "Floor area in square meters." },
+    phone: {
+      type: "string",
+      description: "A phone number ONLY if the user actually included one in their message. Omit this field entirely otherwise -- never invent one."
+    }
+  },
+  required: [
+    "title",
+    "description",
+    "listingType",
+    "propertyType",
+    "currency",
+    "price",
+    "region",
+    "district",
+    "address",
+    "rooms",
+    "area"
+  ]
+};
+
+function buildExtractionInstruction() {
+  return [
+    "A property owner is describing their own flat/house/room to list for rent or sale on Uychi, a real estate marketplace for Uzbekistan, by chatting with a Telegram bot.",
+    "Extract the listing fields from their message(s) below into the given JSON schema.",
+    "Only use what they actually said -- never invent a price, room count, area, or address that wasn't mentioned. If something genuinely required is missing or unclear, make your best reasonable reading of their words rather than guessing a number from nothing.",
+    "The user may write in Uzbek, Russian, or a mix. Keep title/description in that same language."
+  ].join("\n");
+}
+
+async function getFileDownloadUrl(fileId: string) {
+  const file = await callTelegramApi<{ file_path?: string }>("getFile", { file_id: fileId });
+
+  if (!file?.file_path) {
+    return null;
+  }
+
+  return `${FILE_BASE}/${file.file_path}`;
+}
+
+async function downloadTelegramPhotoAsFile(fileId: string, index: number) {
+  const url = await getFileDownloadUrl(fileId);
+
+  if (!url) {
+    return null;
+  }
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return new File([buffer], `telegram-${Date.now()}-${index}.jpg`, { type: "image/jpeg" });
+}
+
+function formatDraftSummary(parsed: ParsedListing) {
+  const priceLine = `${parsed.price} ${parsed.currency}${parsed.listingType === "rent" ? (parsed.rentType === "daily" ? "/kun" : "/oy") : ""}`;
+
+  return [
+    `📋 ${parsed.title}`,
+    "",
+    parsed.description,
+    "",
+    `💰 ${priceLine}`,
+    `🏠 ${parsed.propertyType} · ${parsed.rooms} xona · ${parsed.area} m²`,
+    `📍 ${parsed.region}, ${parsed.district}`,
+    parsed.phone ? `📞 ${parsed.phone}` : "📞 (keyingi qadamda so'raladi)"
+  ].join("\n");
+}
+
+async function handleAddListingStart(chatId: number) {
+  listingDraftByChat.set(chatId, { stage: "collecting", texts: [], photoFileIds: [] });
+
+  await sendMessage(
+    chatId,
+    [
+      "🏠 Uyingizni Uychi saytiga joylashtiramiz.",
+      "",
+      "1️⃣ Uyingiz haqida yozing: turi (kvartira/uy/xona), ijaraga/sotuvga, hudud/tuman, narxi, xonalar soni, maydoni (m²).",
+      "2️⃣ Bir nechta surat yuboring.",
+      "",
+      `Hammasini yuborib bo'lgach, "${DONE_LABEL}" tugmasini bosing.`
+    ].join("\n"),
+    {
+      reply_markup: {
+        keyboard: [[DONE_LABEL, CANCEL_LABEL]],
+        resize_keyboard: true
+      }
+    }
+  );
+}
+
+async function cancelDraft(chatId: number) {
+  listingDraftByChat.delete(chatId);
+  await sendMessage(chatId, "Bekor qilindi.", { reply_markup: { remove_keyboard: true } });
+}
+
+async function finalizeCollection(chatId: number, draft: ListingDraft) {
+  if (draft.texts.length === 0) {
+    await sendMessage(chatId, "Hali uyingiz haqida yozmadingiz. Iltimos, tavsif yuboring.");
+    return;
+  }
+
+  if (draft.photoFileIds.length === 0) {
+    await sendMessage(chatId, "Kamida bitta surat yuboring, keyin qaytadan urinib ko'ring.");
+    return;
+  }
+
+  await sendMessage(chatId, "⏳ Ma'lumotlar tahlil qilinmoqda...", { reply_markup: { remove_keyboard: true } });
+
+  let parsed: ParsedListing;
+
+  try {
+    const raw = await runGeminiJson<Omit<ParsedListing, "rentType" | "phone"> & {
+      rentType?: string;
+      phone?: string;
+    }>({
+      systemInstruction: buildExtractionInstruction(),
+      contents: [{ role: "user", parts: [{ text: draft.texts.join("\n\n") }] }],
+      responseSchema: listingExtractionSchema
+    });
+
+    parsed = {
+      ...raw,
+      rentType: (raw.rentType as ParsedListing["rentType"]) ?? (raw.listingType === "rent" ? "monthly" : null),
+      phone: raw.phone?.trim() || null
+    };
+  } catch (error) {
+    console.error("Listing extraction failed:", error);
+    await sendMessage(
+      chatId,
+      "Ma'lumotlarni tahlil qilib bo'lmadi. Iltimos, tavsifni biroz boshqacharoq yozib, qaytadan urinib ko'ring (/addlisting)."
+    );
+    listingDraftByChat.delete(chatId);
+    return;
+  }
+
+  draft.parsed = parsed;
+
+  if (!parsed.phone) {
+    draft.stage = "awaiting_phone";
+    await sendMessage(chatId, "Bog'lanish uchun telefon raqamingizni ulashing:", {
+      reply_markup: {
+        keyboard: [[{ text: SHARE_PHONE_LABEL, request_contact: true }], [CANCEL_LABEL]],
+        resize_keyboard: true
+      }
+    });
+    return;
+  }
+
+  await presentConfirmation(chatId, draft);
+}
+
+async function presentConfirmation(chatId: number, draft: ListingDraft) {
+  if (!draft.parsed) {
+    return;
+  }
+
+  draft.stage = "confirming";
+
+  await sendMessage(chatId, formatDraftSummary(draft.parsed), {
+    reply_markup: {
+      keyboard: [[CONFIRM_LABEL], [CANCEL_LABEL]],
+      resize_keyboard: true
+    }
+  });
+}
+
+async function submitDraft(chatId: number, draft: ListingDraft) {
+  const parsed = draft.parsed;
+
+  if (!parsed) {
+    return;
+  }
+
+  const centroid = getDistrictCentroid(parsed.region, parsed.district);
+
+  const candidate = {
+    listingType: parsed.listingType,
+    title: parsed.title,
+    description: parsed.description,
+    price: parsed.price,
+    currency: parsed.currency,
+    region: parsed.region,
+    district: parsed.district,
+    city: "",
+    address: parsed.address,
+    rooms: parsed.rooms,
+    area: parsed.area,
+    propertyType: parsed.propertyType,
+    rentType: parsed.rentType ?? "",
+    latitude: centroid?.lat ?? 0,
+    longitude: centroid?.lng ?? 0,
+    phone: parsed.phone ?? "",
+    telegramUsername: "",
+    // Passes isValidListingImageValue's format check (must start with
+    // "/uploads/" or be a real http(s) URL) purely to satisfy the schema's
+    // min(1) requirement here -- never written to the DB, the real
+    // uploaded paths below replace it entirely.
+    images: ["/uploads/pending.jpg"]
+  };
+
+  const validated = listingInputSchema.safeParse(candidate);
+
+  if (!validated.success) {
+    console.error("Bot-submitted listing failed validation:", validated.error.flatten());
+    await sendMessage(
+      chatId,
+      "Ma'lumotlarda xatolik bor edi, afsuski. Iltimos, qaytadan urinib ko'ring: /addlisting",
+      { reply_markup: { remove_keyboard: true } }
+    );
+    listingDraftByChat.delete(chatId);
+    return;
+  }
+
+  const uploadedImages: string[] = [];
+
+  for (const [index, fileId] of draft.photoFileIds.entries()) {
+    const file = await downloadTelegramPhotoAsFile(fileId, index);
+
+    if (!file) {
+      continue;
+    }
+
+    try {
+      uploadedImages.push(await saveUploadedImageLocally(file));
+    } catch (error) {
+      console.error("Failed to save a Telegram-submitted photo:", error);
+    }
+  }
+
+  if (uploadedImages.length === 0) {
+    await sendMessage(chatId, "Suratlarni saqlab bo'lmadi. Iltimos, qaytadan urinib ko'ring: /addlisting", {
+      reply_markup: { remove_keyboard: true }
+    });
+    listingDraftByChat.delete(chatId);
+    return;
+  }
+
+  const listingId = randomUUID();
+  const { rentType, latitude, longitude } = validated.data;
+  const rentTypeSql = rentType ? Prisma.sql`CAST(${rentType} AS "RentType")` : Prisma.sql`NULL`;
+
+  await prisma.$executeRaw(
+    Prisma.sql`
+      INSERT INTO "Listing" (
+        "id", "title", "description", "price", "listingType", "currency",
+        "region", "district", "city", "address", "rooms", "area",
+        "propertyType", "rentType", "latitude", "longitude", "locationPrecision",
+        "phone", "status", "createdAt", "updatedAt", "userId"
+      )
+      VALUES (
+        ${listingId}, ${validated.data.title}, ${validated.data.description}, ${validated.data.price},
+        ${validated.data.listingType}, CAST(${validated.data.currency} AS "Currency"),
+        ${validated.data.region}, ${validated.data.district}, ${validated.data.city},
+        ${validated.data.address}, ${validated.data.rooms}, ${validated.data.area},
+        CAST(${validated.data.propertyType} AS "PropertyType"), ${rentTypeSql},
+        ${latitude}, ${longitude}, CAST('APPROXIMATE' AS "LocationPrecision"),
+        ${validated.data.phone}, CAST(${ListingStatus.PENDING} AS "ListingStatus"),
+        ${new Date()}, ${new Date()}, NULL
+      )
+    `
+  );
+
+  for (const url of uploadedImages) {
+    await prisma.$executeRaw`
+      INSERT INTO "ListingImage" ("id", "url", "listingId")
+      VALUES (${randomUUID()}, ${url}, ${listingId})
+    `;
+  }
+
+  listingDraftByChat.delete(chatId);
+
+  await sendMessage(
+    chatId,
+    "✅ Rahmat! E'loningiz yuborildi va ko'rib chiqilmoqda. Tasdiqlangach, saytda ko'rinadi.",
+    { reply_markup: { remove_keyboard: true } }
+  );
+
+  await notifyOwnerOfTelegramListing(validated.data.title);
+}
+
+/** Mirrors notifyOwnerOfNewListing in app/api/listings/route.ts -- same best-effort, silent-skip behavior if the owner hasn't linked Telegram. */
+async function notifyOwnerOfTelegramListing(title: string) {
+  try {
+    const ownerEmail = getOwnerEmail();
+
+    if (!ownerEmail) {
+      return;
+    }
+
+    const owner = await getUserByEmail(ownerEmail);
+
+    if (!owner?.telegramChatId) {
+      return;
+    }
+
+    const link = getAbsoluteUrl(getOwnerDashboardPath());
+    const text = [`🆕 Telegram bot orqali yangi e'lon`, title, "", link].join("\n");
+
+    await sendTelegramNotification(owner.telegramChatId, text);
+  } catch (error) {
+    console.error("Owner notify (bot listing) failed:", error);
+  }
+}
+
+async function handleListingDraftMessage(chatId: number, message: TelegramMessage, draft: ListingDraft) {
+  if (message.text === CANCEL_LABEL) {
+    await cancelDraft(chatId);
+    return;
+  }
+
+  if (draft.stage === "collecting") {
+    if (message.text === DONE_LABEL) {
+      await finalizeCollection(chatId, draft);
+      return;
+    }
+
+    if (message.text) {
+      draft.texts.push(message.text);
+    }
+
+    if (message.photo && message.photo.length > 0) {
+      draft.photoFileIds.push(message.photo[message.photo.length - 1].file_id);
+    }
+
+    return;
+  }
+
+  if (draft.stage === "awaiting_phone") {
+    if (message.contact?.phone_number) {
+      const phone = message.contact.phone_number.startsWith("+")
+        ? message.contact.phone_number
+        : `+${message.contact.phone_number}`;
+
+      if (draft.parsed) {
+        draft.parsed.phone = phone;
+      }
+
+      await presentConfirmation(chatId, draft);
+    }
+
+    return;
+  }
+
+  if (draft.stage === "confirming") {
+    if (message.text === CONFIRM_LABEL) {
+      await submitDraft(chatId, draft);
+    }
+  }
+}
+
+// -----------------------------------------------------------------------
 
 async function handleUpdate(update: TelegramUpdate) {
   const message = update.message;

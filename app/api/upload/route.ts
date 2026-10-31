@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { isAiRateLimited } from "@/lib/ai-rate-limit";
 import {
   hasCloudinaryUploadConfig,
   uploadImageToCloudinary
@@ -14,20 +15,25 @@ import {
 import { getUserSession } from "@/lib/user-session";
 
 const MAX_UPLOAD_SIZE = 8 * 1024 * 1024;
+// No login required to upload -- keyed by account when signed in, otherwise
+// IP, so this (despite the name) is a generic per-hour limiter re-used here
+// to keep an anonymous caller from hammering disk/bandwidth with uploads.
+const MAX_UPLOADS_PER_HOUR = 30;
 
 export async function POST(request: Request) {
   try {
     const locale = getLocale();
     const t = getTranslations(locale);
     const session = await getUserSession();
+    const rateLimitKey = `upload:${session?.userId ?? `ip:${request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"}`}`;
 
-    if (!session) {
+    if (isAiRateLimited(rateLimitKey, MAX_UPLOADS_PER_HOUR)) {
       return NextResponse.json(
         {
-          error: t.api.loginToUploadImages
+          error: t.api.uploadRateLimited
         },
         {
-          status: 401
+          status: 429
         }
       );
     }

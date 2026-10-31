@@ -4,7 +4,6 @@ export { privatePageMetadata as metadata } from "@/lib/site";
 import { AiUychiThread } from "@/components/ai-uychi-thread";
 import { hasGeminiConfig } from "@/lib/gemini";
 import { getLocale, getTranslations } from "@/lib/i18n";
-import { requireUser } from "@/lib/session-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +14,6 @@ export default async function AiUychiPage() {
 
   const locale = getLocale();
   const t = getTranslations(locale);
-  await requireUser("/ai-uychi");
 
   return (
     <AiUychiThread

@@ -82,7 +82,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     notFound();
   }
 
-  const loginToContactHref = `/login?next=${encodeURIComponent(`/listings/${listing.id}#contact-panel`)}`;
   const contactHref = `tel:${listing.phone}`;
   const hasNoAgencyFee =
     listing.title.toLowerCase().includes("no agency fee") ||
@@ -210,51 +209,33 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               </p>
             </div>
 
-            {session ? (
-              <div className="flex items-center gap-3 rounded-2xl border border-line bg-mist/50 px-4 py-3.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
-                  </svg>
-                </span>
-                <span className="text-base font-semibold tabular-nums text-ink">{listing.phone}</span>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-accent/20 bg-accent/5 px-4 py-4 text-sm leading-6 text-ink/70">
-                {t.listingDetail.revealContact}
-              </div>
-            )}
+            <div className="flex items-center gap-3 rounded-2xl border border-line bg-mist/50 px-4 py-3.5">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+              </span>
+              <span className="text-base font-semibold tabular-nums text-ink">{listing.phone}</span>
+            </div>
 
             <div className="space-y-2.5">
-              {session ? (
-                <a href={contactHref} className="btn-primary w-full gap-2">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
-                  </svg>
-                  {t.common.contactOwner}
-                </a>
-              ) : (
-                <Link href={loginToContactHref} className="btn-primary w-full">
-                  {t.common.logInToContact}
-                </Link>
-              )}
+              <a href={contactHref} className="btn-primary w-full gap-2">
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+                {t.common.contactOwner}
+              </a>
 
-              {canMessageOwner ? (
-                session ? (
-                  <form action="/api/conversations" method="post">
-                    <input type="hidden" name="listingId" value={listing.id} />
-                    <button type="submit" className="btn-secondary w-full gap-2">
-                      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                      </svg>
-                      {t.common.messageOwner}
-                    </button>
-                  </form>
-                ) : (
-                  <Link href={loginToContactHref} className="btn-secondary w-full gap-2 text-center">
-                    {t.common.logInToMessage}
-                  </Link>
-                )
+              {canMessageOwner && session ? (
+                <form action="/api/conversations" method="post">
+                  <input type="hidden" name="listingId" value={listing.id} />
+                  <button type="submit" className="btn-secondary w-full gap-2">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                    </svg>
+                    {t.common.messageOwner}
+                  </button>
+                </form>
               ) : null}
             </div>
           </section>

@@ -36,7 +36,6 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
           copy={{
             success: t.addListing.success,
             draftRestored: t.addListing.draftRestored,
-            loginToSubmit: t.addListing.loginToSubmit,
             sectionBasic: t.addListing.form.sectionBasic,
             sectionPrice: t.addListing.form.sectionPrice,
             sectionLocation: t.addListing.form.sectionLocation,
@@ -88,7 +87,6 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
           }}
           showSuccess={showSuccess}
           initialPhone={user?.phone}
-          isAuthenticated={Boolean(user)}
         />
       </div>
     </div>

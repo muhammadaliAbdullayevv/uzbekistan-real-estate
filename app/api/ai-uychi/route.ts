@@ -27,12 +27,12 @@ export async function POST(request: Request) {
   }
 
   const session = await getUserSession();
+  // No login required to use AI Uychi -- rate-limit by account when signed
+  // in (keeps the existing per-user fairness), otherwise by IP, so the
+  // free Gemini quota still has some protection from one runaway caller.
+  const rateLimitKey = session?.userId ?? `ip:${request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"}`;
 
-  if (!session) {
-    return NextResponse.json({ error: t.api.loginRequired }, { status: 401 });
-  }
-
-  if (isAiRateLimited(session.userId, AI_UYCHI_MAX_MESSAGES_PER_HOUR)) {
+  if (isAiRateLimited(rateLimitKey, AI_UYCHI_MAX_MESSAGES_PER_HOUR)) {
     return NextResponse.json({ error: t.aiUychi.rateLimited }, { status: 429 });
   }
 

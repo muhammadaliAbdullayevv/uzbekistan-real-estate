@@ -78,7 +78,6 @@ type AddListingFormProps = {
   copy: {
     success: string;
     draftRestored?: string;
-    loginToSubmit?: string;
     sectionBasic: string;
     sectionPrice: string;
     sectionLocation: string;
@@ -132,7 +131,6 @@ type AddListingFormProps = {
   };
   showSuccess?: boolean;
   initialPhone?: string | null;
-  isAuthenticated?: boolean;
   initialValues?: {
     listingType: ListingTypeValue;
     title: string;
@@ -166,7 +164,6 @@ export function AddListingForm({
   copy,
   showSuccess = false,
   initialPhone,
-  isAuthenticated = true,
   initialValues
 }: AddListingFormProps) {
   const router = useRouter();
@@ -527,12 +524,6 @@ export function AddListingForm({
       {restoredDraft && copy.draftRestored ? (
         <div className="panel border-accent/25 bg-accent/5 p-4 text-sm font-medium text-accent">
           {copy.draftRestored}
-        </div>
-      ) : null}
-
-      {!isAuthenticated && copy.loginToSubmit ? (
-        <div className="panel border-line/80 bg-mist/45 p-4 text-sm leading-6 text-ink/70">
-          {copy.loginToSubmit}
         </div>
       ) : null}
 

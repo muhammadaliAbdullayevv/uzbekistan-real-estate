@@ -4,6 +4,7 @@ import { ListingStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
+import { isAiRateLimited } from "@/lib/ai-rate-limit";
 import { prisma } from "@/lib/db";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { getAbsoluteUrl } from "@/lib/site";
@@ -12,6 +13,10 @@ import { sendTelegramNotification } from "@/lib/telegram-notify";
 import { getUserByEmail } from "@/lib/user-data";
 import { getUserSession } from "@/lib/user-session";
 import { listingInputSchema } from "@/lib/validations/listing";
+
+// No login required to submit -- caps how many listings one account/IP can
+// create per hour so open submission doesn't become an easy spam vector.
+const MAX_SUBMISSIONS_PER_HOUR = 10;
 
 /**
  * Best-effort: the owner moderates every listing alone, so let them know a
@@ -42,15 +47,22 @@ export async function POST(request: Request) {
   try {
     const locale = getLocale();
     const t = getTranslations(locale);
+    // No login required to submit -- an anonymous submission is just
+    // created with userId NULL (the schema already supports this; see the
+    // Telegram-bot submission flow, which has worked the same way since
+    // before this route allowed it). Signed-in submitters still get
+    // userId attributed, same as before, so "my listings" keeps working
+    // for anyone who does have an account.
     const session = await getUserSession();
+    const rateLimitKey = `submit-listing:${session?.userId ?? `ip:${request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"}`}`;
 
-    if (!session) {
+    if (isAiRateLimited(rateLimitKey, MAX_SUBMISSIONS_PER_HOUR)) {
       return NextResponse.json(
         {
-          error: t.api.loginToSubmitListing
+          error: t.api.submissionRateLimited
         },
         {
-          status: 401
+          status: 429
         }
       );
     }
@@ -123,7 +135,7 @@ export async function POST(request: Request) {
           CAST(${ListingStatus.PENDING} AS "ListingStatus"),
           ${new Date()},
           ${new Date()},
-          ${session.userId}
+          ${session?.userId ?? null}
         )
       `
     );
