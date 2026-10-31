@@ -5,11 +5,12 @@ import { BackLink } from "@/components/back-link";
 import { ProfileEditForm } from "@/components/profile-edit-form";
 import { ProfileSummary } from "@/components/profile-summary";
 import { hasUnreadMessages } from "@/lib/conversations";
+import { getVisitorId } from "@/lib/favorites";
 import { hasGeminiConfig } from "@/lib/gemini";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { getRegionLabel, getRegionOptions } from "@/lib/locations";
 import { getOwnerDashboardPath, isOwner } from "@/lib/owner";
-import { requireUser } from "@/lib/session-auth";
+import { getCurrentUser } from "@/lib/session-auth";
 
 type AccountPageProps = {
   searchParams?: Record<string, string | string[] | undefined>;
@@ -90,7 +91,43 @@ function NavRow({
 export default async function AccountPage({ searchParams = {} }: AccountPageProps) {
   const locale = getLocale();
   const t = getTranslations(locale);
-  const user = await requireUser("/account");
+  const user = await getCurrentUser();
+
+  if (!user) {
+    const visitorId = getVisitorId();
+    const displayId = visitorId ? visitorId.replace(/-/g, "").slice(0, 8).toUpperCase() : "——————";
+
+    return (
+      <div className="shell space-y-8">
+        <BackLink href="/" label={t.common.backToListings} />
+
+        <section className="panel flex flex-col items-center gap-4 p-10 text-center">
+          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-mist text-ink/35">
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              className="h-10 w-10"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0" />
+            </svg>
+          </span>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink/40">
+              {t.account.guestIdLabel}
+            </p>
+            <p className="mt-1 font-display text-xl font-semibold tabular-nums text-ink">
+              {displayId}
+            </p>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   const hasUnread = await hasUnreadMessages(user.id);
   const showOwnerDashboardLink = isOwner({ email: user.email });

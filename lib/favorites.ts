@@ -1,20 +1,26 @@
 import { randomUUID } from "node:crypto";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 import { getApprovedListingsByIds } from "@/lib/listings";
+import {
+  VISITOR_ID_COOKIE,
+  VISITOR_ID_HEADER,
+  VISITOR_ID_TTL_SECONDS
+} from "@/lib/visitor-id-constants";
+
+export { VISITOR_ID_COOKIE };
 
 // Anonymous-first: no login needed to save a listing. Each visitor gets a
-// long-lived random id in this cookie, which is what favorites are keyed to
-// (see mergeFavoritesIntoUser for what happens once they do log in).
-export const VISITOR_ID_COOKIE = "__vid";
-const VISITOR_ID_TTL_SECONDS = 60 * 60 * 24 * 365; // 1 year
-
+// long-lived id, set by middleware.ts on every page view (forwarded here via
+// a request header) so it's available immediately -- including before
+// they've ever favorited anything. API routes aren't covered by that
+// middleware, so they fall back to reading the cookie directly.
 export function getVisitorId() {
-  return cookies().get(VISITOR_ID_COOKIE)?.value ?? null;
+  return headers().get(VISITOR_ID_HEADER) ?? cookies().get(VISITOR_ID_COOKIE)?.value ?? null;
 }
 
 export function setVisitorIdCookie(response: NextResponse, visitorId: string) {

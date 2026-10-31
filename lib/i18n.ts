@@ -268,6 +268,7 @@ const translations = {
     account: {
       pill: "Mening kabinetim",
       title: "Mening kabinetim",
+      guestIdLabel: "Mehmon ID",
       memberSince: "Ro‘yxatdan o‘tgan sana:",
       loggedInAs: "Kirish qilingan email",
       emailNotVerified:
@@ -830,6 +831,7 @@ const translations = {
     account: {
       pill: "Мой кабинет",
       title: "Мой кабинет",
+      guestIdLabel: "Гостевой ID",
       memberSince: "Дата регистрации:",
       loggedInAs: "Вы вошли как",
       emailNotVerified:
