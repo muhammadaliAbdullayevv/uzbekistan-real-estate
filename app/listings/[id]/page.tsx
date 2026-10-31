@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FavoriteButton } from "@/components/favorite-button";
 import { ListingGallery } from "@/components/listing-gallery";
 import { LocationSection, LocationSummary } from "@/components/location-display";
 import { SmartBackLink } from "@/components/smart-back-link";
 import { TrackListingView } from "@/components/track-listing-view";
+import { getFavoriteListingIds, getVisitorId } from "@/lib/favorites";
 import {
   formatDate,
   formatPrice,
@@ -94,6 +96,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       : "border-emerald-200 bg-emerald-50 text-emerald-800";
   const canMessageOwner = listing.userId && (!session || session.userId !== listing.userId);
   const jsonLd = buildListingJsonLd(listing);
+  const visitorId = getVisitorId();
+  const favoriteIds = await getFavoriteListingIds(visitorId, session?.userId ?? null);
+  const isFavorited = favoriteIds.has(listing.id);
 
   return (
     <div className="shell space-y-8">
@@ -237,6 +242,17 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </button>
                 </form>
               ) : null}
+
+              <FavoriteButton
+                listingId={listing.id}
+                isFavorited={isFavorited}
+                copy={{
+                  save: t.common.save,
+                  saved: t.common.saved,
+                  saveListing: t.common.saveListing,
+                  removeFromSaved: t.common.removeFromSaved
+                }}
+              />
             </div>
           </section>
         </aside>

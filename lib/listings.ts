@@ -317,7 +317,7 @@ function orderListingsByIds(listings: ListingWithImages[], ids: string[]) {
     .filter((listing): listing is ListingWithImages => Boolean(listing));
 }
 
-async function getApprovedListingsByIds(ids: string[]) {
+export async function getApprovedListingsByIds(ids: string[]) {
   if (ids.length === 0) {
     return [];
   }

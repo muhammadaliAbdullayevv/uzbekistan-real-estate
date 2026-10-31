@@ -7,6 +7,7 @@ import {
   registerRateLimitKey
 } from "@/lib/login-rate-limit";
 import { registerUser } from "@/lib/auth";
+import { getVisitorId, mergeFavoritesIntoUser } from "@/lib/favorites";
 import { getLocale } from "@/lib/i18n";
 import { resolvePostAuthPath } from "@/lib/owner";
 import { redirectUrl } from "@/lib/site";
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
 
   try {
     const sessionPayload = await registerUser({ ...parsed.data, locale: getLocale() });
+    await mergeFavoritesIntoUser(getVisitorId(), sessionPayload.userId);
     const token = await createUserSession(sessionPayload);
     const destination = resolvePostAuthPath(sessionPayload, safeNextPath);
     const response = NextResponse.redirect(redirectUrl(destination), {

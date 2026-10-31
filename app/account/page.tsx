@@ -4,6 +4,8 @@ export { privatePageMetadata as metadata } from "@/lib/site";
 import { BackLink } from "@/components/back-link";
 import { ProfileEditForm } from "@/components/profile-edit-form";
 import { ProfileSummary } from "@/components/profile-summary";
+import { hasUnreadMessages } from "@/lib/conversations";
+import { hasGeminiConfig } from "@/lib/gemini";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { getRegionLabel, getRegionOptions } from "@/lib/locations";
 import { getOwnerDashboardPath, isOwner } from "@/lib/owner";
@@ -52,15 +54,31 @@ function ChevronRight() {
   );
 }
 
-function NavRow({ href, icon, label }: { href: string; icon: string; label: string }) {
+function NavRow({
+  href,
+  icon,
+  label,
+  showDot = false
+}: {
+  href: string;
+  icon: string;
+  label: string;
+  showDot?: boolean;
+}) {
   return (
     <Link
       href={href}
       className="flex items-center justify-between gap-3 py-3 text-sm font-medium text-ink transition hover:text-accent"
     >
       <span className="flex items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-ink/60 shadow-sm">
+        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-ink/60 shadow-sm">
           <NavIcon path={icon} />
+          {showDot ? (
+            <span
+              aria-hidden="true"
+              className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-coral"
+            />
+          ) : null}
         </span>
         {label}
       </span>
@@ -74,6 +92,7 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
   const t = getTranslations(locale);
   const user = await requireUser("/account");
 
+  const hasUnread = await hasUnreadMessages(user.id);
   const showOwnerDashboardLink = isOwner({ email: user.email });
   const profileUpdated = searchParams.updated === "1";
   const telegramError = typeof searchParams.telegramError === "string" ? searchParams.telegramError : null;
@@ -194,6 +213,19 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
             </Link>
 
             <nav className="mt-2 divide-y divide-teal-100/70 px-1">
+              <NavRow
+                href="/chat"
+                label={t.nav.chat}
+                icon="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
+                showDot={hasUnread}
+              />
+              {hasGeminiConfig() ? (
+                <NavRow
+                  href="/ai-uychi"
+                  label={t.aiUychi.title}
+                  icon="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3z"
+                />
+              ) : null}
               <NavRow
                 href="/my-listings"
                 label={t.account.trackListings}

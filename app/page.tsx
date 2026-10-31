@@ -1,6 +1,7 @@
 import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
 import { SearchFilters } from "@/components/search-filters";
+import { getFavoriteListingIds, getVisitorId } from "@/lib/favorites";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import {
   countApprovedListings,
@@ -8,6 +9,7 @@ import {
   getFirstParam,
   type ListingSearchParams
 } from "@/lib/listings";
+import { getUserSession } from "@/lib/user-session";
 
 export const dynamic = "force-dynamic";
 
@@ -56,12 +58,16 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
       (rawSort && rawSort !== "newest")
   );
 
-  const [totalCount, listings, recentListings] = await Promise.all([
+  const session = await getUserSession();
+  const visitorId = getVisitorId();
+
+  const [totalCount, listings, recentListings, favoriteIds] = await Promise.all([
     countApprovedListings(filters),
     getApprovedListings(filters),
     hasActiveFilters
       ? Promise.resolve([])
-      : getApprovedListings({ sort: "newest", limit: RECENTLY_ADDED_LIMIT })
+      : getApprovedListings({ sort: "newest", limit: RECENTLY_ADDED_LIMIT }),
+    getFavoriteListingIds(visitorId, session?.userId ?? null)
   ]);
 
   return (
@@ -100,7 +106,11 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
                 key={listing.id}
                 className="w-[80%] shrink-0 snap-start sm:w-[45%] lg:w-[300px]"
               >
-                <ListingCard locale={locale} listing={listing} />
+                <ListingCard
+                  locale={locale}
+                  listing={listing}
+                  isFavorited={favoriteIds.has(listing.id)}
+                />
               </div>
             ))}
           </div>
@@ -129,7 +139,12 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
         ) : (
           <div className="grid grid-cols-2 gap-2.5 sm:gap-6 lg:grid-cols-3">
             {listings.map((listing) => (
-              <ListingCard key={listing.id} locale={locale} listing={listing} />
+              <ListingCard
+                key={listing.id}
+                locale={locale}
+                listing={listing}
+                isFavorited={favoriteIds.has(listing.id)}
+              />
             ))}
           </div>
         )}

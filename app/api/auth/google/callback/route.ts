@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { authenticateWithGoogle } from "@/lib/auth";
+import { getVisitorId, mergeFavoritesIntoUser } from "@/lib/favorites";
 import { exchangeGoogleCode } from "@/lib/google-auth";
 import { resolvePostAuthPath } from "@/lib/owner";
 import { redirectUrl } from "@/lib/site";
@@ -47,6 +48,8 @@ export async function GET(request: Request) {
       clearOauthCookies(response);
       return response;
     }
+
+    await mergeFavoritesIntoUser(getVisitorId(), result.user.userId);
 
     const token = await createUserSession(result.user);
     const destination = resolvePostAuthPath(result.user, nextPath);

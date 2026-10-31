@@ -10,6 +10,7 @@ import {
 } from "@/lib/login-rate-limit";
 import { resolvePostAuthPath } from "@/lib/owner";
 import { redirectUrl } from "@/lib/site";
+import { getVisitorId, mergeFavoritesIntoUser } from "@/lib/favorites";
 import {
   createUserSession,
   getSafeUserNextPath,
@@ -72,6 +73,8 @@ export async function POST(request: Request) {
   }
 
   await clearLoginFailures(rateKey);
+
+  await mergeFavoritesIntoUser(getVisitorId(), result.user.userId);
 
   const token = await createUserSession(result.user);
   const nextPath = resolvePostAuthPath(result.user, safeNextPath);

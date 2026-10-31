@@ -95,6 +95,7 @@ model User {
   conversationsAsBuyer  Conversation[]   @relation("ConversationsAsBuyer")
   conversationsAsOwner  Conversation[]   @relation("ConversationsAsOwner")
   messages              Message[]
+  favorites             FavoriteListing[]
 }
 
 model Listing {
@@ -126,6 +127,7 @@ model Listing {
   images           ListingImage[]
   views            ListingView[]
   conversations    Conversation[]
+  favorites        FavoriteListing[]
 
   @@index([status, createdAt])
   @@index([region])
@@ -157,6 +159,25 @@ model ListingView {
 
   @@index([userId, viewedAt])
   @@index([listingId, viewedAt])
+}
+
+/// Anonymous-first: visitorId (a long-lived cookie, no login needed) is the
+/// primary key for "did they save this." userId is filled in once that
+/// visitor logs in (see lib/favorites.ts mergeFavoritesIntoUser), so an
+/// account's saves follow it across devices without ever requiring login
+/// just to tap the heart.
+model FavoriteListing {
+  id        String   @id @default(cuid())
+  visitorId String
+  userId    String?
+  listingId String
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([visitorId, listingId])
+  @@unique([userId, listingId])
+  @@index([listingId])
 }
 
 model Conversation {

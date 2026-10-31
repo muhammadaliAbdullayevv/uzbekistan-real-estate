@@ -84,7 +84,7 @@ export function ProfileMasthead({
           <p className="truncate font-display text-xl font-semibold text-ink sm:text-2xl">
             {name || email}
           </p>
-          <p className="mt-1 truncate text-sm text-ink/55">{email}</p>
+          {name ? <p className="mt-1 truncate text-sm text-ink/55">{email}</p> : null}
         </div>
       </div>
 

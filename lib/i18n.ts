@@ -29,6 +29,7 @@ const translations = {
       listings: "E'lonlar",
       addListing: "E'lon qo'shish",
       chat: "Xabarlar",
+      saved: "Saqlangan",
       account: "Kabinet",
       owner: "Egasi",
       login: "Kirish",
@@ -117,7 +118,11 @@ const translations = {
       metersAway: "m narida",
       active: "Faol",
       rented: "Ijaraga berilgan",
-      sold: "Sotilgan"
+      sold: "Sotilgan",
+      save: "Saqlash",
+      saved: "Saqlangan",
+      saveListing: "E'lonni saqlash",
+      removeFromSaved: "Saqlanganlardan olib tashlash"
     },
     home: {
       title: "Kvartira va uylarni topish uchun pastdagi qidiruvdan foydalaning",
@@ -130,6 +135,16 @@ const translations = {
       emptyTitle: "Bu filtrlarga mos ijara topilmadi",
       emptyDescription:
         "Narx oralig'ini kengaytiring, xona sonini tozalang yoki boshqa ko'cha va mo'ljalni qidiring."
+    },
+    savedPage: {
+      pill: "Saqlanganlar",
+      title: "Saqlangan e'lonlar",
+      intro:
+        "Narxlar, reja va aloqa variantlarini taqqoslayotganingizda qisqa ro'yxatni shu yerda saqlang.",
+      browseMore: "Yana e'lonlarni ko'rish",
+      emptyTitle: "Hozircha saqlangan e'lon yo'q",
+      emptyDescription:
+        "Qisqa ro'yxat tuzish uchun kartalar yoki batafsil sahifalarda Saqlash tugmasidan foydalaning."
     },
     search: {
       searchLabel: "Qidiruv",
@@ -577,6 +592,7 @@ const translations = {
       listings: "Объявления",
       addListing: "Добавить объявление",
       chat: "Сообщения",
+      saved: "Сохранённое",
       account: "Кабинет",
       owner: "Владелец",
       login: "Войти",
@@ -665,7 +681,11 @@ const translations = {
       metersAway: "м от вас",
       active: "Активно",
       rented: "Сдано",
-      sold: "Продано"
+      sold: "Продано",
+      save: "Сохранить",
+      saved: "Сохранено",
+      saveListing: "Сохранить объявление",
+      removeFromSaved: "Убрать из сохранённого"
     },
     home: {
       title: "Используйте поиск ниже, чтобы найти квартиру или дом",
@@ -678,6 +698,16 @@ const translations = {
       emptyTitle: "По этим фильтрам ничего не найдено",
       emptyDescription:
         "Расширьте диапазон цены, уберите фильтр по комнатам или попробуйте другой адрес и ориентир."
+    },
+    savedPage: {
+      pill: "Избранное",
+      title: "Сохранённые объявления",
+      intro:
+        "Держите здесь короткий список, пока сравниваете цены, планировки и способы связи.",
+      browseMore: "Смотреть ещё",
+      emptyTitle: "Пока нет сохранённых объявлений",
+      emptyDescription:
+        "Открывайте карточки или страницы объявлений и используйте Сохранить, чтобы собрать свой список."
     },
     search: {
       searchLabel: "Поиск",
