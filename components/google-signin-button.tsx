@@ -9,7 +9,7 @@ export function GoogleSignInButton({ nextPath, label, dividerLabel }: GoogleSign
     <div className="space-y-5">
       <a
         href={`/api/auth/google?next=${encodeURIComponent(nextPath)}`}
-        className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/5 px-5 py-3.5 text-sm font-bold text-white transition duration-200 hover:-translate-y-0.5 hover:border-cyan-400/40 hover:bg-white/10 hover:shadow-sm"
+        className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-300 bg-white px-5 py-3.5 text-sm font-bold text-slate-800 shadow-xs transition duration-200 hover:-translate-y-0.5 hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-sm"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
           <path

@@ -23,8 +23,8 @@ export function BackLink({ href, label }: BackLinkProps) {
       onPointerCancel={clearPressed}
       onPointerLeave={clearPressed}
       style={{ WebkitTapHighlightColor: "transparent" }}
-      className={`inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 py-1.5 pl-2.5 pr-4 text-sm font-bold text-slate-300 shadow-sm transition-all duration-150 ease-out hover:border-cyan-400/40 hover:bg-white/10 hover:text-white ${
-        isPressed ? "scale-95 bg-white/15" : "scale-100"
+      className={`inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white py-1.5 pl-2.5 pr-4 text-sm font-bold text-slate-700 shadow-sm transition-all duration-150 ease-out hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 ${
+        isPressed ? "scale-95 bg-blue-50" : "scale-100"
       }`}
     >
       <svg

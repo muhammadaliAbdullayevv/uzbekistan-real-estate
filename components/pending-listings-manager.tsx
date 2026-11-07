@@ -101,8 +101,8 @@ export function PendingListingsManager({ listings, copy }: PendingListingsManage
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#0D131C] px-4 py-3 text-sm">
-        <label className="flex items-center gap-2 text-ink/70">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-xs">
+        <label className="flex items-center gap-2 font-semibold text-slate-700">
           <input
             type="checkbox"
             checked={listings.length > 0 && selected.size === listings.length}
@@ -114,12 +114,12 @@ export function PendingListingsManager({ listings, copy }: PendingListingsManage
 
         {selected.size > 0 ? (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-ink/60">{formatMessage(copy.selectedCount, { count: selected.size })}</span>
+            <span className="text-slate-600">{formatMessage(copy.selectedCount, { count: selected.size })}</span>
             <button
               type="button"
               disabled={isSubmitting}
               onClick={() => bulkAction("APPROVED")}
-              className="rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:from-cyan-300 hover:to-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {copy.bulkApprove}
             </button>

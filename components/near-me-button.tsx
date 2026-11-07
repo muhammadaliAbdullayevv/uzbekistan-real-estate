@@ -68,8 +68,8 @@ export function NearMeButton({ copy }: NearMeButtonProps) {
         disabled={isLocating}
         className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-70 sm:text-sm ${
           isActive
-            ? "border-cyan-400 bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 shadow-md shadow-cyan-500/20"
-            : "border-cyan-500/30 bg-cyan-500/10 text-cyan-300 hover:border-cyan-400/60 hover:bg-cyan-500/20"
+            ? "border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-600/20"
+            : "border-blue-200 bg-blue-50 text-blue-700 hover:border-blue-300 hover:bg-blue-100"
         }`}
       >
         {isActive ? (

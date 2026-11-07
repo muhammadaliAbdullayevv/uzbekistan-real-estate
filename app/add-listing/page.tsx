@@ -18,50 +18,34 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
   const botUsername = getTelegramBotUsername();
 
   return (
-    <div className="shell space-y-6">
-      <SmartBackLink label={t.common.backToListings} fallbackHref="/" />
+    <div className="shell -mt-4 space-y-3 sm:mt-0 sm:space-y-5">
+      <div className="mx-auto max-w-5xl space-y-3 sm:space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <SmartBackLink label={locale === "ru" ? "Назад" : "Orqaga"} fallbackHref="/" />
+            <h1 className="font-display text-lg font-extrabold text-slate-900 sm:text-2xl">
+              {locale === "ru" ? "Новое объявление" : "Yangi e'lon joylash"}
+            </h1>
+          </div>
 
-      <div className="mx-auto max-w-3xl space-y-6">
-        <div>
-          <h1 className="font-display text-2xl font-extrabold text-white sm:text-3xl">
-            {t.addListing.title}
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-slate-400">{t.addListing.intro}</p>
+          {/* Fast-Track Telegram Bot Submission Pill */}
+          {botUsername ? (
+            <a
+              href={`https://t.me/${botUsername}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-white px-3 py-1.5 text-[11px] font-extrabold text-blue-700 shadow-2xs transition hover:border-blue-400 hover:bg-blue-50 sm:text-xs"
+            >
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" />
+              </svg>
+              <span>@{botUsername}</span>
+            </a>
+          ) : null}
         </div>
 
-        {/* Fast-Track Telegram Bot Submission Banner */}
-        {botUsername ? (
-          <div className="rounded-[26px] border border-cyan-500/30 bg-gradient-to-r from-[#0F1B29] via-[#122032] to-[#0B2228] p-4 shadow-xl sm:p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="space-y-1">
-                <p className="flex items-center gap-2 text-xs font-extrabold text-cyan-300 sm:text-sm">
-                  <span aria-hidden="true">⚡</span>
-                  <span>
-                    {locale === "ru"
-                      ? "Спешите? Разместите через Telegram-бот за 30 секунд"
-                      : "Shoshilayapsizmi? Telegram botda 30 soniyada joylang"}
-                  </span>
-                </p>
-                <p className="text-xs text-slate-300">
-                  {locale === "ru"
-                    ? "Просто отправьте фото и описание боту — Gemini AI сам заполнит объявление."
-                    : "Forma to'ldirish shart emas — botga rasmlar va qisqa xabar yuboring, Gemini AI e'lonni o'zi tayyorlaydi!"}
-                </p>
-              </div>
-              <a
-                href={`https://t.me/${botUsername}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 px-4 py-2.5 text-xs font-extrabold text-slate-950 shadow-md transition hover:from-cyan-300 hover:to-teal-300"
-              >
-                <span aria-hidden="true">🤖</span>
-                <span>@{botUsername} &rarr;</span>
-              </a>
-            </div>
-          </div>
-        ) : null}
-
         <AddListingForm
+          locale={locale}
           regionOptions={getRegionOptions(locale)}
           districtOptionsByRegion={getDistrictOptionsByRegion(locale)}
           listingTypeLabels={t.enums.listingTypes}

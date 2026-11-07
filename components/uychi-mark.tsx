@@ -5,16 +5,14 @@
  */
 export function UychiMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
-      <path
-        d="M17 90 L17 42 L50 10 L83 42 L83 90"
-        fill="none"
-        stroke="#1D3B34"
-        strokeWidth="15"
-        strokeLinejoin="miter"
-        strokeLinecap="butt"
-      />
-      <rect x="38" y="54" width="24" height="44" fill="#B07D2B" />
-    </svg>
+    <span
+      className={`inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] text-white shadow-md shadow-blue-600/20 ${className ?? "h-8 w-8"}`}
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 24 24" className="h-[58%] w-[58%]" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9.5z" />
+        <path d="M9 21V13h6v8" />
+      </svg>
+    </span>
   );
 }

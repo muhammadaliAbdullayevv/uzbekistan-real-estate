@@ -23,6 +23,22 @@ export function isValidListingImageValue(value: string) {
   }
 }
 
+const optionalNullableInt = (min: number, max: number) =>
+  z.preprocess((value) => {
+    if (value === "" || value === undefined || value === null) {
+      return null;
+    }
+    return value;
+  }, z.coerce.number().int().min(min).max(max).nullable().optional().default(null));
+
+const optionalNullableFloat = (min: number, max: number) =>
+  z.preprocess((value) => {
+    if (value === "" || value === undefined || value === null) {
+      return null;
+    }
+    return value;
+  }, z.coerce.number().min(min).max(max).nullable().optional().default(null));
+
 export const listingInputSchema = z
   .object({
     listingType: z.enum(LISTING_TYPES),
@@ -33,12 +49,30 @@ export const listingInputSchema = z
     region: z.enum(UZBEKISTAN_REGIONS),
     district: z.string().trim().min(2, "District or city is required.").max(80),
     city: z.string().trim().max(80).optional().or(z.literal("")),
-    address: z.string().trim().min(5, "Address is required.").max(200),
+    street: z.string().trim().max(120).optional().nullable().or(z.literal("")),
+    address: z.string().trim().min(2, "Address is required.").max(200),
     rooms: z.coerce.number().int().min(1).max(20),
     area: z.coerce.number().int().min(10).max(1000),
+    floor: optionalNullableInt(0, 100),
+    totalFloors: optionalNullableInt(1, 100),
+    plotArea: optionalNullableFloat(0.1, 500),
     propertyType: z.enum(PROPERTY_TYPES),
     rentType: z.enum(RENT_TYPES).optional().nullable().or(z.literal("")),
     furnishing: z.enum(FURNISHING_STATUSES).optional().nullable().or(z.literal("")),
+    negotiable: z.preprocess(
+      (value) => value === true || value === "true" || value === "on",
+      z.boolean().optional().default(false)
+    ),
+    amenities: z
+      .array(z.string().trim().min(1).max(40))
+      .max(30)
+      .optional()
+      .default([]),
+    tenantPreferences: z
+      .array(z.string().trim().min(1).max(40))
+      .max(20)
+      .optional()
+      .default([]),
     latitude: z.coerce.number().min(-90, "Location is required.").max(90),
     longitude: z.coerce.number().min(-180, "Location is required.").max(180),
     phone: z.string().trim().min(7, "Phone number is required.").max(30),
@@ -75,6 +109,13 @@ export const listingInputSchema = z
   .transform((value) => ({
     ...value,
     city: value.city?.trim() || null,
+    street: value.street?.trim() || null,
+    floor: value.floor ?? null,
+    totalFloors: value.totalFloors ?? null,
+    plotArea: value.plotArea ?? null,
+    negotiable: Boolean(value.negotiable),
+    amenities: value.amenities ?? [],
+    tenantPreferences: value.tenantPreferences ?? [],
     rentType: value.listingType === "rent" ? value.rentType ?? "monthly" : null,
     furnishing: value.furnishing || null
   }));

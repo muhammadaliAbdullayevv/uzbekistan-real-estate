@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import {
+  CURRENCIES,
   FURNISHING_STATUSES,
   LISTING_TYPES,
   PROPERTY_TYPES,
@@ -11,6 +12,7 @@ import { getTranslations } from "@/lib/i18n";
 import { getRegionOptions } from "@/lib/locations";
 import { LocationSelect } from "@/components/location-select";
 import { NearMeButton } from "@/components/near-me-button";
+import { SearchFilterModal } from "@/components/search-filter-modal";
 
 type SearchFiltersProps = {
   locale: Locale;
@@ -47,8 +49,24 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
   const currentRooms = values.rooms ?? "";
   const currentRentType = values.rentType ?? "";
   const currentFurnishing = values.furnishing ?? "";
+  const currentCurrency = values.currency ?? "";
   const currentSort = values.sort ?? "newest";
   const isVerifiedOnly = values.verifiedOnly === "1";
+
+  const activeFilterCount = [
+    values.listingType,
+    values.region,
+    values.district,
+    values.minPrice,
+    values.maxPrice,
+    values.rooms,
+    values.propertyType,
+    values.rentType,
+    values.furnishing,
+    values.verifiedOnly,
+    values.nearLat,
+    values.sort && values.sort !== "newest" ? values.sort : undefined
+  ].filter(Boolean).length;
 
   const roomOptions = [
     { value: "", label: t.search.anyOption },
@@ -59,211 +77,340 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
     { value: "5", label: t.search.roomsPlus }
   ];
 
+  const quickPills = [
+    {
+      label: t.search.allListingTypes,
+      href: "/",
+      active: !currentPropertyType && !currentListingType && !currentRentType
+    },
+    {
+      label: t.enums.propertyTypes.flat,
+      href: "/?propertyType=flat",
+      active: currentPropertyType === "flat"
+    },
+    {
+      label: t.enums.propertyTypes.house,
+      href: "/?propertyType=house",
+      active: currentPropertyType === "house"
+    },
+    {
+      label: t.enums.propertyTypes.room,
+      href: "/?propertyType=room",
+      active: currentPropertyType === "room"
+    },
+    {
+      label: t.enums.rentTypes.daily,
+      href: "/?listingType=rent&rentType=daily",
+      active: currentRentType === "daily"
+    },
+    {
+      label: t.enums.listingTypes.sale,
+      href: "/?listingType=sale",
+      active: currentListingType === "sale"
+    }
+  ];
+
   return (
-    <form className="rounded-[28px] border border-white/10 bg-gradient-to-b from-[#121822] to-[#0D121A] p-3.5 shadow-2xl sm:p-5">
-      {values.nearLat && values.nearLng ? (
-        <>
-          <input type="hidden" name="nearLat" defaultValue={values.nearLat} />
-          <input type="hidden" name="nearLng" defaultValue={values.nearLng} />
-        </>
-      ) : null}
+    <div className="space-y-2.5">
+      <form
+        action="/"
+        method="get"
+        className="flex items-center gap-2 rounded-2xl border border-slate-200/90 bg-white p-1.5 pl-3.5 shadow-[0_6px_20px_-6px_rgba(15,23,42,0.07),0_2px_6px_rgba(15,23,42,0.03)] sm:p-2 sm:pl-4"
+      >
+        {values.nearLat && values.nearLng ? (
+          <>
+            <input type="hidden" name="nearLat" defaultValue={values.nearLat} />
+            <input type="hidden" name="nearLng" defaultValue={values.nearLng} />
+          </>
+        ) : null}
 
-      {/* Top Row: Segment Deal Control + Near Me GPS */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3.5">
-        <div className="grid flex-1 grid-cols-3 gap-1 rounded-2xl border border-white/10 bg-black/40 p-1 sm:max-w-md">
-          {listingTypeOptions.map((option) => (
-            <label key={option.value || "all"} className="cursor-pointer">
-              <input
-                type="radio"
-                name="listingType"
-                value={option.value}
-                defaultChecked={currentListingType === option.value}
-                className="peer sr-only"
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="h-4 w-4 shrink-0 text-slate-400 sm:h-5 sm:w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+
+        <label htmlFor="q" className="sr-only">
+          {t.search.searchLabel}
+        </label>
+        <input
+          id="q"
+          name="q"
+          placeholder={t.search.searchPlaceholder}
+          defaultValue={values.q}
+          className="h-10 min-w-0 flex-1 bg-transparent text-xs font-semibold text-slate-900 placeholder:font-medium placeholder:text-slate-400/75 outline-none sm:h-11 sm:text-sm"
+        />
+
+        {/* Hidden Filter Modal Trigger & Drawer */}
+        <SearchFilterModal activeCount={activeFilterCount} filterLabel={t.search.filters}>
+          <div className="space-y-4">
+            {/* Deal Type Segmented Toggle */}
+            <div>
+              <p className="mb-1.5 text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                {t.common.listingType}
+              </p>
+              <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-slate-200 bg-[#F3F6FB] p-1">
+                {listingTypeOptions.map((option) => (
+                  <label key={option.value || "all"} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="listingType"
+                      value={option.value}
+                      defaultChecked={currentListingType === option.value}
+                      className="peer sr-only"
+                    />
+                    <span className="flex h-9 items-center justify-center rounded-xl px-2 text-center text-xs font-extrabold text-slate-600 transition peer-checked:bg-blue-600 peer-checked:text-white peer-checked:shadow-sm">
+                      {option.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Region & District */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="region" className="mb-1.5 block text-xs font-extrabold text-slate-700">
+                  {t.search.region}
+                </label>
+                <LocationSelect
+                  id="region"
+                  name="region"
+                  defaultValue={values.region}
+                  options={getRegionOptions(locale)}
+                  emptyLabel={t.search.allRegions}
+                  className="h-11 rounded-xl text-xs font-semibold sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="district" className="mb-1.5 block text-xs font-extrabold text-slate-700">
+                  {t.search.districtCity}
+                </label>
+                <input
+                  id="district"
+                  name="district"
+                  defaultValue={values.district}
+                  placeholder={t.search.districtCityPlaceholder}
+                  className="input h-11 rounded-xl text-xs font-semibold sm:text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Property Type & Rooms */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="propertyType" className="mb-1.5 block text-xs font-extrabold text-slate-700">
+                  {t.common.propertyType}
+                </label>
+                <select
+                  id="propertyType"
+                  name="propertyType"
+                  defaultValue={currentPropertyType}
+                  className="select h-11 rounded-xl text-xs font-semibold sm:text-sm"
+                >
+                  <option value="">{t.search.anyOption}</option>
+                  {PROPERTY_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {t.enums.propertyTypes[type]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <p className="mb-1.5 text-xs font-extrabold text-slate-700">
+                  {t.common.rooms}
+                </p>
+                <div className="grid grid-cols-6 gap-1 rounded-xl border border-slate-200 bg-[#F3F6FB] p-1">
+                  {roomOptions.map((room) => (
+                    <label key={room.value || "any"} className="cursor-pointer">
+                      <input
+                        type="radio"
+                        name="rooms"
+                        value={room.value}
+                        defaultChecked={currentRooms === room.value}
+                        className="peer sr-only"
+                      />
+                      <span className="flex h-8 items-center justify-center rounded-lg text-xs font-extrabold text-slate-600 transition peer-checked:bg-blue-600 peer-checked:text-white">
+                        {room.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Price Range & Currency */}
+            <div>
+              <p className="mb-1.5 text-xs font-extrabold text-slate-700">
+                {t.search.priceRange}
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                <input
+                  name="minPrice"
+                  type="number"
+                  min="0"
+                  defaultValue={values.minPrice}
+                  placeholder={t.search.priceMin}
+                  className="input h-11 rounded-xl text-xs font-semibold sm:text-sm"
+                />
+                <input
+                  name="maxPrice"
+                  type="number"
+                  min="0"
+                  defaultValue={values.maxPrice}
+                  placeholder={t.search.priceMax}
+                  className="input h-11 rounded-xl text-xs font-semibold sm:text-sm"
+                />
+                <select
+                  name="currency"
+                  defaultValue={currentCurrency}
+                  className="select h-11 rounded-xl text-xs font-semibold sm:text-sm"
+                >
+                  <option value="">USD / UZS</option>
+                  {CURRENCIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Rent Duration, Furnishing & Sort */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div>
+                <label htmlFor="rentType" className="mb-1.5 block text-xs font-extrabold text-slate-700">
+                  {t.search.rentDuration}
+                </label>
+                <select
+                  id="rentType"
+                  name="rentType"
+                  defaultValue={currentRentType}
+                  className="select h-11 rounded-xl text-xs font-semibold"
+                >
+                  <option value="">{t.search.anyOption}</option>
+                  {RENT_TYPES.map((rt) => (
+                    <option key={rt} value={rt}>
+                      {t.enums.rentTypes[rt]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="furnishing" className="mb-1.5 block text-xs font-extrabold text-slate-700">
+                  {locale === "ru" ? "Мебель" : "Jihozlanganlik"}
+                </label>
+                <select
+                  id="furnishing"
+                  name="furnishing"
+                  defaultValue={currentFurnishing}
+                  className="select h-11 rounded-xl text-xs font-semibold"
+                >
+                  <option value="">{t.search.anyOption}</option>
+                  {FURNISHING_STATUSES.map((fs) => (
+                    <option key={fs} value={fs}>
+                      {t.enums.furnishingStatuses[fs]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="sort" className="mb-1.5 block text-xs font-extrabold text-slate-700">
+                  {t.search.sort}
+                </label>
+                <select
+                  id="sort"
+                  name="sort"
+                  defaultValue={currentSort}
+                  className="select h-11 rounded-xl text-xs font-semibold"
+                >
+                  <option value="newest">{t.search.sortNewest}</option>
+                  <option value="price_asc">{t.search.sortPriceAsc}</option>
+                  <option value="price_desc">{t.search.sortPriceDesc}</option>
+                </select>
+              </div>
+            </div>
+
+            {/* GPS Near Me & Verified Owner */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <NearMeButton
+                copy={{
+                  nearMe: t.search.nearMe,
+                  locating: t.search.locating,
+                  nearMeActive: t.search.nearMeActive,
+                  nearMeError: t.search.nearMeError
+                }}
               />
-              <span className="flex h-9 items-center justify-center rounded-xl px-2 text-center text-xs font-extrabold text-slate-400 transition peer-checked:bg-gradient-to-r peer-checked:from-cyan-400 peer-checked:to-teal-400 peer-checked:text-slate-950 peer-checked:shadow-md sm:h-10 sm:text-sm">
-                {option.label}
-              </span>
-            </label>
-          ))}
-        </div>
 
-        <div className="flex items-center gap-2">
-          <NearMeButton
-            copy={{
-              nearMe: t.search.nearMe,
-              locating: t.search.locating,
-              nearMeActive: t.search.nearMeActive,
-              nearMeError: t.search.nearMeError
-            }}
-          />
-          <Link
-            href="/"
-            className="inline-flex h-9 items-center rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-bold text-slate-300 transition hover:border-white/25 hover:text-white"
-          >
-            {t.search.resetFilters}
-          </Link>
-        </div>
-      </div>
+              <label className="cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="verifiedOnly"
+                  value="1"
+                  defaultChecked={isVerifiedOnly}
+                  className="peer sr-only"
+                />
+                <span className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-[#F3F6FB] px-3 text-xs font-bold text-slate-700 transition peer-checked:border-emerald-300 peer-checked:bg-emerald-50 peer-checked:text-emerald-700">
+                  <span>✓</span>
+                  <span>{t.search.verifiedOnly}</span>
+                </span>
+              </label>
+            </div>
 
-      {/* Main Search Inputs: Keyword, Region, District, Submit */}
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.5fr)_minmax(170px,210px)_minmax(170px,210px)_auto]">
-        <div className="sm:col-span-2 lg:col-span-1">
-          <label htmlFor="q" className="sr-only">
-            {t.search.searchLabel}
-          </label>
-          <div className="relative">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-400"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3.5-3.5" />
-            </svg>
-            <input
-              id="q"
-              name="q"
-              placeholder={t.search.searchPlaceholder}
-              defaultValue={values.q}
-              className="input h-12 rounded-2xl pl-11 pr-4 text-sm font-medium"
-            />
+            {/* Footer Actions */}
+            <div className="flex items-center gap-2.5 border-t border-slate-200 pt-4">
+              <Link
+                href="/"
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-[#F3F6FB] px-4 text-xs font-extrabold text-slate-700 transition hover:bg-slate-200 sm:text-sm"
+              >
+                {t.search.resetFilters}
+              </Link>
+              <button
+                type="submit"
+                className="btn-primary h-11 flex-1 rounded-xl text-xs font-extrabold sm:text-sm"
+              >
+                {t.search.applyFilters}
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div>
-          <LocationSelect
-            id="region"
-            name="region"
-            defaultValue={values.region}
-            options={getRegionOptions(locale)}
-            emptyLabel={t.search.allRegions}
-            className="h-12 rounded-2xl text-sm font-medium"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="district" className="sr-only">
-            {t.search.districtCity}
-          </label>
-          <input
-            id="district"
-            name="district"
-            defaultValue={values.district}
-            placeholder={t.search.districtCityPlaceholder}
-            className="input h-12 rounded-2xl text-sm font-medium"
-          />
-        </div>
+        </SearchFilterModal>
 
         <button
           type="submit"
-          className="btn-primary h-12 rounded-2xl px-6 text-sm font-extrabold shadow-lg shadow-cyan-500/20 sm:col-span-2 lg:col-span-1"
+          className="btn-primary hidden h-10 rounded-xl px-5 text-xs font-extrabold sm:inline-flex sm:h-11 sm:text-sm"
         >
           {t.search.searchButton}
         </button>
-      </div>
+      </form>
 
-      {/* Quick Filter Chips Bar: Rooms, Property Type, Rent Duration, Furnishing, Verified, Sort */}
-      <div className="mt-3.5 flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
-        {/* Rooms Pills */}
-        <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-black/30 p-1">
-          <span className="px-2 text-[11px] font-bold text-slate-400">
-            {t.common.rooms}:
-          </span>
-          {roomOptions.map((room) => (
-            <label key={room.value || "any"} className="cursor-pointer">
-              <input
-                type="radio"
-                name="rooms"
-                value={room.value}
-                defaultChecked={currentRooms === room.value}
-                className="peer sr-only"
-              />
-              <span className="inline-flex h-7 items-center justify-center rounded-lg px-2 text-xs font-bold text-slate-300 transition peer-checked:bg-cyan-500/25 peer-checked:text-cyan-300 peer-checked:ring-1 peer-checked:ring-cyan-400/50">
-                {room.label}
-              </span>
-            </label>
-          ))}
-        </div>
-
-        {/* Property Type Select */}
-        <select
-          name="propertyType"
-          defaultValue={currentPropertyType}
-          aria-label={t.common.propertyType}
-          className="select h-9 w-auto min-w-[125px] rounded-xl py-0 pl-3 pr-8 text-xs font-bold"
-        >
-          <option value="">{t.common.propertyType}: {t.search.anyOption}</option>
-          {PROPERTY_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {t.enums.propertyTypes[type]}
-            </option>
-          ))}
-        </select>
-
-        {/* Rent Duration Select */}
-        <select
-          name="rentType"
-          defaultValue={currentRentType}
-          aria-label={t.search.rentDuration}
-          className="select h-9 w-auto min-w-[125px] rounded-xl py-0 pl-3 pr-8 text-xs font-bold"
-        >
-          <option value="">{t.search.rentDuration}: {t.search.anyOption}</option>
-          {RENT_TYPES.map((rt) => (
-            <option key={rt} value={rt}>
-              {t.enums.rentTypes[rt]}
-            </option>
-          ))}
-        </select>
-
-        {/* Furnishing Select */}
-        <select
-          name="furnishing"
-          defaultValue={currentFurnishing}
-          aria-label="Furnishing"
-          className="select h-9 w-auto min-w-[125px] rounded-xl py-0 pl-3 pr-8 text-xs font-bold"
-        >
-          <option value="">{t.search.anyOption}</option>
-          {FURNISHING_STATUSES.map((fs) => (
-            <option key={fs} value={fs}>
-              {t.enums.furnishingStatuses[fs]}
-            </option>
-          ))}
-        </select>
-
-        {/* Verified Owner Toggle */}
-        <label className="cursor-pointer">
-          <input
-            type="checkbox"
-            name="verifiedOnly"
-            value="1"
-            defaultChecked={isVerifiedOnly}
-            className="peer sr-only"
-          />
-          <span className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-[#0D131C] px-3 text-xs font-bold text-slate-300 transition peer-checked:border-emerald-400/50 peer-checked:bg-emerald-500/15 peer-checked:text-emerald-300">
-            <span>✓</span>
-            <span>{t.search.verifiedOnly}</span>
-          </span>
-        </label>
-
-        {/* Sort Select */}
-        <div className="ml-auto flex items-center gap-1.5">
-          <select
-            name="sort"
-            defaultValue={currentSort}
-            aria-label={t.search.sort}
-            className="select h-9 w-auto min-w-[145px] rounded-xl py-0 pl-3 pr-8 text-xs font-bold"
+      {/* Quick Category Pills */}
+      <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto pb-0.5">
+        {quickPills.map((pill) => (
+          <Link
+            key={pill.label}
+            href={pill.href}
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-extrabold transition ${
+              pill.active
+                ? "border-blue-600 bg-blue-600 text-white shadow-xs"
+                : "border-slate-200/90 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600"
+            }`}
           >
-            <option value="newest">{t.search.sortNewest}</option>
-            <option value="price_asc">{t.search.sortPriceAsc}</option>
-            <option value="price_desc">{t.search.sortPriceDesc}</option>
-          </select>
-        </div>
+            {pill.label}
+          </Link>
+        ))}
       </div>
-    </form>
+    </div>
   );
 }

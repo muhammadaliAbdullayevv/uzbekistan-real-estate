@@ -49,7 +49,7 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#090C10]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/90 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(15,23,42,0.06)] backdrop-blur-2xl sm:hidden"
     >
       <div className="flex items-stretch justify-around">
         {tabs.map((tab) => {
@@ -77,7 +77,7 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
                 aria-label={tab.label}
               >
                 <span
-                  className={`-mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-400 via-teal-400 to-indigo-500 text-slate-950 shadow-[0_10px_28px_-6px_rgba(34,211,238,0.55)] ring-4 ring-[#06080B] transition-transform duration-150 ease-out ${
+                  className={`-mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white shadow-[0_10px_24px_-6px_rgba(37,99,235,0.5)] ring-4 ring-white transition-transform duration-150 ease-out ${
                     isPressed ? "scale-90" : "scale-100"
                   }`}
                 >
@@ -102,7 +102,7 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
               onPointerLeave={() => clearPressed(tab.href)}
               style={{ WebkitTapHighlightColor: "transparent" }}
               className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-bold transition-all duration-150 ease-out ${
-                isActive ? "text-cyan-400" : "text-slate-400 hover:text-white"
+                isActive ? "text-blue-600" : "text-slate-500 hover:text-slate-900"
               } ${isPressed ? "scale-90 opacity-70" : "scale-100"}`}
               aria-current={isActive ? "page" : undefined}
             >

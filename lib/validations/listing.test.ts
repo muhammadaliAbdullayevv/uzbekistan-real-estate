@@ -175,4 +175,26 @@ describe("listingInputSchema -- rent requires a rentType", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts floor, totalFloors, street, negotiable, amenities, and tenantPreferences", () => {
+    const result = listingInputSchema.safeParse({
+      ...base,
+      rentType: "monthly",
+      floor: 3,
+      totalFloors: 9,
+      street: "Qatortol ko'chasi, 9-kvartal",
+      negotiable: true,
+      amenities: ["heating", "ac", "pool"],
+      tenantPreferences: ["family", "students"]
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.floor).toBe(3);
+      expect(result.data.totalFloors).toBe(9);
+      expect(result.data.street).toBe("Qatortol ko'chasi, 9-kvartal");
+      expect(result.data.negotiable).toBe(true);
+      expect(result.data.amenities).toEqual(["heating", "ac", "pool"]);
+      expect(result.data.tenantPreferences).toEqual(["family", "students"]);
+    }
+  });
 });

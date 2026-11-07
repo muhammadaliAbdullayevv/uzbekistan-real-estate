@@ -82,22 +82,33 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
       {hasGeminiConfig() ? (
         <Link
           href="/ai-uychi"
-          className="group flex items-center justify-between gap-4 rounded-[24px] border border-cyan-500/30 bg-gradient-to-r from-[#0F1A28] via-[#0D2230] to-[#0A2524] p-4 shadow-lg transition hover:border-cyan-400/60 sm:px-6"
+          className="group flex items-center justify-between gap-4 rounded-[22px] border border-blue-200/90 bg-gradient-to-r from-white via-[#EFF6FF] to-blue-50/90 p-3.5 shadow-[0_6px_18px_-6px_rgba(37,99,235,0.1)] transition hover:border-blue-400 sm:rounded-[24px] sm:px-6 sm:py-4"
         >
           <div className="flex items-center gap-3.5">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-cyan-400 to-indigo-500 text-lg font-extrabold text-slate-950 shadow-md shadow-cyan-500/25">
-              ✨
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white shadow-md shadow-blue-600/20 sm:h-11 sm:w-11">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3Z" />
+              </svg>
             </span>
             <div>
-              <p className="text-sm font-extrabold text-white sm:text-base">
+              <p className="text-sm font-extrabold text-slate-900 sm:text-base">
                 {t.aiUychi.title}
               </p>
-              <p className="text-xs text-cyan-200/80 sm:text-sm">
+              <p className="text-xs font-medium text-slate-600 sm:text-sm">
                 {t.aiUychi.subtitle}
               </p>
             </div>
           </div>
-          <span className="shrink-0 rounded-xl border border-cyan-400/40 bg-cyan-400/15 px-3 py-1.5 text-xs font-extrabold text-cyan-300 transition group-hover:bg-cyan-400 group-hover:text-slate-950">
+          <span className="shrink-0 rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-xs font-extrabold text-blue-600 shadow-xs transition group-hover:bg-blue-600 group-hover:text-white">
             &rarr;
           </span>
         </Link>
@@ -106,7 +117,7 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
       {recentListings.length > 0 ? (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-extrabold text-white sm:text-xl">
+            <h2 className="font-display text-lg font-extrabold text-slate-900 sm:text-xl">
               {t.home.recentlyAddedTitle}
             </h2>
           </div>
@@ -129,13 +140,13 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
 
       <section className="space-y-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
-          <p className="text-sm font-bold text-slate-300 sm:text-base">
-            <span className="font-display text-lg font-extrabold text-cyan-400 sm:text-xl">
+          <p className="text-sm font-bold text-slate-700 sm:text-base">
+            <span className="font-display text-lg font-extrabold text-blue-600 sm:text-xl">
               {totalCount}
             </span>{" "}
             {t.home.resultsCountSuffix}
           </p>
-          <p className="text-xs font-medium text-slate-400">
+          <p className="text-xs font-medium text-slate-500">
             {t.home.resultsNote}
           </p>
         </div>

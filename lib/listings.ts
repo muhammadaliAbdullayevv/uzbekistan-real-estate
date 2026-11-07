@@ -56,12 +56,19 @@ export type ListingWithImages = {
   region: string;
   district: string;
   city: string | null;
+  street?: string | null;
   address: string;
   rooms: number;
   area: number;
+  floor?: number | null;
+  totalFloors?: number | null;
+  plotArea?: number | null;
   propertyType: PropertyType;
   rentType: RentTypeValue | null;
   furnishing: FurnishingStatusValue | null;
+  negotiable?: boolean;
+  amenities?: string[];
+  tenantPreferences?: string[];
   latitude: number | null;
   longitude: number | null;
   locationPrecision: "EXACT" | "APPROXIMATE";
@@ -121,12 +128,19 @@ function buildSelectSql(near?: NearPoint) {
       l."region",
       l."district",
       l."city",
+      l."street",
       l."address",
       l."rooms",
       l."area",
+      l."floor",
+      l."totalFloors",
+      l."plotArea",
       l."propertyType",
       l."rentType",
       l."furnishing",
+      l."negotiable",
+      COALESCE(l."amenities", ARRAY[]::TEXT[]) AS "amenities",
+      COALESCE(l."tenantPreferences", ARRAY[]::TEXT[]) AS "tenantPreferences",
       l."latitude",
       l."longitude",
       l."locationPrecision",
@@ -242,6 +256,7 @@ function buildWhereSql(filters: ListingSearchParams, near?: NearPoint) {
         OR l."region" ILIKE ${pattern}
         OR l."district" ILIKE ${pattern}
         OR COALESCE(l."city", '') ILIKE ${pattern}
+        OR COALESCE(l."street", '') ILIKE ${pattern}
         OR l."address" ILIKE ${pattern}
       )`
     );
@@ -528,12 +543,19 @@ export async function updateListingForUser(
     region: string;
     district: string;
     city: string | null;
+    street?: string | null;
     address: string;
     rooms: number;
     area: number;
+    floor?: number | null;
+    totalFloors?: number | null;
+    plotArea?: number | null;
     propertyType: PropertyType;
     rentType: RentTypeValue | null;
     furnishing: FurnishingStatusValue | null;
+    negotiable?: boolean;
+    amenities?: string[];
+    tenantPreferences?: string[];
     latitude: number;
     longitude: number;
     phone: string;
@@ -565,6 +587,8 @@ export async function updateListingForUser(
     const furnishingSql = input.furnishing
       ? Prisma.sql`CAST(${input.furnishing} AS "FurnishingStatus")`
       : Prisma.sql`NULL`;
+    const amenitiesVal = input.amenities ?? [];
+    const tenantPreferencesVal = input.tenantPreferences ?? [];
 
     await tx.$executeRaw(
       Prisma.sql`
@@ -578,12 +602,19 @@ export async function updateListingForUser(
           "region" = ${input.region},
           "district" = ${input.district},
           "city" = ${input.city},
+          "street" = ${input.street ?? null},
           "address" = ${input.address},
           "rooms" = ${input.rooms},
           "area" = ${input.area},
+          "floor" = ${input.floor ?? null},
+          "totalFloors" = ${input.totalFloors ?? null},
+          "plotArea" = ${input.plotArea ?? null},
           "propertyType" = CAST(${input.propertyType} AS "PropertyType"),
           "rentType" = ${rentTypeSql},
           "furnishing" = ${furnishingSql},
+          "negotiable" = ${Boolean(input.negotiable)},
+          "amenities" = ${amenitiesVal},
+          "tenantPreferences" = ${tenantPreferencesVal},
           "latitude" = ${input.latitude},
           "longitude" = ${input.longitude},
           "locationPrecision" = CAST('EXACT' AS "LocationPrecision"),

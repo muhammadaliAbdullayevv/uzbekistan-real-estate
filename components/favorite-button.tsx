@@ -64,7 +64,7 @@ export function FavoriteButton({
         disabled={isPending}
         aria-pressed={saved}
         aria-label={saved ? copy.removeFromSaved : copy.saveListing}
-        className="badge-blur inline-flex h-9 w-9 items-center justify-center rounded-full text-white shadow-lg transition hover:scale-110 hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-60 sm:h-10 sm:w-10"
+        className="badge-blur inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-700 shadow-md transition hover:scale-110 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-60 sm:h-9 sm:w-9"
       >
         <HeartIcon filled={saved} />
       </button>
@@ -90,11 +90,11 @@ function HeartIcon({ filled }: { filled: boolean }) {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className={`h-4 w-4 sm:h-5 sm:w-5 ${
-        filled ? "fill-rose-500 text-rose-500" : "fill-none text-white"
+      className={`h-4 w-4 sm:h-[18px] sm:w-[18px] ${
+        filled ? "fill-rose-500 text-rose-500" : "fill-none text-current"
       }`}
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="2.1"
       strokeLinecap="round"
       strokeLinejoin="round"
     >

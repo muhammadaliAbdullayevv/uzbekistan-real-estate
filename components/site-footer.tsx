@@ -8,31 +8,31 @@ export function SiteFooter() {
   const t = getTranslations(locale);
 
   return (
-    <footer className="border-t border-white/10 bg-[#080B10]">
-      <div className="shell flex flex-col gap-4 py-8 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+    <footer className="border-t border-slate-200/90 bg-white">
+      <div className="shell flex flex-col gap-4 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="font-display font-bold text-white">
+          <p className="font-display font-extrabold text-slate-900">
             {siteConfig.name.toUpperCase()}
-            <span className="text-cyan-400">.UZ</span>
+            <span className="text-blue-600">.UZ</span>
           </p>
-          <p className="mt-1 text-xs text-slate-400 sm:text-sm">
+          <p className="mt-1 text-xs text-slate-500 sm:text-sm">
             {formatMessage(t.footer.summary, {
               location: t.location.primary
             })}
           </p>
         </div>
 
-        <nav className="flex flex-wrap gap-5 text-xs font-semibold sm:text-sm">
-          <Link href="/about" className="hover:text-cyan-400">
+        <nav className="flex flex-wrap gap-5 text-xs font-bold text-slate-600 sm:text-sm">
+          <Link href="/about" className="hover:text-blue-600">
             {t.footer.about}
           </Link>
-          <Link href="/contact" className="hover:text-cyan-400">
+          <Link href="/contact" className="hover:text-blue-600">
             {t.footer.contact}
           </Link>
-          <Link href="/privacy" className="hover:text-cyan-400">
+          <Link href="/privacy" className="hover:text-blue-600">
             {t.footer.privacy}
           </Link>
-          <Link href="/terms" className="hover:text-cyan-400">
+          <Link href="/terms" className="hover:text-blue-600">
             {t.footer.terms}
           </Link>
         </nav>

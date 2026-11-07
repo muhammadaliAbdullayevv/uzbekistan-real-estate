@@ -6,6 +6,7 @@ type LocationValue = {
   region?: string | null;
   district?: string | null;
   city?: string | null;
+  street?: string | null;
   address?: string | null;
 };
 
@@ -39,25 +40,35 @@ export function LocationSection({
 
   return (
     <section className={className}>
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-ink/45">
+      <h2 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">
         {t.common.location}
       </h2>
-      <dl className="mt-4 space-y-3 text-sm text-ink/70">
+      <dl className="mt-3 space-y-2.5 text-sm text-slate-600">
         <div className="flex items-start justify-between gap-4">
-          <dt className="text-ink/50">{t.common.region}</dt>
-          <dd className="max-w-[18rem] text-right font-medium text-ink">
+          <dt className="font-semibold text-slate-500">{t.common.region}</dt>
+          <dd className="max-w-[18rem] text-right font-bold text-slate-900">
             {details.region ?? "—"}
           </dd>
         </div>
         <div className="flex items-start justify-between gap-4">
-          <dt className="text-ink/50">{t.common.district}</dt>
-          <dd className="max-w-[18rem] text-right font-medium text-ink">
+          <dt className="font-semibold text-slate-500">{t.common.district}</dt>
+          <dd className="max-w-[18rem] text-right font-bold text-slate-900">
             {details.districtCity ?? "—"}
           </dd>
         </div>
+        {value.street?.trim() ? (
+          <div className="flex items-start justify-between gap-4">
+            <dt className="font-semibold text-slate-500">
+              {locale === "ru" ? "Улица / квартал" : "Ko'cha / mahalla"}
+            </dt>
+            <dd className="max-w-[18rem] text-right font-bold text-slate-900">
+              {value.street.trim()}
+            </dd>
+          </div>
+        ) : null}
         <div className="flex items-start justify-between gap-4">
-          <dt className="text-ink/50">{t.common.address}</dt>
-          <dd className="max-w-[18rem] text-right font-medium text-ink">
+          <dt className="font-semibold text-slate-500">{t.common.address}</dt>
+          <dd className="max-w-[18rem] text-right font-bold text-slate-900">
             {value.address?.trim() || "—"}
           </dd>
         </div>

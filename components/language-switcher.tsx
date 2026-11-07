@@ -28,14 +28,14 @@ export function LanguageSwitcher({
   return (
     <div className="flex items-center gap-2">
       <span className="sr-only">{label}</span>
-      <div className="inline-flex rounded-xl border border-white/10 bg-white/5 p-0.5 shadow-sm">
+      <div className="inline-flex rounded-xl border border-slate-200 bg-[#F3F6FB] p-0.5 shadow-sm">
         <button
           type="button"
           onClick={() => setLocale("uz")}
           className={`rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] transition sm:text-[11px] ${
             currentLocale === "uz"
-              ? "bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 shadow-sm"
-              : "text-slate-400 hover:text-white"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
           }`}
         >
           UZ
@@ -45,8 +45,8 @@ export function LanguageSwitcher({
           onClick={() => setLocale("ru")}
           className={`rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] transition sm:text-[11px] ${
             currentLocale === "ru"
-              ? "bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 shadow-sm"
-              : "text-slate-400 hover:text-white"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
           }`}
         >
           RU

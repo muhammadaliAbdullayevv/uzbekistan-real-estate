@@ -46,7 +46,7 @@ export function DesktopSidebar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage
     <nav
       aria-label="Primary"
       style={{ width: DESKTOP_SIDEBAR_WIDTH }}
-      className="fixed inset-y-0 left-0 z-20 hidden shrink-0 flex-col gap-1.5 border-r border-white/10 bg-[#090C10]/95 p-3 pt-20 backdrop-blur-xl sm:flex md:pt-24"
+      className="fixed inset-y-0 left-0 z-20 hidden shrink-0 flex-col gap-1.5 border-r border-slate-200/90 bg-white/95 p-3 pt-20 backdrop-blur-xl sm:flex md:pt-24"
     >
       {tabs.map((tab) => {
         const currentlyActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
@@ -63,8 +63,8 @@ export function DesktopSidebar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage
             }}
             className={`flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-bold transition-all ${
               isActive
-                ? "border border-cyan-500/30 bg-gradient-to-r from-cyan-500/15 to-teal-500/10 text-cyan-300 shadow-sm"
-                : "text-slate-400 hover:bg-white/5 hover:text-white"
+                ? "border border-blue-200 bg-blue-50 text-blue-700 shadow-sm"
+                : "text-slate-600 hover:bg-[#F3F6FB] hover:text-slate-900"
             }`}
             aria-current={isActive ? "page" : undefined}
           >

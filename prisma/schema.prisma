@@ -115,12 +115,19 @@ model Listing {
   region           String         @default("Tashkent Region")
   district         String
   city             String?
+  street           String?
   address          String
   rooms            Int
   area             Int
+  floor            Int?
+  totalFloors      Int?
+  plotArea         Float?
   propertyType     PropertyType
   rentType         RentType?      @default(monthly)
   furnishing       FurnishingStatus?
+  negotiable       Boolean        @default(false)
+  amenities        String[]       @default([])
+  tenantPreferences String[]      @default([])
   latitude         Float?
   longitude        Float?
   locationPrecision LocationPrecision @default(APPROXIMATE)

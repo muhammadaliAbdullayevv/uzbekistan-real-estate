@@ -32,16 +32,17 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
 
   return (
     <div className="shell">
-      <div className="mx-auto max-w-3xl space-y-6">
+      <div className="mx-auto max-w-5xl space-y-6">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink sm:text-3xl">
+          <h1 className="font-display text-2xl font-extrabold text-slate-900 sm:text-3xl">
             {t.addListing.editTitle}
           </h1>
-          <p className="mt-2 text-sm leading-6 text-ink/60">{t.addListing.editIntro}</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">{t.addListing.editIntro}</p>
         </div>
 
         <AddListingForm
           mode="edit"
+          locale={locale}
           submitPath={`/api/listings/${listing.id}`}
           successPath="/my-listings?status=updated"
           regionOptions={getRegionOptions(locale)}
@@ -114,12 +115,19 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             region,
             district: listing.district,
             city: listing.city,
+            street: listing.street ?? null,
             address: listing.address,
             rooms: listing.rooms,
             area: listing.area,
+            floor: listing.floor ?? null,
+            totalFloors: listing.totalFloors ?? null,
+            plotArea: listing.plotArea ?? null,
             propertyType: listing.propertyType,
             rentType: listing.rentType,
             furnishing: listing.furnishing,
+            negotiable: listing.negotiable ?? false,
+            amenities: listing.amenities ?? [],
+            tenantPreferences: listing.tenantPreferences ?? [],
             latitude: listing.latitude ?? 41.311158,
             longitude: listing.longitude ?? 69.279737,
             phone: listing.phone,

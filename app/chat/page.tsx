@@ -30,9 +30,9 @@ export default async function ChatInboxPage() {
           back arrow sits on the left edge and the title is truly centered
           (a right-side spacer balances the arrow's width) so the arrow
           reads as "go back", not as if it's labelling the title next to it. */}
-      <div className="sticky top-[61px] z-20 -mt-8 flex items-center border-b border-white/10 bg-[#090C10]/95 px-3 py-3 backdrop-blur-xl sm:px-6">
+      <div className="sticky top-[61px] z-20 -mt-8 flex items-center border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur-xl sm:px-6">
         <BackIconButton href="/" label={t.common.backToListings} />
-        <h1 className="flex-1 text-center font-display text-base font-extrabold text-white">
+        <h1 className="flex-1 text-center font-display text-base font-extrabold text-slate-900">
           {t.chat.inboxTitle}
         </h1>
         <span className="h-9 w-9 shrink-0" aria-hidden="true" />
