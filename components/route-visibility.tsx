@@ -9,7 +9,14 @@ import type { ReactNode } from "react";
 // belong there. This wraps SiteFooter (a Server Component, so it can't read
 // the route itself) instead of duplicating its data-fetching in a client
 // version.
-const HIDDEN_ON = ["/ai-uychi", "/chat"];
+const HIDDEN_ON = [
+  "/ai-uychi",
+  "/chat",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password"
+];
 
 export function HideFooterOnChatRoutes({
   children,
@@ -19,10 +26,12 @@ export function HideFooterOnChatRoutes({
   isAdminPage: boolean;
 }) {
   const pathname = usePathname();
-  // isAdminPage comes from a header middleware sets (see app/layout.tsx),
-  // not a pathname check -- see the comment in mobile-tab-bar.tsx for why a
-  // literal "/admin" pathname check doesn't work once ADMIN_PATH is set.
-  const hide = isAdminPage || HIDDEN_ON.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+  const currentPath = pathname ?? "";
+  const hide =
+    isAdminPage ||
+    HIDDEN_ON.some(
+      (route) => currentPath === route || currentPath.startsWith(`${route}/`)
+    );
 
   if (hide) {
     return null;

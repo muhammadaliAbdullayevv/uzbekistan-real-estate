@@ -32,6 +32,7 @@ export const DESKTOP_SIDEBAR_WIDTH = 224;
 
 export function DesktopSidebar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: boolean }) {
   const pathname = usePathname();
+  const currentPath = pathname ?? "";
   const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export function DesktopSidebar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage
       className="fixed inset-y-0 left-0 z-20 hidden shrink-0 flex-col gap-1.5 border-r border-slate-200/90 bg-white/95 p-3 pt-20 backdrop-blur-xl sm:flex md:pt-24"
     >
       {tabs.map((tab) => {
-        const currentlyActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+        const currentlyActive = tab.href === "/" ? currentPath === "/" : currentPath.startsWith(tab.href);
         const isActive = pendingHref ? tab.href === pendingHref : currentlyActive;
 
         return (
@@ -57,7 +58,7 @@ export function DesktopSidebar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage
             key={tab.href}
             href={tab.href}
             onClick={() => {
-              if (tab.href !== pathname) {
+              if (tab.href !== currentPath) {
                 setPendingHref(tab.href);
               }
             }}

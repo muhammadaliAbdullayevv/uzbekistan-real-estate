@@ -154,11 +154,7 @@ async function handleStart(chatId: number, rawToken?: string) {
       pendingByChat.set(chatId, { kind: "direct_credentials", forceNewPassword: true });
       await sendMessage(
         chatId,
-        [
-          "⏳ Saytdagi havola muddati tugagan bo'lishi mumkin, lekin shu yerning o'zida Login va Parol olishingiz mumkin!",
-          "",
-          "Quyidagi «📱 Telefon raqamimni ulashish» tugmasini bosing:"
-        ].join("\n"),
+        "👋 Uychi.site botiga xush kelibsiz!\n\nSaytga kirish uchun Login va Parol olish uchun pastdagi «📱 Telefon raqamimni ulashish» tugmasini bosing:",
         {
           reply_markup: {
             keyboard: [[{ text: "📱 Telefon raqamimni ulashish", request_contact: true }]],
@@ -174,11 +170,7 @@ async function handleStart(chatId: number, rawToken?: string) {
 
     await sendMessage(
       chatId,
-      [
-        "👋 Uychi.site tizimiga xush kelibsiz!",
-        "",
-        "Shaxsingizni tasdiqlash, saytga avtomatik kirish hamda boshqa qurilmalar uchun Login va Parol olish uchun quyidagi tugmani bosing:"
-      ].join("\n"),
+      "👋 Uychi.site tizimiga xush kelibsiz!\n\nSaytga avtomatik kirish hamda shaxsiy Login va Parolingizni olish uchun pastdagi «📱 Telefon raqamimni ulashish» tugmasini bosing:",
       {
         reply_markup: {
           keyboard: [[{ text: "📱 Telefon raqamimni ulashish", request_contact: true }]],
@@ -213,22 +205,20 @@ async function handleStart(chatId: number, rawToken?: string) {
     return;
   }
 
-  // Direct /start without token: offer instant phone identification + login/password generation
-  pendingByChat.set(chatId, { kind: "direct_credentials", forceNewPassword: false });
+  // Direct start or /start register: instant 1-tap phone registration
+  pendingByChat.set(chatId, { kind: "direct_credentials", forceNewPassword: true });
 
   await sendMessage(
     chatId,
     [
+      "👋 Assalomu alaykum!",
       "🏠 Uychi.site rasmiy botiga xush kelibsiz!",
       "",
-      "Saytdan foydalanish va har qanday brauzer/qurilmadan kirish uchun Login va Parol olish uchun pastdagi «📱 Telefon raqamimni ulashish» tugmasini bosing:"
+      "Ro'yxatdan o'tish va Login hamda Parolingizni olish uchun pastdagi «📱 Telefon raqamimni ulashish» tugmasini bosing:"
     ].join("\n"),
     {
       reply_markup: {
-        keyboard: [
-          [{ text: "📱 Telefon raqamimni ulashish", request_contact: true }],
-          [ADD_LISTING_BUTTON]
-        ],
+        keyboard: [[{ text: "📱 Telefon raqamimni ulashish", request_contact: true }]],
         resize_keyboard: true,
         one_time_keyboard: true
       }
@@ -324,40 +314,37 @@ async function handleContact(chatId: number, message: TelegramMessage, contact: 
   }
 
   const siteUrl = getAbsoluteUrl("/login");
-  const credentialsLines = passwordSet
-    ? [
-        "🔐 Boshqa qurilma yoki kompyuter brauzeridan saytga kirish uchun ma'lumotlaringiz:",
-        `• Login (Telefon): ${user.phone}`,
-        `• Parol: ${plainPass}`,
-        `• Sayt manzili: ${siteUrl}`
-      ]
-    : [
-        "🔐 Boshqa qurilmadan kirish uchun Login:",
-        `• Login (Telefon): ${user.phone}`,
-        `• Parol: avval berilgan parolingiz (yangi parol olish uchun "${NEW_PASSWORD_BUTTON}" tugmasini bosing)`
-      ];
+  const loginUrlWithPhone = user.phone
+    ? `${siteUrl}?email=${encodeURIComponent(user.phone)}`
+    : siteUrl;
 
   await sendMessage(
     chatId,
     [
-      "✅ Shaxsingiz va telefon raqamingiz muvaffaqiyatli tasdiqlandi!",
+      "🎉 Hisobingiz muvaffaqiyatli tasdiqlandi!",
       "",
       `👤 Ism: ${user.name || "Foydalanuvchi"}`,
       `📞 Telefon: ${user.phone}`,
-      user.telegramUsername ? `🌐 Telegram: @${user.telegramUsername}` : "",
+      user.telegramUsername ? `💬 Telegram: @${user.telegramUsername}` : "",
       "",
-      ...credentialsLines,
+      "🔐 Saytga kirish ma'lumotlaringiz:",
+      `• Login (Telefon): ${user.phone}`,
+      `• Parol: ${plainPass}`,
       "",
-      pending.kind === "website_login"
-        ? "🚀 Saytda avtomatik tizimga kirdingiz! Brauzerga qaytishingiz mumkin."
-        : "🚀 Endi saytga ushbu Login va Parol orqali istalgan qurilmadan kirishingiz mumkin."
+      "Quyidagi tugmani bosib darhol saytga kirishingiz mumkin 👇"
     ]
       .filter(Boolean)
       .join("\n"),
     {
       reply_markup: {
-        keyboard: [[NEW_PASSWORD_BUTTON, ADD_LISTING_BUTTON]],
-        resize_keyboard: true
+        inline_keyboard: [
+          [
+            {
+              text: "🌐 Saytga kirish (uychi.site)",
+              url: loginUrlWithPhone
+            }
+          ]
+        ]
       }
     }
   );

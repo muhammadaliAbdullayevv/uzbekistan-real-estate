@@ -31,6 +31,7 @@ function TabIcon({ path, className = "h-5 w-5" }: { path: string; className?: st
 
 export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: boolean }) {
   const pathname = usePathname();
+  const currentPath = pathname ?? "";
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const [pressedHref, setPressedHref] = useState<string | null>(null);
 
@@ -42,7 +43,7 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
     setPressedHref((current) => (current === href ? null : current));
   }
 
-  if (pathname === "/ai-uychi" || pathname.startsWith("/chat/") || isAdminPage) {
+  if (currentPath === "/ai-uychi" || currentPath.startsWith("/chat/") || isAdminPage) {
     return null;
   }
 
@@ -53,7 +54,7 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
     >
       <div className="flex items-stretch justify-around">
         {tabs.map((tab) => {
-          const currentlyActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+          const currentlyActive = tab.href === "/" ? currentPath === "/" : currentPath.startsWith(tab.href);
           const isActive = pendingHref ? tab.href === pendingHref : currentlyActive;
           const isPressed = pressedHref === tab.href;
 
@@ -63,7 +64,7 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
                 key={tab.href}
                 href={tab.href}
                 onClick={() => {
-                  if (tab.href !== pathname) {
+                  if (tab.href !== currentPath) {
                     setPendingHref(tab.href);
                   }
                 }}
@@ -92,7 +93,7 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
               key={tab.href}
               href={tab.href}
               onClick={() => {
-                if (tab.href !== pathname) {
+                if (tab.href !== currentPath) {
                   setPendingHref(tab.href);
                 }
               }}
