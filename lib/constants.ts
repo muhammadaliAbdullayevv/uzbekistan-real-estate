@@ -25,13 +25,61 @@ export const AMENITY_KEYS = [
   "security"
 ] as const;
 
-export const TENANT_PREFERENCE_KEYS = [
+export const RENT_PREFERENCE_KEYS = [
   "family",
   "students",
   "boys",
   "girls",
   "foreigners",
   "all"
+] as const;
+
+export const SALE_CONDITION_KEYS = [
+  "cadastr_ready",
+  "vacant_propiska",
+  "new_building",
+  "ready_to_move",
+  "euro_renovation",
+  "first_owner"
+] as const;
+
+export const TENANT_PREFERENCE_KEYS = [
+  ...RENT_PREFERENCE_KEYS,
+  ...SALE_CONDITION_KEYS
+] as const;
+
+export const RENT_INCLUDED_IN_PRICE_KEYS = [
+  "utilities_included",
+  "utilities_separate",
+  "wifi_included",
+  "no_deposit",
+  "deposit_required",
+  "no_commission",
+  "long_term_discount"
+] as const;
+
+export const SALE_INCLUDED_IN_PRICE_KEYS = [
+  "furniture_included",
+  "no_commission",
+  "mortgage_available",
+  "installment_available",
+  "cadastr_ready",
+  "barter_possible"
+] as const;
+
+export const INCLUDED_IN_PRICE_KEYS = [
+  "utilities_included",
+  "utilities_separate",
+  "wifi_included",
+  "no_deposit",
+  "deposit_required",
+  "no_commission",
+  "long_term_discount",
+  "furniture_included",
+  "mortgage_available",
+  "installment_available",
+  "cadastr_ready",
+  "barter_possible"
 ] as const;
 
 export const PLACEHOLDER_IMAGE = "/placeholder-listing.svg";
@@ -42,7 +90,10 @@ export type RentTypeValue = (typeof RENT_TYPES)[number];
 export type CurrencyValue = (typeof CURRENCIES)[number];
 export type FurnishingStatusValue = (typeof FURNISHING_STATUSES)[number];
 export type AmenityKey = (typeof AMENITY_KEYS)[number];
+export type RentPreferenceKey = (typeof RENT_PREFERENCE_KEYS)[number];
+export type SaleConditionKey = (typeof SALE_CONDITION_KEYS)[number];
 export type TenantPreferenceKey = (typeof TENANT_PREFERENCE_KEYS)[number];
+export type IncludedInPriceKey = (typeof INCLUDED_IN_PRICE_KEYS)[number];
 
 export const PROPERTY_TYPE_LABELS: Record<PropertyTypeValue, string> = {
   flat: "Flat",

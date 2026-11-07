@@ -73,6 +73,21 @@ export const listingInputSchema = z
       .max(20)
       .optional()
       .default([]),
+    includedInPrice: z
+      .array(z.string().trim().min(1).max(50))
+      .max(20)
+      .optional()
+      .default([]),
+    contactName: z.string().trim().max(120).optional().nullable().or(z.literal("")),
+    contactEmail: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email("Valid email is required.")
+      .max(120)
+      .optional()
+      .nullable()
+      .or(z.literal("")),
     latitude: z.coerce.number().min(-90, "Location is required.").max(90),
     longitude: z.coerce.number().min(-180, "Location is required.").max(180),
     phone: z.string().trim().min(7, "Phone number is required.").max(30),
@@ -116,6 +131,9 @@ export const listingInputSchema = z
     negotiable: Boolean(value.negotiable),
     amenities: value.amenities ?? [],
     tenantPreferences: value.tenantPreferences ?? [],
+    includedInPrice: value.includedInPrice ?? [],
+    contactName: value.contactName?.trim() || null,
+    contactEmail: value.contactEmail?.trim().toLowerCase() || null,
     rentType: value.listingType === "rent" ? value.rentType ?? "monthly" : null,
     furnishing: value.furnishing || null
   }));

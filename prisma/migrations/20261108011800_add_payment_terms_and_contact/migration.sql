@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Listing" ADD COLUMN IF NOT EXISTS "includedInPrice" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN IF NOT EXISTS "contactName" TEXT,
+ADD COLUMN IF NOT EXISTS "contactEmail" TEXT;

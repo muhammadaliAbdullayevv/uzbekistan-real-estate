@@ -6,7 +6,11 @@ import { ListingGallery } from "@/components/listing-gallery";
 import { LocationSection, LocationSummary } from "@/components/location-display";
 import { SmartBackLink } from "@/components/smart-back-link";
 import { TrackListingView } from "@/components/track-listing-view";
-import { getAmenityLabel, getTenantPreferenceLabel } from "@/lib/amenity-labels";
+import {
+  getAmenityLabel,
+  getIncludedInPriceLabel,
+  getTenantPreferenceLabel
+} from "@/lib/amenity-labels";
 import { getFavoriteListingIds, getVisitorId } from "@/lib/favorites";
 import {
   formatDate,
@@ -127,6 +131,16 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
   const amenities = listing.amenities ?? [];
   const tenantPreferences = listing.tenantPreferences ?? [];
+  const includedInPrice = listing.includedInPrice ?? [];
+  const ownerName = listing.contactName?.trim() || null;
+  const ownerInitials = ownerName
+    ? ownerName
+        .split(/\s+/)
+        .map((p) => p[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "UY";
 
   return (
     <div className="shell space-y-5 pb-24 sm:space-y-7 sm:pb-0">
@@ -194,7 +208,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               {tenantPreferences.length > 0 ? (
                 <div className={amenities.length > 0 ? "border-t border-slate-200 pt-4" : ""}>
                   <h2 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">
-                    {locale === "ru" ? "Кому подходит" : "Kimlar uchun mos"}
+                    {listing.listingType === "sale"
+                      ? locale === "ru"
+                        ? "Документы и состояние"
+                        : "Hujjatlar va uy holati"
+                      : locale === "ru"
+                        ? "Кому подходит"
+                        : "Kimlar uchun mos"}
                   </h2>
                   <div className="mt-2.5 flex flex-wrap gap-2">
                     {tenantPreferences.map((pref) => (
@@ -267,6 +287,20 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   {formatPriceEquiv(listing.price, listing.currency, locale)}
                 </span>
               </div>
+
+              {includedInPrice.length > 0 ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {includedInPrice.map((item) => (
+                    <span
+                      key={item}
+                      className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-extrabold text-emerald-800"
+                    >
+                      <span>✓</span>
+                      <span>{getIncludedInPriceLabel(item, locale)}</span>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             {/* Soft Sky-Tinted Spec Grid (#F3F6FB) */}
@@ -347,22 +381,41 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <h2 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-400">
                   {t.common.ownerContact}
                 </h2>
-                <p className="mt-1 text-xs text-slate-400">
+                {ownerName ? (
+                  <p className="mt-1 font-display text-base font-extrabold text-white">
+                    {ownerName}
+                  </p>
+                ) : null}
+                <p className="mt-0.5 text-xs text-slate-400">
                   {t.common.created}: {formatDate(listing.createdAt, locale)}
                 </p>
               </div>
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 font-display text-sm font-extrabold text-white">
-                UY
+                {ownerInitials}
               </span>
             </div>
 
-            <div className="mt-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-blue-400">
-                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
-                </svg>
-              </span>
-              <span className="text-base font-extrabold tabular-nums text-white">{listing.phone}</span>
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-blue-400">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+                  </svg>
+                </span>
+                <span className="text-base font-extrabold tabular-nums text-white">{listing.phone}</span>
+              </div>
+
+              {listing.contactEmail ? (
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-blue-400">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                    </svg>
+                  </span>
+                  <span className="truncate text-xs font-bold text-slate-200">{listing.contactEmail}</span>
+                </div>
+              ) : null}
             </div>
 
             <div className="mt-4 space-y-2.5">

@@ -197,4 +197,20 @@ describe("listingInputSchema -- rent requires a rentType", () => {
       expect(result.data.tenantPreferences).toEqual(["family", "students"]);
     }
   });
+
+  it("accepts includedInPrice, contactName, and optional contactEmail", () => {
+    const result = listingInputSchema.safeParse({
+      ...base,
+      rentType: "monthly",
+      includedInPrice: ["utilities_included", "no_commission"],
+      contactName: "Muhammadali Abdullayev",
+      contactEmail: "User@Gmail.com"
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.includedInPrice).toEqual(["utilities_included", "no_commission"]);
+      expect(result.data.contactName).toBe("Muhammadali Abdullayev");
+      expect(result.data.contactEmail).toBe("user@gmail.com");
+    }
+  });
 });

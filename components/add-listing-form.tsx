@@ -8,12 +8,15 @@ import {
   useState,
   type ChangeEvent,
   type DragEvent,
-  type FormEvent,
-  type ReactNode
+  type FormEvent
 } from "react";
 
 import { LocationPicker } from "@/components/location-picker";
-import { AMENITY_LABELS, TENANT_PREFERENCE_LABELS } from "@/lib/amenity-labels";
+import {
+  AMENITY_LABELS,
+  INCLUDED_IN_PRICE_LABELS,
+  TENANT_PREFERENCE_LABELS
+} from "@/lib/amenity-labels";
 import { getDistrictCentroid } from "@/lib/district-coordinates";
 import { isLocalImageUrl } from "@/lib/image-url";
 import {
@@ -21,11 +24,15 @@ import {
   CURRENCIES,
   LISTING_TYPES,
   PROPERTY_TYPES,
+  RENT_INCLUDED_IN_PRICE_KEYS,
+  RENT_PREFERENCE_KEYS,
   RENT_TYPES,
-  TENANT_PREFERENCE_KEYS,
+  SALE_CONDITION_KEYS,
+  SALE_INCLUDED_IN_PRICE_KEYS,
   type AmenityKey,
   type CurrencyValue,
   type FurnishingStatusValue,
+  type IncludedInPriceKey,
   type ListingTypeValue,
   type PropertyTypeValue,
   type RentTypeValue,
@@ -34,10 +41,22 @@ import {
 import type { UzbekistanRegion } from "@/lib/locations";
 
 const FALLBACK_MAP_CENTER = { lat: 41.311158, lng: 69.279737 };
-const DRAFT_STORAGE_KEY = "draft-listing-v2";
+const DRAFT_STORAGE_KEY = "draft-listing-v3";
 
 function stripUzPrefix(phone: string) {
   return phone.replace(/^\+?998/, "").trim();
+}
+
+function splitFullName(fullName?: string | null): { firstName: string; lastName: string } {
+  const cleaned = (fullName ?? "").trim();
+  if (!cleaned) {
+    return { firstName: "", lastName: "" };
+  }
+  const parts = cleaned.split(/\s+/);
+  return {
+    firstName: parts[0] ?? "",
+    lastName: parts.slice(1).join(" ")
+  };
 }
 
 function doneUrls(items: PhotoItem[]) {
@@ -68,11 +87,15 @@ type DraftValues = {
   furnishing?: FurnishingStatusValue;
   amenities?: string[];
   tenantPreferences?: string[];
+  includedInPrice?: string[];
   title?: string;
   description?: string;
   price?: string;
   currency?: CurrencyValue;
   negotiable?: boolean;
+  contactFirstName?: string;
+  contactLastName?: string;
+  contactEmail?: string;
   phone?: string;
   images?: string[];
 };
@@ -149,6 +172,8 @@ type AddListingFormProps = {
   };
   showSuccess?: boolean;
   initialPhone?: string | null;
+  initialName?: string | null;
+  initialEmail?: string | null;
   initialValues?: {
     listingType: ListingTypeValue;
     title: string;
@@ -171,6 +196,9 @@ type AddListingFormProps = {
     negotiable?: boolean;
     amenities?: string[];
     tenantPreferences?: string[];
+    includedInPrice?: string[];
+    contactName?: string | null;
+    contactEmail?: string | null;
     latitude: number;
     longitude: number;
     phone: string;
@@ -350,10 +378,14 @@ export function AddListingForm({
   copy,
   showSuccess = false,
   initialPhone,
+  initialName,
+  initialEmail,
   initialValues
 }: AddListingFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const initialSplitName = splitFullName(initialValues?.contactName ?? initialName);
 
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [listingType, setListingType] = useState<ListingTypeValue>(
@@ -392,7 +424,8 @@ export function AddListingForm({
     initialValues?.region ?? regionOptions[0]?.value ?? "Tashkent City"
   );
   const [selectedDistrict, setSelectedDistrict] = useState<string>(
-    initialValues?.district ?? (districtOptionsByRegion[initialValues?.region ?? regionOptions[0]?.value ?? "Tashkent City"]?.[0]?.value ?? "")
+    initialValues?.district ??
+      (districtOptionsByRegion[initialValues?.region ?? regionOptions[0]?.value ?? "Tashkent City"]?.[0]?.value ?? "")
   );
   const [street, setStreet] = useState<string>(initialValues?.street ?? "");
   const [address, setAddress] = useState<string>(initialValues?.address ?? "");
@@ -410,7 +443,8 @@ export function AddListingForm({
     initialValues?.furnishing ?? "FURNISHED"
   );
   const [tenantPreferences, setTenantPreferences] = useState<string[]>(
-    initialValues?.tenantPreferences ?? ["family"]
+    initialValues?.tenantPreferences ??
+      (initialValues?.listingType === "sale" ? ["cadastr_ready"] : ["family"])
   );
   const [amenities, setAmenities] = useState<string[]>(
     initialValues?.amenities ?? ["heating", "ac", "washer", "fridge", "wifi"]
@@ -427,7 +461,7 @@ export function AddListingForm({
   const [title, setTitle] = useState<string>(initialValues?.title ?? "");
   const [description, setDescription] = useState<string>(initialValues?.description ?? "");
 
-  // Step 5: Price & Contact
+  // Step 5: Price, What's Included in Price, Contact Info & Final Review
   const [priceValue, setPriceValue] = useState<string>(
     initialValues?.price !== undefined ? String(initialValues.price) : ""
   );
@@ -436,6 +470,14 @@ export function AddListingForm({
   );
   const [negotiable, setNegotiable] = useState<boolean>(
     initialValues?.negotiable ?? true
+  );
+  const [includedInPrice, setIncludedInPrice] = useState<string[]>(
+    initialValues?.includedInPrice ?? ["no_commission"]
+  );
+  const [contactFirstName, setContactFirstName] = useState<string>(initialSplitName.firstName);
+  const [contactLastName, setContactLastName] = useState<string>(initialSplitName.lastName);
+  const [contactEmail, setContactEmail] = useState<string>(
+    initialValues?.contactEmail ?? initialEmail ?? ""
   );
   const [phone, setPhone] = useState<string>(
     stripUzPrefix(initialValues?.phone ?? initialPhone ?? "")
@@ -475,11 +517,15 @@ export function AddListingForm({
       if (parsed.furnishing) setFurnishing(parsed.furnishing);
       if (Array.isArray(parsed.amenities)) setAmenities(parsed.amenities);
       if (Array.isArray(parsed.tenantPreferences)) setTenantPreferences(parsed.tenantPreferences);
+      if (Array.isArray(parsed.includedInPrice)) setIncludedInPrice(parsed.includedInPrice);
       if (parsed.title !== undefined) setTitle(parsed.title);
       if (parsed.description !== undefined) setDescription(parsed.description);
       if (parsed.price !== undefined) setPriceValue(parsed.price);
       if (parsed.currency) setSelectedCurrency(parsed.currency);
       if (parsed.negotiable !== undefined) setNegotiable(parsed.negotiable);
+      if (parsed.contactFirstName) setContactFirstName(parsed.contactFirstName);
+      if (parsed.contactLastName) setContactLastName(parsed.contactLastName);
+      if (parsed.contactEmail !== undefined) setContactEmail(parsed.contactEmail);
       if (parsed.phone) setPhone(parsed.phone);
       if (Array.isArray(parsed.images) && parsed.images.length > 0) {
         setPhotos(
@@ -514,11 +560,15 @@ export function AddListingForm({
       furnishing,
       amenities,
       tenantPreferences,
+      includedInPrice,
       title,
       description,
       price: priceValue,
       currency: selectedCurrency,
       negotiable,
+      contactFirstName,
+      contactLastName,
+      contactEmail,
       phone,
       images: doneUrls(photos)
     };
@@ -545,11 +595,15 @@ export function AddListingForm({
     furnishing,
     amenities,
     tenantPreferences,
+    includedInPrice,
     title,
     description,
     priceValue,
     selectedCurrency,
     negotiable,
+    contactFirstName,
+    contactLastName,
+    contactEmail,
     phone,
     photos
   ]);
@@ -561,6 +615,22 @@ export function AddListingForm({
       // Ignore
     }
   }
+
+  // Filter amenities based on propertyType so apartment/room/studio doesn't show yard-only items and house doesn't show apartment elevator
+  const visibleAmenityKeys = AMENITY_KEYS.filter((key) => {
+    if (propertyType === "house") {
+      return key !== "elevator";
+    }
+    return key !== "garden" && key !== "bbq";
+  });
+
+  // Active preference keys for Step 3 based on dealType (rent vs sale)
+  const activePreferenceKeys: readonly TenantPreferenceKey[] =
+    listingType === "sale" ? SALE_CONDITION_KEYS : RENT_PREFERENCE_KEYS;
+
+  // Active includedInPrice keys for Step 5 based on dealType (rent vs sale)
+  const activeIncludedKeys: readonly IncludedInPriceKey[] =
+    listingType === "sale" ? SALE_INCLUDED_IN_PRICE_KEYS : RENT_INCLUDED_IN_PRICE_KEYS;
 
   // District options for selected region
   const baseDistrictOptions = districtOptionsByRegion[selectedRegion] ?? [];
@@ -576,7 +646,12 @@ export function AddListingForm({
 
   // Smart Auto-Generated Title & Description helpers
   function generateSmartTitle() {
-    const propLabel = propertyTypeLabels[propertyType].toLowerCase();
+    const propLabel =
+      propertyType === "house"
+        ? locale === "ru"
+          ? "дом / участок"
+          : "hovli uy"
+        : propertyTypeLabels[propertyType].toLowerCase();
     const locPrefix = currentDistrictLabel || currentRegionLabel;
     const floorPart =
       propertyType === "house"
@@ -589,7 +664,7 @@ export function AddListingForm({
     if (locale === "ru") {
       return [
         locPrefix ? `${locPrefix}:` : "",
-        `${rooms || 2}-комн. ${propLabel}`,
+        propertyType === "studio" ? propLabel : `${rooms || 2}-комн. ${propLabel}`,
         area ? `${area} м²` : "",
         floorPart
       ]
@@ -600,7 +675,7 @@ export function AddListingForm({
     }
     return [
       locPrefix ? `${locPrefix}da` : "",
-      `${rooms || 2} xonali ${propLabel}`,
+      propertyType === "studio" ? propLabel : `${rooms || 2} xonali ${propLabel}`,
       area ? `${area} m²` : "",
       floorPart
     ]
@@ -611,10 +686,16 @@ export function AddListingForm({
   }
 
   function generateSmartDescription() {
-    const amenityNames = amenities
+    const activeAmenities = amenities.filter((a) =>
+      visibleAmenityKeys.includes(a as AmenityKey)
+    );
+    const amenityNames = activeAmenities
       .map((a) => (AMENITY_LABELS[locale] as Record<string, string>)[a])
       .filter(Boolean);
-    const tenantNames = tenantPreferences
+    const activePrefs = tenantPreferences.filter((tp) =>
+      activePreferenceKeys.includes(tp as TenantPreferenceKey)
+    );
+    const tenantNames = activePrefs
       .map((tp) => (TENANT_PREFERENCE_LABELS[locale] as Record<string, string>)[tp])
       .filter(Boolean);
 
@@ -635,20 +716,34 @@ export function AddListingForm({
 
     if (locale === "ru") {
       return [
-        `${currentDistrictLabel || currentRegionLabel}${locSentence ? ` (${locSentence})` : ""} — сдается/продается ${rooms || 2}-комнатная ${propertyTypeLabels[propertyType].toLowerCase()}.`,
+        `${currentDistrictLabel || currentRegionLabel}${locSentence ? ` (${locSentence})` : ""} — ${
+          listingType === "sale" ? "продается" : "сдается"
+        } ${propertyType === "studio" ? "студия" : `${rooms || 2}-комнатная ${propertyTypeLabels[propertyType].toLowerCase()}`}.`,
         floorSentence,
         amenityNames.length > 0 ? `В доме есть: ${amenityNames.join(", ")}.` : "",
-        tenantNames.length > 0 ? `Подходит: ${tenantNames.join(", ")}.` : ""
+        tenantNames.length > 0
+          ? listingType === "sale"
+            ? `Преимущества: ${tenantNames.join(", ")}.`
+            : `Подходит: ${tenantNames.join(", ")}.`
+          : ""
       ]
         .filter(Boolean)
         .join(" ");
     }
 
     return [
-      `${currentDistrictLabel || currentRegionLabel}da${locSentence ? ` (${locSentence})` : ""} barcha qulayliklarga ega ${rooms || 2} xonali ${propertyTypeLabels[propertyType].toLowerCase()} ${listingType === "sale" ? "sotiladi" : "ijaraga beriladi"}.`,
+      `${currentDistrictLabel || currentRegionLabel}da${locSentence ? ` (${locSentence})` : ""} barcha qulayliklarga ega ${
+        propertyType === "studio"
+          ? "studiya xonadon"
+          : `${rooms || 2} xonali ${propertyType === "house" ? "hovli uy" : propertyTypeLabels[propertyType].toLowerCase()}`
+      } ${listingType === "sale" ? "sotiladi" : "ijaraga beriladi"}.`,
       floorSentence,
       amenityNames.length > 0 ? `Uyda mavjud: ${amenityNames.join(", ")}.` : "",
-      tenantNames.length > 0 ? `${tenantNames.join(", ")} uchun juda qulay.` : ""
+      tenantNames.length > 0
+        ? listingType === "sale"
+          ? `Holati va hujjatlar: ${tenantNames.join(", ")}.`
+          : `${tenantNames.join(", ")} uchun juda qulay.`
+        : ""
     ]
       .filter(Boolean)
       .join(" ");
@@ -676,7 +771,19 @@ export function AddListingForm({
     if (step === 1) {
       const areaNum = Number(area);
       if (!areaNum || areaNum < 10) {
-        setError(locale === "ru" ? "Укажите площадь (минимум 10 м²)." : "Umumiy maydonni kiriting (kamida 10 m²).");
+        setError(
+          locale === "ru"
+            ? "Укажите площадь (минимум 10 м²)."
+            : "Umumiy maydonni kiriting (kamida 10 m²)."
+        );
+        return;
+      }
+      if (propertyType !== "house" && floor && totalFloors && Number(floor) > Number(totalFloors)) {
+        setError(
+          locale === "ru"
+            ? "Этаж квартиры не может быть больше этажности дома."
+            : "Kvartira qavati bino qavatlari sonidan katta bo'lishi mumkin emas."
+        );
         return;
       }
       goToStep(2);
@@ -847,6 +954,26 @@ export function AddListingForm({
     );
   }
 
+  function toggleIncludedInPrice(key: IncludedInPriceKey) {
+    setIncludedInPrice((prev) => {
+      if (prev.includes(key)) {
+        return prev.filter((item) => item !== key);
+      }
+      let next = [...prev, key];
+      // Smart mutual exclusion for contradictory utility/deposit options
+      if (key === "utilities_included") {
+        next = next.filter((item) => item !== "utilities_separate");
+      } else if (key === "utilities_separate") {
+        next = next.filter((item) => item !== "utilities_included");
+      } else if (key === "no_deposit") {
+        next = next.filter((item) => item !== "deposit_required");
+      } else if (key === "deposit_required") {
+        next = next.filter((item) => item !== "no_deposit");
+      }
+      return next;
+    });
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
@@ -874,12 +1001,41 @@ export function AddListingForm({
       return;
     }
 
+    if (!contactFirstName.trim() || !contactLastName.trim()) {
+      setError(
+        locale === "ru"
+          ? "Пожалуйста, укажите ваше имя и фамилию."
+          : "Iltimos, ismingiz va familiyangizni kiriting."
+      );
+      return;
+    }
+
     if (!phone.trim() || phone.replace(/\D/g, "").length < 7) {
       setError(locale === "ru" ? "Укажите номер телефона." : "Telefon raqamingizni kiriting.");
       return;
     }
 
+    if (contactEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.trim())) {
+      setError(
+        locale === "ru"
+          ? "Введите корректный адрес электронной почты (Gmail)."
+          : "To'g'ri elektron pochta (Gmail) manzilini kiriting."
+      );
+      return;
+    }
+
     setIsSubmitting(true);
+
+    const filteredAmenities = amenities.filter((a) =>
+      visibleAmenityKeys.includes(a as AmenityKey)
+    );
+    const filteredPreferences = tenantPreferences.filter((tp) =>
+      activePreferenceKeys.includes(tp as TenantPreferenceKey)
+    );
+    const filteredIncluded = includedInPrice.filter((inc) =>
+      activeIncludedKeys.includes(inc as IncludedInPriceKey)
+    );
+    const fullContactName = `${contactFirstName.trim()} ${contactLastName.trim()}`.trim();
 
     const payload = {
       listingType,
@@ -892,7 +1048,7 @@ export function AddListingForm({
       city: street.trim() || null,
       street: street.trim() || null,
       address: finalAddress,
-      rooms: Number(rooms) || 2,
+      rooms: propertyType === "studio" ? 1 : Number(rooms) || 2,
       area: Number(area) || 65,
       floor: propertyType !== "house" && floor ? Number(floor) : null,
       totalFloors: totalFloors ? Number(totalFloors) : null,
@@ -901,8 +1057,11 @@ export function AddListingForm({
       rentType: listingType === "rent" ? selectedRentType : null,
       furnishing,
       negotiable,
-      amenities,
-      tenantPreferences,
+      amenities: filteredAmenities,
+      tenantPreferences: filteredPreferences,
+      includedInPrice: filteredIncluded,
+      contactName: fullContactName,
+      contactEmail: contactEmail.trim().toLowerCase() || null,
       latitude: finalPosition.lat,
       longitude: finalPosition.lng,
       phone: `+998${phone.replace(/\D/g, "")}`,
@@ -950,15 +1109,15 @@ export function AddListingForm({
           { id: 1, label: "1. Тип дома", nextTitle: "Далее: Адрес" },
           { id: 2, label: "2. Адрес", nextTitle: "Далее: Удобства" },
           { id: 3, label: "3. Удобства", nextTitle: "Далее: Фото" },
-          { id: 4, label: "4. Фото", nextTitle: "Далее: Цена" },
-          { id: 5, label: "5. Цена", nextTitle: "" }
+          { id: 4, label: "4. Фото", nextTitle: "Далее: Цена и проверка" },
+          { id: 5, label: "5. Цена и отправка", nextTitle: "" }
         ]
       : [
           { id: 1, label: "1. Uy turi", nextTitle: "Davom etish: Manzil" },
           { id: 2, label: "2. Manzil", nextTitle: "Davom etish: Qulaylik" },
           { id: 3, label: "3. Qulaylik", nextTitle: "Davom etish: Rasmlar" },
-          { id: 4, label: "4. Rasmlar", nextTitle: "Davom etish: Narx" },
-          { id: 5, label: "5. Narx", nextTitle: "" }
+          { id: 4, label: "4. Rasmlar", nextTitle: "Davom etish: Narx va Tekshiruv" },
+          { id: 5, label: "5. Narx va Yuborish", nextTitle: "" }
         ];
 
   const propertySubtitles: Record<PropertyTypeValue, string> =
@@ -967,13 +1126,13 @@ export function AddListingForm({
           flat: "Многоэтажный дом",
           house: "Участок / двор",
           room: "Отдельная комната",
-          studio: "Компактная"
+          studio: "Открытая 1-комн."
         }
       : {
           flat: "Ko'p qavatli",
           house: "Uchastka",
           room: "Alohida xona",
-          studio: "Ixcham reja"
+          studio: "Ochiq 1 xonali"
         };
 
   // Live Preview Card computed values
@@ -1004,7 +1163,17 @@ export function AddListingForm({
   const previewLocation = [currentDistrictLabel || currentRegionLabel, street.trim() || address.trim()]
     .filter(Boolean)
     .join(" · ");
-  const previewCoverUrl = doneUrls(photos)[0];
+  const uploadedPhotoUrls = doneUrls(photos);
+  const previewCoverUrl = uploadedPhotoUrls[0];
+  const activeIncludedList = includedInPrice.filter((inc) =>
+    activeIncludedKeys.includes(inc as IncludedInPriceKey)
+  );
+  const activeAmenityList = amenities.filter((a) =>
+    visibleAmenityKeys.includes(a as AmenityKey)
+  );
+  const activePrefList = tenantPreferences.filter((tp) =>
+    activePreferenceKeys.includes(tp as TenantPreferenceKey)
+  );
 
   return (
     <div className="space-y-5">
@@ -1161,7 +1330,14 @@ export function AddListingForm({
                       <button
                         key={type}
                         type="button"
-                        onClick={() => setPropertyType(type)}
+                        onClick={() => {
+                          setPropertyType(type);
+                          if (type === "studio") {
+                            setRooms("1");
+                          } else if (type === "room" && Number(rooms) > 3) {
+                            setRooms("1");
+                          }
+                        }}
                         className={`relative flex items-center gap-3 rounded-2xl border p-3 text-left transition ${
                           active
                             ? "border-blue-600 bg-gradient-to-br from-[#EFF6FF] to-[#DBEAFE]/60 shadow-[0_6px_16px_-6px_rgba(37,99,235,0.2)]"
@@ -1202,33 +1378,52 @@ export function AddListingForm({
                 </div>
               </div>
 
-              {/* Xonalar soni */}
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-slate-900 sm:text-sm">
-                    {locale === "ru" ? "Количество комнат" : "Xonalar soni"}
+              {/* Xonalar soni — adapts to propertyType (locked to 1 for Studiya) */}
+              {propertyType === "studio" ? (
+                <div className="flex items-center justify-between rounded-2xl border border-blue-200 bg-[#EFF6FF] px-3.5 py-2.5 text-xs font-extrabold text-blue-800">
+                  <span>
+                    {locale === "ru"
+                      ? "Студия — открытая планировка (1 комната)"
+                      : "Studiya — ochiq rejali 1 xonali xonadon"}
+                  </span>
+                  <span className="rounded-lg bg-blue-600 px-2 py-0.5 text-[11px] text-white">
+                    1 {locale === "ru" ? "комн." : "xona"}
                   </span>
                 </div>
-                <div className="grid grid-cols-5 gap-2">
-                  {(["1", "2", "3", "4", "5"] as const).map((r) => {
-                    const active = rooms === r;
-                    return (
-                      <button
-                        key={r}
-                        type="button"
-                        onClick={() => setRooms(r)}
-                        className={`flex h-11 items-center justify-center rounded-xl border text-sm font-extrabold transition ${
-                          active
-                            ? "border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-600/25"
-                            : "border-slate-200 bg-[#F3F6FB] text-slate-700 hover:border-slate-300"
-                        }`}
-                      >
-                        {r === "5" ? "5+" : r}
-                      </button>
-                    );
-                  })}
+              ) : (
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-slate-900 sm:text-sm">
+                      {propertyType === "room"
+                        ? locale === "ru"
+                          ? "Количество сдаваемых комнат"
+                          : "Topshiriladigan xonalar soni"
+                        : locale === "ru"
+                          ? "Количество комнат"
+                          : "Xonalar soni"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-2">
+                    {(["1", "2", "3", "4", "5"] as const).map((r) => {
+                      const active = rooms === r;
+                      return (
+                        <button
+                          key={r}
+                          type="button"
+                          onClick={() => setRooms(r)}
+                          className={`flex h-11 items-center justify-center rounded-xl border text-sm font-extrabold transition ${
+                            active
+                              ? "border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-600/25"
+                              : "border-slate-200 bg-[#F3F6FB] text-slate-700 hover:border-slate-300"
+                          }`}
+                        >
+                          {r === "5" ? "5+" : r}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* SINGLE-LINE ROW: Left = Qavati (Etaj) / Sotix, Right = Umumiy maydon */}
               <div className="grid grid-cols-2 gap-3">
@@ -1473,7 +1668,7 @@ export function AddListingForm({
             </section>
           ) : null}
 
-          {/* STEP 3: Qulayliklar (Jihozlanishi, Kimlar uchun, va Uyda nimalar bor?) */}
+          {/* STEP 3: Qulayliklar (Jihozlanishi, Kimlar uchun / Hujjatlar, va Uyda nimalar bor?) */}
           {step === 3 ? (
             <section className="space-y-5 rounded-[24px] border border-slate-200/90 bg-white p-4 shadow-[0_8px_24px_-8px_rgba(15,23,42,0.06)] sm:p-6">
               {/* Ta'miri va jihozlanishi */}
@@ -1502,18 +1697,24 @@ export function AddListingForm({
                 </div>
               </div>
 
-              {/* Kimlar uchun mos? */}
+              {/* Dynamic Section: "Kimlar uchun mos?" (for Rent) OR "Hujjatlar va uy holati" (for Sale) */}
               <div>
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-xs font-extrabold text-slate-900 sm:text-sm">
-                    {locale === "ru" ? "Кому подходит?" : "Kimlar uchun mos?"}
+                    {listingType === "sale"
+                      ? locale === "ru"
+                        ? "Документы и состояние дома"
+                        : "Hujjatlar va uy holati"
+                      : locale === "ru"
+                        ? "Кому подходит?"
+                        : "Kimlar uchun mos?"}
                   </span>
                   <span className="text-[11px] font-semibold text-slate-400">
                     {locale === "ru" ? "Можно несколько" : "Bir nechta tanlash mumkin"}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {TENANT_PREFERENCE_KEYS.map((pref) => {
+                  {activePreferenceKeys.map((pref) => {
                     const active = tenantPreferences.includes(pref);
                     return (
                       <button
@@ -1538,18 +1739,18 @@ export function AddListingForm({
                 </div>
               </div>
 
-              {/* Uyda nimalar bor? (Expanded 16 options with crisp SVG icons) */}
+              {/* Uyda nimalar bor? (Property-type-aware amenities with crisp SVG icons) */}
               <div>
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-xs font-extrabold text-slate-900 sm:text-sm">
                     {locale === "ru" ? "Что есть в доме?" : "Uyda nimalar bor?"}
                   </span>
                   <span className="text-[11px] font-extrabold text-blue-600">
-                    {amenities.length} {locale === "ru" ? "выбрано" : "ta tanlandi"}
+                    {activeAmenityList.length} {locale === "ru" ? "выбрано" : "ta tanlandi"}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-2">
-                  {AMENITY_KEYS.map((key) => {
+                  {visibleAmenityKeys.map((key) => {
                     const active = amenities.includes(key);
                     return (
                       <button
@@ -1740,116 +1941,421 @@ export function AddListingForm({
             </section>
           ) : null}
 
-          {/* STEP 5: Narx va Aloqa */}
+          {/* STEP 5: Narx, To'lov ichidagi shartlar, Aloqa (Ism, Familiya, Tel, Gmail) va Yakuniy ko'rib chiqish */}
           {step === 5 ? (
-            <section className="space-y-4 rounded-[24px] border border-slate-200/90 bg-white p-4 shadow-[0_8px_24px_-8px_rgba(15,23,42,0.06)] sm:space-y-5 sm:p-6">
-              <div className="grid grid-cols-[1fr_115px] gap-3">
-                <div>
-                  <label htmlFor="price" className="mb-1.5 block text-xs font-extrabold text-slate-900 sm:text-sm">
-                    {listingType === "rent" ? copy.rentPrice : copy.salePrice}
-                  </label>
-                  <input
-                    id="price"
-                    name="price"
-                    type="number"
-                    min="1"
-                    required
-                    value={priceValue}
-                    onChange={(e) => setPriceValue(e.target.value)}
-                    placeholder="400"
-                    className="input text-base font-extrabold text-blue-600"
-                  />
+            <div className="space-y-4">
+              {/* 5A. Price, Currency, "Kami bor" & What is inside the cost of payment */}
+              <section className="space-y-4 rounded-[24px] border border-slate-200/90 bg-white p-4 shadow-[0_8px_24px_-8px_rgba(15,23,42,0.06)] sm:space-y-5 sm:p-6">
+                <div className="grid grid-cols-[1fr_115px] gap-3">
+                  <div>
+                    <label htmlFor="price" className="mb-1.5 block text-xs font-extrabold text-slate-900 sm:text-sm">
+                      {listingType === "rent"
+                        ? selectedRentType === "daily"
+                          ? locale === "ru"
+                            ? "Суточная стоимость аренды"
+                            : "Kunlik ijara narxi"
+                          : copy.rentPrice
+                        : copy.salePrice}
+                    </label>
+                    <input
+                      id="price"
+                      name="price"
+                      type="number"
+                      min="1"
+                      required
+                      value={priceValue}
+                      onChange={(e) => setPriceValue(e.target.value)}
+                      placeholder={listingType === "sale" ? "55000" : "400"}
+                      className="input text-base font-extrabold text-blue-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="currency" className="mb-1.5 block text-xs font-extrabold text-slate-900 sm:text-sm">
+                      {copy.currency}
+                    </label>
+                    <select
+                      id="currency"
+                      name="currency"
+                      value={selectedCurrency}
+                      onChange={(e) => setSelectedCurrency(e.target.value as CurrencyValue)}
+                      className="select font-extrabold"
+                    >
+                      {CURRENCIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c === "USD" ? "$ USD" : "UZS"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                <div>
-                  <label htmlFor="currency" className="mb-1.5 block text-xs font-extrabold text-slate-900 sm:text-sm">
-                    {copy.currency}
-                  </label>
-                  <select
-                    id="currency"
-                    name="currency"
-                    value={selectedCurrency}
-                    onChange={(e) => setSelectedCurrency(e.target.value as CurrencyValue)}
-                    className="select font-extrabold"
-                  >
-                    {CURRENCIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c === "USD" ? "$ USD" : "UZS"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* "Kami bor" Negotiable Toggle */}
-              <button
-                type="button"
-                onClick={() => setNegotiable((prev) => !prev)}
-                className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-[#F3F6FB] p-3.5 text-left transition hover:border-blue-300"
-              >
-                <div>
-                  <span className="block text-xs font-extrabold text-slate-900 sm:text-sm">
-                    {locale === "ru" ? "Торг уместен («Ками бор»)" : "«Kami bor» (Narxi kelishiladi)"}
-                  </span>
-                  <span className="mt-0.5 block text-[11px] font-medium text-slate-500">
-                    {locale === "ru"
-                      ? "Покупатели видят, что можно договориться"
-                      : "Xaridorlar bilan narx ustida kelishish mumkin"}
-                  </span>
-                </div>
-                <span
-                  className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition ${
-                    negotiable ? "bg-blue-600" : "bg-slate-300"
-                  }`}
+                {/* "Kami bor" Negotiable Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setNegotiable((prev) => !prev)}
+                  className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-[#F3F6FB] p-3.5 text-left transition hover:border-blue-300"
                 >
+                  <div>
+                    <span className="block text-xs font-extrabold text-slate-900 sm:text-sm">
+                      {locale === "ru" ? "Торг уместен («Ками бор»)" : "«Kami bor» (Narxi kelishiladi)"}
+                    </span>
+                    <span className="mt-0.5 block text-[11px] font-medium text-slate-500">
+                      {locale === "ru"
+                        ? "Покупатели видят, что можно договориться"
+                        : "Mijozlar bilan narx ustida kelishish mumkin"}
+                    </span>
+                  </div>
                   <span
-                    className={`h-5 w-5 rounded-full bg-white shadow-xs transition-transform ${
-                      negotiable ? "translate-x-5" : "translate-x-0"
+                    className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition ${
+                      negotiable ? "bg-blue-600" : "bg-slate-300"
                     }`}
-                  />
-                </span>
-              </button>
-
-              {/* Phone Number */}
-              <div>
-                <label htmlFor="phone" className="mb-1.5 block text-xs font-extrabold text-slate-900 sm:text-sm">
-                  {copy.phone}
-                </label>
-                <div className="flex h-12 items-stretch overflow-hidden rounded-2xl border border-slate-300/90 bg-[#F3F6FB] transition focus-within:border-blue-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-600/15">
-                  <span className="flex items-center border-r border-slate-200 bg-slate-100 px-3.5 text-sm font-extrabold text-slate-700 select-none">
-                    +998
+                  >
+                    <span
+                      className={`h-5 w-5 rounded-full bg-white shadow-xs transition-transform ${
+                        negotiable ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
                   </span>
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    inputMode="numeric"
-                    pattern="[0-9]{9}"
-                    maxLength={9}
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
-                    placeholder="901234567"
-                    className="w-full flex-1 bg-transparent px-3.5 text-sm font-extrabold text-slate-900 outline-none"
-                  />
-                </div>
-              </div>
+                </button>
 
-              <div className="flex items-center gap-2.5 rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs font-bold text-emerald-800">
-                <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  <path d="m9 12 2 2 4-4" />
-                </svg>
-                <span>
-                  {locale === "ru"
-                    ? "После быстрой проверки объявление сразу появится на сайте."
-                    : "Tekshiruvdan so'ng e'loningiz darhol sayt va Telegram kanalga chiqadi."}
-                </span>
-              </div>
-            </section>
+                {/* What is inside the cost of payment (Narx ichiga nimalar kiradi va to'lov shartlari) */}
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-slate-900 sm:text-sm">
+                      {listingType === "sale"
+                        ? locale === "ru"
+                          ? "Что входит в стоимость и условия оплаты"
+                          : "Sotuv narxi ichida nimalar bor va to'lov shartlari"
+                        : locale === "ru"
+                          ? "Что входит в оплату аренды?"
+                          : "To'lov narxi ichiga nimalar kiradi?"}
+                    </span>
+                    <span className="text-[11px] font-extrabold text-blue-600">
+                      {activeIncludedList.length} {locale === "ru" ? "выбрано" : "ta tanlandi"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {activeIncludedKeys.map((key) => {
+                      const active = includedInPrice.includes(key);
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => toggleIncludedInPrice(key)}
+                          className={`flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-left text-xs font-extrabold transition ${
+                            active
+                              ? "border-blue-600 bg-[#EFF6FF] text-blue-800 shadow-2xs"
+                              : "border-slate-200 bg-[#F3F6FB] text-slate-700 hover:border-slate-300"
+                          }`}
+                        >
+                          <span
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
+                              active
+                                ? "border-blue-600 bg-blue-600 text-white"
+                                : "border-slate-300 bg-white text-transparent"
+                            }`}
+                          >
+                            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </span>
+                          <span className="leading-snug">{INCLUDED_IN_PRICE_LABELS[locale][key]}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+
+              {/* 5B. Submitter Contact Details: Ism, Familiya, Telefon raqami, Gmail (optional) */}
+              <section className="space-y-4 rounded-[24px] border border-slate-200/90 bg-white p-4 shadow-[0_8px_24px_-8px_rgba(15,23,42,0.06)] sm:space-y-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display text-sm font-extrabold text-slate-900 sm:text-base">
+                    {locale === "ru" ? "Контактные данные автора" : "Murojaat uchun aloqa ma'lumotlari"}
+                  </h3>
+                  <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-extrabold text-blue-600">
+                    {locale === "ru" ? "Шаг 5" : "Shaxsiy ma'lumot"}
+                  </span>
+                </div>
+
+                {/* First Name & Last Name in one row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="contact-first-name" className="mb-1.5 block text-xs font-extrabold text-slate-900 sm:text-sm">
+                      {locale === "ru" ? "Имя *" : "Ismingiz *"}
+                    </label>
+                    <input
+                      id="contact-first-name"
+                      type="text"
+                      required
+                      value={contactFirstName}
+                      onChange={(e) => setContactFirstName(e.target.value)}
+                      placeholder={locale === "ru" ? "Мухаммадали" : "Muhammadali"}
+                      className="input text-xs font-bold sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="contact-last-name" className="mb-1.5 block text-xs font-extrabold text-slate-900 sm:text-sm">
+                      {locale === "ru" ? "Фамилия *" : "Familiyangiz *"}
+                    </label>
+                    <input
+                      id="contact-last-name"
+                      type="text"
+                      required
+                      value={contactLastName}
+                      onChange={(e) => setContactLastName(e.target.value)}
+                      placeholder={locale === "ru" ? "Абдуллаев" : "Abdullayev"}
+                      className="input text-xs font-bold sm:text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone Number & Optional Gmail */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="phone" className="mb-1.5 block text-xs font-extrabold text-slate-900 sm:text-sm">
+                      {copy.phone} *
+                    </label>
+                    <div className="flex h-12 items-stretch overflow-hidden rounded-2xl border border-slate-300/90 bg-[#F3F6FB] transition focus-within:border-blue-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-600/15">
+                      <span className="flex items-center border-r border-slate-200 bg-slate-100 px-3.5 text-sm font-extrabold text-slate-700 select-none">
+                        +998
+                      </span>
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="[0-9]{9}"
+                        maxLength={9}
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                        placeholder="901234567"
+                        className="w-full flex-1 bg-transparent px-3.5 text-sm font-extrabold text-slate-900 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <label htmlFor="contact-email" className="text-xs font-extrabold text-slate-900 sm:text-sm">
+                        {locale === "ru" ? "Gmail / Эл. почта" : "Gmail / Elektron pochta"}
+                      </label>
+                      <span className="text-[10px] font-semibold text-slate-400">
+                        {locale === "ru" ? "Необязательно" : "Ixtiyoriy"}
+                      </span>
+                    </div>
+                    <input
+                      id="contact-email"
+                      type="email"
+                      inputMode="email"
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      placeholder="example@gmail.com"
+                      className="input h-12 text-xs font-bold sm:text-sm"
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {/* 5C. FINAL REVIEW OF THE LISTING (Yakuniy ko'rib chiqish) */}
+              <section className="overflow-hidden rounded-[24px] border-2 border-blue-200 bg-white shadow-[0_10px_28px_-8px_rgba(37,99,235,0.14)]">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-blue-100 bg-gradient-to-r from-[#EFF6FF] to-[#DBEAFE]/60 px-4 py-3 sm:px-5">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white">
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </span>
+                    <h3 className="font-display text-xs font-extrabold text-slate-900 sm:text-sm">
+                      {locale === "ru"
+                        ? "Итоговая проверка вашего объявления"
+                        : "E'loningizning yakuniy ko'rinishi (Tekshirib oling)"}
+                    </h3>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1">
+                    {([1, 2, 3, 4] as const).map((sId) => (
+                      <button
+                        key={sId}
+                        type="button"
+                        onClick={() => goToStep(sId)}
+                        className="rounded-lg border border-blue-200 bg-white px-2 py-0.5 text-[10px] font-extrabold text-blue-700 transition hover:bg-blue-600 hover:text-white"
+                      >
+                        ✎ {sId}-{locale === "ru" ? "шаг" : "qadam"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4 p-4 sm:p-5">
+                  {/* Top Row: Cover Photo + Main Headline & Price */}
+                  <div className="grid gap-3.5 sm:grid-cols-[160px_1fr]">
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                      {previewCoverUrl ? (
+                        <Image
+                          src={previewCoverUrl}
+                          alt={previewTitle}
+                          fill
+                          unoptimized={isLocalImageUrl(previewCoverUrl)}
+                          className="object-cover"
+                          sizes="180px"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xs font-bold text-slate-400">
+                          {locale === "ru" ? "Нет фото" : "Rasm yo'q"}
+                        </div>
+                      )}
+                      {/* Only heart button on photo */}
+                      <span
+                        aria-hidden="true"
+                        className="badge-blur absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-700 shadow-xs"
+                      >
+                        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.1">
+                          <path d="M12 20.5 4.8 13.7a4.9 4.9 0 0 1 0-7 4.7 4.7 0 0 1 6.8 0L12 7.2l.4-.5a4.7 4.7 0 0 1 6.8 0 4.9 4.9 0 0 1 0 7Z" />
+                        </svg>
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="rounded-md bg-blue-600 px-2 py-0.5 text-[10px] font-extrabold text-white">
+                          {listingType === "sale"
+                            ? locale === "ru"
+                              ? "Продажа"
+                              : "Sotuv"
+                            : selectedRentType === "daily"
+                              ? locale === "ru"
+                                ? "Посуточно"
+                                : "Kunlik ijara"
+                              : locale === "ru"
+                                ? "Долгосрочная аренда"
+                                : "Oylik ijara"}
+                        </span>
+                        <span className="rounded-md border border-slate-200 bg-[#F3F6FB] px-2 py-0.5 text-[10px] font-extrabold text-slate-700">
+                          {propertyType === "house"
+                            ? locale === "ru"
+                              ? "Дом / Участок"
+                              : "Hovli / Uy"
+                            : propertyTypeLabels[propertyType]}
+                        </span>
+                        <span className="rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-extrabold text-blue-700">
+                          {furnishingLabels[furnishing]}
+                        </span>
+                        {negotiable ? (
+                          <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700">
+                            {locale === "ru" ? "Торг уместен" : "Kami bor"}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <p className="font-display text-xl font-extrabold text-blue-600">
+                        {previewPriceFormatted}
+                      </p>
+
+                      <p className="text-sm font-extrabold text-slate-900">{previewTitle}</p>
+                      <p className="text-xs font-semibold text-slate-500">📍 {previewLocation}</p>
+                    </div>
+                  </div>
+
+                  {/* Specs Summary Strip */}
+                  <div className="grid grid-cols-3 gap-2 rounded-2xl border border-slate-200 bg-[#F3F6FB] p-3 text-center">
+                    <div>
+                      <p className="text-xs font-extrabold text-slate-900 sm:text-sm">
+                        {propertyType === "studio" ? "1 (Studiya)" : `${rooms || 2} ta`}
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-500">{copy.rooms}</p>
+                    </div>
+                    <div className="border-x border-slate-200">
+                      <p className="text-xs font-extrabold text-slate-900 sm:text-sm">{area || 65} m²</p>
+                      <p className="text-[10px] font-bold text-slate-500">{copy.area}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-extrabold text-slate-900 sm:text-sm">{previewFloorSpec}</p>
+                      <p className="text-[10px] font-bold text-slate-500">
+                        {propertyType === "house"
+                          ? locale === "ru"
+                            ? "Участок / Этажи"
+                            : "Sotix / Qavat"
+                          : locale === "ru"
+                            ? "Этажность"
+                            : "Qavati"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* What's Included in Price + Amenities Summary */}
+                  {activeIncludedList.length > 0 ? (
+                    <div>
+                      <p className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                        {locale === "ru" ? "Условия оплаты:" : "Narx va to'lov shartlari:"}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {activeIncludedList.map((inc) => (
+                          <span
+                            key={inc}
+                            className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-extrabold text-emerald-800"
+                          >
+                            <span>✓</span>
+                            <span>
+                              {INCLUDED_IN_PRICE_LABELS[locale][inc as IncludedInPriceKey]}
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {activeAmenityList.length > 0 || activePrefList.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3">
+                      {activeAmenityList.map((a) => (
+                        <span
+                          key={a}
+                          className="rounded-lg border border-blue-200 bg-[#EFF6FF] px-2 py-0.5 text-[11px] font-bold text-blue-800"
+                        >
+                          {AMENITY_LABELS[locale][a as AmenityKey]}
+                        </span>
+                      ))}
+                      {activePrefList.map((tp) => (
+                        <span
+                          key={tp}
+                          className="rounded-lg border border-slate-200 bg-[#F3F6FB] px-2 py-0.5 text-[11px] font-bold text-slate-700"
+                        >
+                          {TENANT_PREFERENCE_LABELS[locale][tp as TenantPreferenceKey]}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {/* Submitter Contact Bar */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-[#0F172A] px-4 py-3 text-xs text-white">
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 font-display text-xs font-extrabold">
+                        {(contactFirstName[0] || "U").toUpperCase()}
+                        {(contactLastName[0] || "Y").toUpperCase()}
+                      </span>
+                      <div>
+                        <p className="font-extrabold">
+                          {[contactFirstName.trim(), contactLastName.trim()].filter(Boolean).join(" ") ||
+                            (locale === "ru" ? "Имя не указано" : "Ism Familiya kiritilmagan")}
+                        </p>
+                        {contactEmail.trim() ? (
+                          <p className="text-[11px] text-slate-300">{contactEmail.trim()}</p>
+                        ) : null}
+                      </div>
+                    </div>
+                    <span className="rounded-xl bg-white/10 px-3 py-1.5 font-extrabold tabular-nums text-blue-300">
+                      +998 {phone || "•• ••• •• ••"}
+                    </span>
+                  </div>
+                </div>
+              </section>
+            </div>
           ) : null}
 
-          {/* Step Navigation Footer Buttons */}
+          {/* Step Navigation Footer Buttons (with Bottom Send Listing Button on Step 5) */}
           <div className="flex items-center gap-2.5 rounded-[22px] border border-slate-200/90 bg-white p-3 shadow-[0_6px_20px_-6px_rgba(15,23,42,0.06)]">
             {step > 1 ? (
               <button
@@ -1879,8 +2385,11 @@ export function AddListingForm({
               <button
                 type="submit"
                 disabled={isSubmitting || hasUploadingPhoto}
-                className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 px-5 text-xs font-extrabold text-white shadow-lg shadow-emerald-600/25 transition hover:from-emerald-700 hover:to-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm"
+                className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] px-5 text-xs font-extrabold text-white shadow-lg shadow-blue-600/30 transition hover:from-blue-700 hover:to-blue-800 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm"
               >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                </svg>
                 <span>
                   {hasUploadingPhoto
                     ? copy.uploading
@@ -1890,11 +2399,10 @@ export function AddListingForm({
                         : copy.submitting
                       : mode === "edit"
                         ? copy.updateSubmit ?? copy.submit
-                        : copy.submit}
+                        : locale === "ru"
+                          ? "Отправить объявление"
+                          : "E'lonni yuborish va joylash"}
                 </span>
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
               </button>
             )}
           </div>
@@ -1957,7 +2465,8 @@ export function AddListingForm({
                 </div>
 
                 <p className="text-xs font-bold text-slate-700">
-                  {rooms || 2} {copy.rooms.toLowerCase()} · {area || 65} m² · {previewFloorSpec}
+                  {propertyType === "studio" ? "1" : rooms || 2} {copy.rooms.toLowerCase()} ·{" "}
+                  {area || 65} m² · {previewFloorSpec}
                 </p>
 
                 <p className="line-clamp-2 text-xs font-extrabold leading-snug text-slate-900">
@@ -1970,7 +2479,11 @@ export function AddListingForm({
 
                 <div className="flex flex-wrap gap-1 pt-1">
                   <span className="rounded-md border border-slate-200 bg-[#F3F6FB] px-2 py-0.5 text-[10px] font-bold text-slate-600">
-                    {propertyTypeLabels[propertyType]}
+                    {propertyType === "house"
+                      ? locale === "ru"
+                        ? "Дом / Участок"
+                        : "Hovli / Uy"
+                      : propertyTypeLabels[propertyType]}
                   </span>
                   <span className="rounded-md border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700">
                     {furnishingLabels[furnishing]}
@@ -1984,8 +2497,8 @@ export function AddListingForm({
                 {locale === "ru" ? "Умный помощник:" : "Smart yordamchi:"}
               </strong>{" "}
               {locale === "ru"
-                ? "Заголовок и описание автоматически формируются на основе этажа, площади и выбранных удобств."
-                : "Tanlangan qavat, maydon, ko'cha va qulayliklar asosida sarlavha hamda tavsif avtomatik shakllantiriladi."}
+                ? "На 5-м шаге вы увидите полную итоговую карточку объявления перед отправкой."
+                : "5-qadamda e'lonni yuborishdan oldin barcha kiritgan ma'lumotlaringizni yakuniy kartochkada tekshirib olasiz."}
             </div>
           </div>
         </aside>

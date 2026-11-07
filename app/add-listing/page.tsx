@@ -108,6 +108,8 @@ export default async function AddListingPage({ searchParams = {} }: AddListingPa
           }}
           showSuccess={showSuccess}
           initialPhone={user?.phone}
+          initialName={user?.name}
+          initialEmail={user?.email}
         />
       </div>
     </div>

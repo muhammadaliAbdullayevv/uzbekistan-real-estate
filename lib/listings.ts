@@ -69,10 +69,13 @@ export type ListingWithImages = {
   negotiable?: boolean;
   amenities?: string[];
   tenantPreferences?: string[];
+  includedInPrice?: string[];
   latitude: number | null;
   longitude: number | null;
   locationPrecision: "EXACT" | "APPROXIMATE";
   availabilityStatus: ListingAvailabilityStatusValue;
+  contactName?: string | null;
+  contactEmail?: string | null;
   phone: string;
   telegramUsername: string | null;
   status: ListingStatus;
@@ -141,10 +144,13 @@ function buildSelectSql(near?: NearPoint) {
       l."negotiable",
       COALESCE(l."amenities", ARRAY[]::TEXT[]) AS "amenities",
       COALESCE(l."tenantPreferences", ARRAY[]::TEXT[]) AS "tenantPreferences",
+      COALESCE(l."includedInPrice", ARRAY[]::TEXT[]) AS "includedInPrice",
       l."latitude",
       l."longitude",
       l."locationPrecision",
       l."availabilityStatus",
+      l."contactName",
+      l."contactEmail",
       l."phone",
       l."telegramUsername",
       l."status",
@@ -292,7 +298,7 @@ function buildWhereSql(filters: ListingSearchParams, near?: NearPoint) {
     conditions.push(Prisma.sql`l."propertyType" = CAST(${propertyType} AS "PropertyType")`);
   }
 
-  if (rentType && RENT_TYPES.includes(rentType)) {
+  if (listingType !== "sale" && rentType && RENT_TYPES.includes(rentType)) {
     conditions.push(Prisma.sql`l."rentType" = CAST(${rentType} AS "RentType")`);
   }
 
@@ -556,6 +562,9 @@ export async function updateListingForUser(
     negotiable?: boolean;
     amenities?: string[];
     tenantPreferences?: string[];
+    includedInPrice?: string[];
+    contactName?: string | null;
+    contactEmail?: string | null;
     latitude: number;
     longitude: number;
     phone: string;
@@ -589,6 +598,7 @@ export async function updateListingForUser(
       : Prisma.sql`NULL`;
     const amenitiesVal = input.amenities ?? [];
     const tenantPreferencesVal = input.tenantPreferences ?? [];
+    const includedInPriceVal = input.includedInPrice ?? [];
 
     await tx.$executeRaw(
       Prisma.sql`
@@ -615,6 +625,9 @@ export async function updateListingForUser(
           "negotiable" = ${Boolean(input.negotiable)},
           "amenities" = ${amenitiesVal},
           "tenantPreferences" = ${tenantPreferencesVal},
+          "includedInPrice" = ${includedInPriceVal},
+          "contactName" = ${input.contactName ?? null},
+          "contactEmail" = ${input.contactEmail ?? null},
           "latitude" = ${input.latitude},
           "longitude" = ${input.longitude},
           "locationPrecision" = CAST('EXACT' AS "LocationPrecision"),

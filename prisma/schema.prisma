@@ -128,10 +128,13 @@ model Listing {
   negotiable       Boolean        @default(false)
   amenities        String[]       @default([])
   tenantPreferences String[]      @default([])
+  includedInPrice  String[]       @default([])
   latitude         Float?
   longitude        Float?
   locationPrecision LocationPrecision @default(APPROXIMATE)
   availabilityStatus ListingAvailabilityStatus @default(ACTIVE)
+  contactName      String?
+  contactEmail     String?
   phone            String
   telegramUsername String?
   status           ListingStatus @default(PENDING)

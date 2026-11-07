@@ -27,8 +27,8 @@ export function TelegramWebAppInit() {
     webApp.expand();
 
     try {
-      webApp.setHeaderColor("#090C10");
-      webApp.setBackgroundColor("#06080B");
+      webApp.setHeaderColor("#FFFFFF");
+      webApp.setBackgroundColor("#DCE5F2");
     } catch {
       // Unsupported on this Telegram client version -- fine to ignore.
     }
