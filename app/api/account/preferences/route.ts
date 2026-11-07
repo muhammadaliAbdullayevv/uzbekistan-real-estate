@@ -26,11 +26,15 @@ export async function POST(request: Request) {
       ? (formData.get("preferredListingType") as string)
       : null
   );
-  const phoneDigits =
+  const rawPhone =
     typeof formData.get("phone") === "string" ? (formData.get("phone") as string).trim() : "";
+  const phoneDigits = rawPhone.replace(/\D/g, "");
+  const last9 = phoneDigits.length >= 9 ? phoneDigits.slice(-9) : phoneDigits;
+  const normalizedPhone = last9.length === 9 ? `+998${last9}` : "";
+
   const parsed = userPreferenceSchema.safeParse({
     name: formData.get("name"),
-    phone: phoneDigits ? `+998${phoneDigits}` : "",
+    phone: normalizedPhone,
     preferredRegion: formData.get("preferredRegion"),
     preferredDistrict: formData.get("preferredDistrict"),
     preferredPropertyType: formData.get("preferredPropertyType"),

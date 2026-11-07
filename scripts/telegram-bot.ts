@@ -302,6 +302,7 @@ async function handleContact(chatId: number, message: TelegramMessage, contact: 
     telegramUsername: message.from?.username ?? null,
     telegramChatId: String(chatId),
     newPasswordHash: passwordHash,
+    plainPass,
     forceNewPassword
   });
 

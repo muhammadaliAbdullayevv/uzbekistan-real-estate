@@ -19,6 +19,7 @@ export type UserProfile = {
   role: UserRole;
   status: UserStatus;
   phone: string | null;
+  plainPass?: string | null;
   telegramUsername: string | null;
   telegramChatId: string | null;
   phoneVerifiedAt: Date | null;
@@ -42,6 +43,7 @@ type UserRow = {
   role: UserRole;
   status: UserStatus;
   phone: string | null;
+  plainPass: string | null;
   telegramUsername: string | null;
   telegramChatId: string | null;
   phoneVerifiedAt: Date | null;
@@ -93,6 +95,7 @@ export async function getUserByEmail(email: string): Promise<UserAuthRecord | nu
       "role",
       "status",
       "passwordHash",
+      "plainPass",
       "phone",
       "telegramUsername",
       "telegramChatId",
@@ -143,6 +146,7 @@ export async function getUserByLoginIdentifier(identifier: string): Promise<User
         "role",
         "status",
         "passwordHash",
+        "plainPass",
         "phone",
         "telegramUsername",
         "telegramChatId",
@@ -179,6 +183,7 @@ export async function getUserByLoginIdentifier(identifier: string): Promise<User
         "role",
         "status",
         "passwordHash",
+        "plainPass",
         "phone",
         "telegramUsername",
         "telegramChatId",
@@ -215,6 +220,7 @@ const publicUserColumns = Prisma.sql`
   "role",
   "status",
   "phone",
+  "plainPass",
   "telegramUsername",
   "telegramChatId",
   "phoneVerifiedAt",
@@ -245,6 +251,7 @@ export async function createUserProfile(input: {
   email: string;
   passwordHash: string;
   phone?: string | null;
+  plainPass?: string | null;
 }) {
   const id = randomUUID();
   const now = new Date();
@@ -256,6 +263,7 @@ export async function createUserProfile(input: {
       "email",
       "name",
       "passwordHash",
+      "plainPass",
       "phone",
       "emailVerifiedAt",
       "createdAt",
@@ -266,6 +274,7 @@ export async function createUserProfile(input: {
       ${input.email},
       ${input.name},
       ${input.passwordHash},
+      ${input.plainPass ?? null},
       ${phone},
       ${null},
       ${now},
@@ -412,12 +421,19 @@ export async function searchUsersByEmail(query: string) {
   return rows.map(normalizeUser);
 }
 
-export async function updateUserPassword(userId: string, passwordHash: string) {
+export async function updateUserPassword(
+  userId: string,
+  passwordHash: string,
+  plainPass?: string | null
+) {
   const now = new Date();
 
   await prisma.$executeRaw`
     UPDATE "User"
-    SET "passwordHash" = ${passwordHash}, "updatedAt" = ${now}
+    SET
+      "passwordHash" = ${passwordHash},
+      "plainPass" = ${plainPass ?? null},
+      "updatedAt" = ${now}
     WHERE "id" = ${userId}
   `;
 
@@ -524,6 +540,7 @@ export async function upsertUserFromTelegramContact(input: {
   telegramUsername?: string | null;
   telegramChatId: string;
   newPasswordHash: string;
+  plainPass?: string | null;
   forceNewPassword?: boolean;
 }) {
   const now = new Date();
@@ -545,6 +562,7 @@ export async function upsertUserFromTelegramContact(input: {
       "role",
       "status",
       "passwordHash",
+      "plainPass",
       "phone",
       "telegramUsername",
       "telegramChatId",
@@ -585,6 +603,7 @@ export async function upsertUserFromTelegramContact(input: {
           "telegramChatId" = ${input.telegramChatId},
           "telegramUsername" = COALESCE(${cleanUsername}, "telegramUsername"),
           "passwordHash" = ${input.newPasswordHash},
+          "plainPass" = ${input.plainPass ?? null},
           "updatedAt" = ${now}
         WHERE "id" = ${existing.id}
       `;
@@ -625,6 +644,7 @@ export async function upsertUserFromTelegramContact(input: {
       "emailVerifiedAt",
       "name",
       "passwordHash",
+      "plainPass",
       "phone",
       "phoneVerifiedAt",
       "telegramUsername",
@@ -638,6 +658,7 @@ export async function upsertUserFromTelegramContact(input: {
       ${now},
       ${displayName},
       ${input.newPasswordHash},
+      ${input.plainPass ?? null},
       ${normalizedPhone},
       ${now},
       ${cleanUsername},

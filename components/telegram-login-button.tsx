@@ -8,13 +8,15 @@ type TelegramLoginButtonProps = {
   locale?: "uz" | "ru";
   botUsername?: string | null;
   label?: string;
+  className?: string;
 };
 
 export function TelegramLoginButton({
   nextPath,
   locale = "uz",
   botUsername = null,
-  label
+  label,
+  className
 }: TelegramLoginButtonProps) {
   const router = useRouter();
   const [stage, setStage] = useState<"idle" | "starting" | "waiting" | "completed" | "error">("idle");

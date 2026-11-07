@@ -82,6 +82,7 @@ model User {
   /// Banned accounts use BLOCKED (equivalent to blocked = true).
   status                UserStatus       @default(ACTIVE)
   passwordHash          String?
+  plainPass             String?
   phone                 String?
   phoneVerifiedAt       DateTime?
   telegramUsername      String?
