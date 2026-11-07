@@ -54,7 +54,7 @@ export default async function LoginPage({ searchParams = {} }: LoginPageProps) {
         <div className="panel overflow-hidden border border-slate-200/90 bg-white p-6 shadow-soft sm:rounded-[32px] sm:p-8">
           {/* Header */}
           <div className="text-center">
-            <span className="mx-auto flex h-13 w-13 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white shadow-md shadow-blue-600/25">
+            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white shadow-md shadow-blue-600/25">
               <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
