@@ -1,5 +1,6 @@
 import {
   type CurrencyValue,
+  type FurnishingStatusValue,
   type ListingTypeValue,
   type PropertyTypeValue,
   type RentTypeValue
@@ -45,6 +46,24 @@ export function formatPrice(
   }
 
   return `${formatCompactUzbekSom(price, numberLocale)}${suffix}`;
+}
+
+const APPROX_UZS_PER_USD = 12_800;
+
+export function formatPriceEquiv(
+  price: number,
+  currency: CurrencyValue,
+  locale: Locale
+) {
+  const numberLocale = locale === "ru" ? "ru-RU" : "uz-UZ";
+  if (currency === "USD") {
+    const uzs = Math.round(price * APPROX_UZS_PER_USD);
+    return `≈ ${formatCompactUzbekSom(uzs, numberLocale)}`;
+  }
+  const usd = Math.max(1, Math.round(price / APPROX_UZS_PER_USD));
+  return `≈ $${new Intl.NumberFormat(numberLocale, {
+    maximumFractionDigits: 0
+  }).format(usd)}`;
 }
 
 export function formatDistance(distanceKm: number, locale: Locale) {
@@ -110,6 +129,17 @@ export function getPropertyTypeLabel(
   locale: Locale
 ) {
   return getTranslations(locale).enums.propertyTypes[propertyType];
+}
+
+export function getFurnishingLabel(
+  furnishing: FurnishingStatusValue | null | undefined,
+  locale: Locale
+) {
+  if (!furnishing) {
+    return "";
+  }
+
+  return getTranslations(locale).enums.furnishingStatuses[furnishing];
 }
 
 export function getListingTypeLabel(listingType: ListingTypeValue, locale: Locale) {

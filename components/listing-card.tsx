@@ -6,8 +6,11 @@ import { LocationSummary } from "@/components/location-display";
 import {
   formatDistance,
   formatPrice,
+  formatPriceEquiv,
+  getFurnishingLabel,
   getPropertyTypeLabel,
-  getRentTypeLabel
+  getRentTypeLabel,
+  getTelegramLink
 } from "@/lib/format";
 import type { Locale } from "@/lib/i18n";
 import { getTranslations } from "@/lib/i18n";
@@ -26,14 +29,12 @@ export function ListingCard({ locale, listing, isFavorited = false }: ListingCar
     listing.description.toLowerCase().includes("no agency fee");
   const listingIndicator =
     listing.listingType === "sale" ? t.common.forSaleIndicator : t.common.forRentIndicator;
-  const listingIndicatorClass =
-    listing.listingType === "sale"
-      ? "border-amber-200 bg-amber-50 text-amber-800"
-      : "border-emerald-200 bg-emerald-50 text-emerald-800";
+  const telegramHref = getTelegramLink(listing.telegramUsername);
+  const callHref = `tel:${listing.phone}`;
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-line/70 bg-white shadow-[0_16px_50px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_70px_rgba(15,23,42,0.12)] sm:rounded-[30px]">
-      <div className="relative aspect-[16/9] overflow-hidden bg-mist sm:aspect-[4/3]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[26px] border border-white/10 bg-gradient-to-b from-[#131922] to-[#0D1219] shadow-[0_18px_50px_-15px_rgba(0,0,0,0.65)] transition duration-300 hover:-translate-y-1 hover:border-cyan-500/40 hover:shadow-[0_24px_60px_-15px_rgba(6,182,212,0.2)] sm:rounded-[30px]">
+      <div className="relative aspect-[16/10] overflow-hidden bg-[#0A0E14] sm:aspect-[4/3]">
         <Link
           href={`/listings/${listing.id}`}
           className="absolute inset-0 block overflow-hidden"
@@ -42,38 +43,49 @@ export function ListingCard({ locale, listing, isFavorited = false }: ListingCar
             images={listing.images.map((image) => image.url)}
             alt={listing.title}
           />
-          <div className="absolute inset-x-0 top-0 flex flex-wrap gap-1 p-2 pr-11 sm:gap-2 sm:p-4 sm:pr-16">
-            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-ink shadow-sm sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[0.16em]">
+          {/* Top Floating Glass Badges */}
+          <div className="absolute inset-x-0 top-0 flex flex-wrap items-center gap-1.5 p-2.5 pr-12 sm:p-3.5 sm:pr-14">
+            <span className="badge-blur rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-md">
               {getPropertyTypeLabel(listing.propertyType, locale)}
             </span>
             {listing.listingType === "rent" && listing.rentType ? (
-              <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-accent shadow-sm sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[0.16em]">
+              <span className="rounded-full bg-cyan-500/90 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-950 shadow-md">
                 {getRentTypeLabel(listing.rentType, locale)}
               </span>
-            ) : null}
-            {listing.distanceKm !== undefined ? (
-              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-semibold text-ink shadow-sm sm:px-3 sm:py-1 sm:text-[11px]">
-                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-2.5 w-2.5 sm:h-3 sm:w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 21s-7-6.14-7-11a7 7 0 0 1 14 0c0 4.86-7 11-7 11z" />
-                  <circle cx="12" cy="10" r="2.5" />
-                </svg>
-                {formatDistance(listing.distanceKm, locale)}
+            ) : (
+              <span className="rounded-full bg-amber-400/90 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-950 shadow-md">
+                {listingIndicator}
+              </span>
+            )}
+            {listing.userId ? (
+              <span className="hidden rounded-full bg-emerald-400/90 px-2.5 py-1 text-[10px] font-extrabold text-slate-950 shadow-md sm:inline-flex">
+                ✓ {t.common.verifiedOwner}
               </span>
             ) : null}
           </div>
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent p-2.5 sm:p-5">
-            <p className="font-display text-[1.05rem] font-semibold leading-none text-white sm:text-[2.3rem]">
-              {formatPrice(
-                listing.price,
-                listing.currency,
-                listing.listingType,
-                listing.rentType,
-                locale
-              )}
-            </p>
+
+          {/* Bottom Photo Overlay: Distance & Photo Count */}
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-[#090C10] via-[#090C10]/60 to-transparent p-3 sm:p-4">
+            {listing.distanceKm !== undefined ? (
+              <span className="badge-blur inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-[11px] font-bold text-cyan-300">
+                <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                {formatDistance(listing.distanceKm, locale)}
+              </span>
+            ) : (
+              <span className="badge-blur inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-[10px] font-bold text-emerald-300">
+                ✓ {hasNoAgencyFee ? t.common.noAgencyFee : listingIndicator}
+              </span>
+            )}
+
+            {listing.images.length > 0 ? (
+              <span className="badge-blur rounded-lg px-2 py-0.5 font-mono text-[10px] font-semibold text-slate-200">
+                1 / {listing.images.length}
+              </span>
+            ) : null}
           </div>
         </Link>
-        <div className="absolute right-2 top-2 z-10 sm:right-4 sm:top-4">
+
+        <div className="absolute right-2.5 top-2.5 z-10 sm:right-3.5 sm:top-3.5">
           <FavoriteButton
             listingId={listing.id}
             isFavorited={isFavorited}
@@ -88,46 +100,76 @@ export function ListingCard({ locale, listing, isFavorited = false }: ListingCar
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col space-y-2 p-3.5 sm:space-y-4 sm:p-6">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span
-            className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.16em] ${listingIndicatorClass}`}
-          >
-            {listingIndicator}
-          </span>
-          {listing.userId ? (
-            <span className="hidden rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] text-emerald-700 sm:inline-flex">
-              {t.common.verifiedOwner}
+      {/* Card Body */}
+      <div className="flex flex-1 flex-col space-y-2.5 p-3.5 sm:space-y-3.5 sm:p-5">
+        {/* Price & Specs Header */}
+        <div className="flex items-baseline justify-between gap-2">
+          <div>
+            <p className="font-display text-lg font-extrabold leading-none text-cyan-400 sm:text-2xl">
+              {formatPrice(
+                listing.price,
+                listing.currency,
+                listing.listingType,
+                listing.rentType,
+                locale
+              )}
+            </p>
+            <p className="mt-1 text-[11px] font-medium text-slate-400">
+              {formatPriceEquiv(listing.price, listing.currency, locale)}
+            </p>
+          </div>
+
+          <div className="text-right">
+            <span className="block text-xs font-extrabold text-white sm:text-sm">
+              {listing.rooms} {t.common.roomsShort} · {listing.area} m²
             </span>
-          ) : null}
-          {hasNoAgencyFee ? (
-            <span className="hidden rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] text-amber-700 sm:inline-flex">
-              {t.common.noAgencyFee}
-            </span>
-          ) : null}
+            {listing.furnishing ? (
+              <span className="mt-0.5 inline-block text-[10px] font-semibold text-emerald-400">
+                {getFurnishingLabel(listing.furnishing, locale)}
+              </span>
+            ) : null}
+          </div>
         </div>
 
+        {/* Title & Location */}
         <div>
           <Link href={`/listings/${listing.id}`} className="block">
-            <h3 className="line-clamp-2 font-display text-[0.92rem] font-semibold leading-tight text-ink transition group-hover:text-accent sm:text-[1.45rem]">
+            <h3 className="line-clamp-2 text-xs font-bold leading-snug text-slate-100 transition group-hover:text-cyan-300 sm:text-base">
               {listing.title}
             </h3>
           </Link>
           <LocationSummary
             locale={locale}
             value={listing}
-            className="mt-1.5 truncate text-[12px] text-ink/60 sm:mt-2 sm:text-sm"
+            className="mt-1 truncate text-[11px] font-medium text-slate-400 sm:text-xs"
           />
         </div>
 
-        <p className="truncate text-[12px] text-ink/70 sm:text-sm">
-          {listing.rooms} {t.common.roomsShort} · {listing.area} m² · {listing.currency}
-        </p>
+        {/* Instant Customer Deal Triggers */}
+        <div className="mt-auto grid grid-cols-2 gap-2 border-t border-white/10 pt-2.5">
+          {telegramHref ? (
+            <a
+              href={telegramHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 px-2.5 py-2 text-[11px] font-extrabold text-white shadow-md shadow-blue-500/20 transition hover:from-blue-400 hover:to-cyan-400 sm:py-2.5 sm:text-xs"
+            >
+              <span aria-hidden="true">✈️</span>
+              <span className="truncate">{t.common.telegramDirect}</span>
+            </a>
+          ) : (
+            <a
+              href={callHref}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 px-2.5 py-2 text-[11px] font-extrabold text-slate-950 shadow-md shadow-cyan-500/20 transition hover:from-cyan-300 hover:to-teal-300 sm:py-2.5 sm:text-xs"
+            >
+              <span aria-hidden="true">📞</span>
+              <span className="truncate">{t.common.callDirect}</span>
+            </a>
+          )}
 
-        <div className="mt-auto grid gap-3 pt-1">
           <Link
             href={`/listings/${listing.id}`}
-            className="btn-primary w-full py-2.5 text-center sm:py-3"
+            className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-2.5 py-2 text-[11px] font-bold text-white transition hover:border-cyan-400/40 hover:bg-white/10 sm:py-2.5 sm:text-xs"
           >
             {t.common.viewDetails}
           </Link>

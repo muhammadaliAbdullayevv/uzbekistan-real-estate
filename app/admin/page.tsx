@@ -115,7 +115,7 @@ export default async function OwnerPage({ searchParams = {} }: OwnerPageProps) {
 
   return (
     <div className="shell space-y-8">
-      <section className="flex flex-col gap-6 rounded-[32px] border bg-white/85 px-6 py-8 shadow-soft sm:px-8">
+      <section className="panel flex flex-col gap-6 px-6 py-8 sm:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <span className="pill border-accent/25 bg-accent/5 text-accent">
@@ -260,7 +260,7 @@ export default async function OwnerPage({ searchParams = {} }: OwnerPageProps) {
               return (
                 <article
                   key={user.id}
-                  className="rounded-[28px] border border-line/80 bg-white p-5 shadow-sm"
+                  className="panel p-5"
                 >
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                     <div className="space-y-3">

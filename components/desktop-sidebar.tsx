@@ -30,17 +30,6 @@ function TabIcon({ path }: { path: string }) {
 
 export const DESKTOP_SIDEBAR_WIDTH = 224;
 
-/**
- * Desktop counterpart to MobileTabBar -- same tabs/highlight/pending-state
- * behavior, laid out as a fixed left rail instead of a bottom bar. Unlike
- * the mobile bar, this one does NOT hide on /ai-uychi or an open /chat/[id]
- * thread: those hide conditions exist on mobile because a full-screen chat
- * takeover is the expected pattern there (and to dodge an on-screen-keyboard
- * desync bug with two fixed-position bars) -- neither reason applies on a
- * desktop viewport with room to spare, where losing all navigation while
- * chatting would just be worse. It still hides on the owner dashboard,
- * same as the mobile bar.
- */
 export function DesktopSidebar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: boolean }) {
   const pathname = usePathname();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
@@ -57,7 +46,7 @@ export function DesktopSidebar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage
     <nav
       aria-label="Primary"
       style={{ width: DESKTOP_SIDEBAR_WIDTH }}
-      className="fixed inset-y-0 left-0 z-20 hidden shrink-0 flex-col gap-1 border-r border-line/70 bg-white/95 p-3 pt-20 backdrop-blur sm:flex md:pt-24"
+      className="fixed inset-y-0 left-0 z-20 hidden shrink-0 flex-col gap-1.5 border-r border-white/10 bg-[#090C10]/95 p-3 pt-20 backdrop-blur-xl sm:flex md:pt-24"
     >
       {tabs.map((tab) => {
         const currentlyActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
@@ -72,8 +61,10 @@ export function DesktopSidebar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage
                 setPendingHref(tab.href);
               }
             }}
-            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-              isActive ? "bg-tint text-accent" : "text-ink/60 hover:bg-mist hover:text-ink"
+            className={`flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-bold transition-all ${
+              isActive
+                ? "border border-cyan-500/30 bg-gradient-to-r from-cyan-500/15 to-teal-500/10 text-cyan-300 shadow-sm"
+                : "text-slate-400 hover:bg-white/5 hover:text-white"
             }`}
             aria-current={isActive ? "page" : undefined}
           >

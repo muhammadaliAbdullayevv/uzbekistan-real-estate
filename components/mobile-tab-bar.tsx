@@ -9,14 +9,15 @@ type Tab = {
   label: string;
   icon: string;
   showDot?: boolean;
+  elevated?: boolean;
 };
 
-function TabIcon({ path }: { path: string }) {
+function TabIcon({ path, className = "h-5 w-5" }: { path: string; className?: string }) {
   return (
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className="h-5 w-5"
+      className={className}
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
@@ -30,13 +31,7 @@ function TabIcon({ path }: { path: string }) {
 
 export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: boolean }) {
   const pathname = usePathname();
-  // Set the instant a tab is tapped so the highlight moves right away,
-  // rather than waiting for the (sometimes slow, force-dynamic) page to
-  // actually finish loading before usePathname() catches up.
   const [pendingHref, setPendingHref] = useState<string | null>(null);
-  // CSS :active is unreliable on iOS Safari without a touch listener
-  // present, which is why taps gave no feedback at all — driven via
-  // pointer events instead so the press state is consistent everywhere.
   const [pressedHref, setPressedHref] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,20 +42,6 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
     setPressedHref((current) => (current === href ? null : current));
   }
 
-  // AI Uychi and an open buyer/owner chat thread are full-screen chats,
-  // like Telegram/WhatsApp -- no persistent nav bar while one is open.
-  // (The /chat inbox list itself keeps the nav, same as Telegram's own
-  // chat list does.) Keeping it around also caused a real bug: with both
-  // this (fixed bottom-0) and the chat's own input bar fixed-positioned,
-  // opening the on-screen keyboard on Android desynced them, leaving this
-  // bar floating above the keyboard with a gap beneath it.
-  // The owner control panel is a moderation tool, not a browsing screen --
-  // the consumer tab bar (listings/add/AI Uychi/messages/account) doesn't
-  // belong there either. isAdminPage comes from a header middleware sets
-  // (see app/layout.tsx), not a pathname check -- the admin path can be
-  // customized via ADMIN_PATH, and middleware rewrites (not redirects) that
-  // custom path to /admin internally, so the browser's own pathname here
-  // would still show the custom path, never the literal "/admin" string.
   if (pathname === "/ai-uychi" || pathname.startsWith("/chat/") || isAdminPage) {
     return null;
   }
@@ -68,13 +49,43 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line/70 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#090C10]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl sm:hidden"
     >
       <div className="flex items-stretch justify-around">
         {tabs.map((tab) => {
           const currentlyActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
           const isActive = pendingHref ? tab.href === pendingHref : currentlyActive;
           const isPressed = pressedHref === tab.href;
+
+          if (tab.elevated) {
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                onClick={() => {
+                  if (tab.href !== pathname) {
+                    setPendingHref(tab.href);
+                  }
+                }}
+                onPointerDown={() => setPressedHref(tab.href)}
+                onPointerUp={() => clearPressed(tab.href)}
+                onPointerCancel={() => clearPressed(tab.href)}
+                onPointerLeave={() => clearPressed(tab.href)}
+                style={{ WebkitTapHighlightColor: "transparent" }}
+                className="relative flex flex-1 flex-col items-center justify-end pb-2"
+                aria-current={isActive ? "page" : undefined}
+                aria-label={tab.label}
+              >
+                <span
+                  className={`-mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-400 via-teal-400 to-indigo-500 text-slate-950 shadow-[0_10px_28px_-6px_rgba(34,211,238,0.55)] ring-4 ring-[#06080B] transition-transform duration-150 ease-out ${
+                    isPressed ? "scale-90" : "scale-100"
+                  }`}
+                >
+                  <TabIcon path={tab.icon} className="h-6 w-6" />
+                </span>
+              </Link>
+            );
+          }
 
           return (
             <Link
@@ -90,8 +101,8 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
               onPointerCancel={() => clearPressed(tab.href)}
               onPointerLeave={() => clearPressed(tab.href)}
               style={{ WebkitTapHighlightColor: "transparent" }}
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-all duration-150 ease-out ${
-                isActive ? "text-accent" : "text-ink/50"
+              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-bold transition-all duration-150 ease-out ${
+                isActive ? "text-cyan-400" : "text-slate-400 hover:text-white"
               } ${isPressed ? "scale-90 opacity-70" : "scale-100"}`}
               aria-current={isActive ? "page" : undefined}
             >

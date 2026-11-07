@@ -1,4 +1,11 @@
-import { LISTING_TYPES } from "@/lib/constants";
+import Link from "next/link";
+
+import {
+  FURNISHING_STATUSES,
+  LISTING_TYPES,
+  PROPERTY_TYPES,
+  RENT_TYPES
+} from "@/lib/constants";
 import type { Locale } from "@/lib/i18n";
 import { getTranslations } from "@/lib/i18n";
 import { getRegionOptions } from "@/lib/locations";
@@ -16,6 +23,9 @@ type SearchFiltersProps = {
     maxPrice?: string;
     rooms?: string;
     propertyType?: string;
+    rentType?: string;
+    furnishing?: string;
+    verifiedOnly?: string;
     currency?: string;
     sort?: string;
     nearLat?: string;
@@ -33,19 +43,24 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
     }))
   ];
   const currentListingType = values.listingType ?? "";
+  const currentPropertyType = values.propertyType ?? "";
+  const currentRooms = values.rooms ?? "";
+  const currentRentType = values.rentType ?? "";
+  const currentFurnishing = values.furnishing ?? "";
+  const currentSort = values.sort ?? "newest";
+  const isVerifiedOnly = values.verifiedOnly === "1";
+
+  const roomOptions = [
+    { value: "", label: t.search.anyOption },
+    { value: "1", label: "1" },
+    { value: "2", label: "2" },
+    { value: "3", label: "3" },
+    { value: "4", label: "4" },
+    { value: "5", label: t.search.roomsPlus }
+  ];
 
   return (
-    <form className="surface-tint flex flex-col gap-2.5 p-2.5 sm:p-3">
-      {/* type="hidden" inputs still count as siblings for a space-y-*
-          selector (only a literal hidden attribute is skipped), which was
-          stacking an extra margin onto NearMeButton below -- flex+gap
-          instead, since gap only applies between elements actually still
-          in flow (these are display:none by default). */}
-      {/* Only rendered when a real "near me" search is active -- otherwise
-          every ordinary search submit (e.g. just picking a listing type)
-          would carry an empty nearLat/nearLng pair into the URL, which
-          made the near-me button visually show "active" for a search that
-          never used location at all. */}
+    <form className="rounded-[28px] border border-white/10 bg-gradient-to-b from-[#121822] to-[#0D121A] p-3.5 shadow-2xl sm:p-5">
       {values.nearLat && values.nearLng ? (
         <>
           <input type="hidden" name="nearLat" defaultValue={values.nearLat} />
@@ -53,28 +68,57 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
         </>
       ) : null}
 
-      <NearMeButton
-        copy={{
-          nearMe: t.search.nearMe,
-          locating: t.search.locating,
-          nearMeActive: t.search.nearMeActive,
-          nearMeError: t.search.nearMeError
-        }}
-      />
+      {/* Top Row: Segment Deal Control + Near Me GPS */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3.5">
+        <div className="grid flex-1 grid-cols-3 gap-1 rounded-2xl border border-white/10 bg-black/40 p-1 sm:max-w-md">
+          {listingTypeOptions.map((option) => (
+            <label key={option.value || "all"} className="cursor-pointer">
+              <input
+                type="radio"
+                name="listingType"
+                value={option.value}
+                defaultChecked={currentListingType === option.value}
+                className="peer sr-only"
+              />
+              <span className="flex h-9 items-center justify-center rounded-xl px-2 text-center text-xs font-extrabold text-slate-400 transition peer-checked:bg-gradient-to-r peer-checked:from-cyan-400 peer-checked:to-teal-400 peer-checked:text-slate-950 peer-checked:shadow-md sm:h-10 sm:text-sm">
+                {option.label}
+              </span>
+            </label>
+          ))}
+        </div>
 
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-[minmax(0,1.5fr)_minmax(180px,220px)_minmax(180px,220px)]">
-        <div className="col-span-2 lg:col-span-1">
-          <label htmlFor="q" className="mb-1 block text-sm font-medium text-ink/80">
+        <div className="flex items-center gap-2">
+          <NearMeButton
+            copy={{
+              nearMe: t.search.nearMe,
+              locating: t.search.locating,
+              nearMeActive: t.search.nearMeActive,
+              nearMeError: t.search.nearMeError
+            }}
+          />
+          <Link
+            href="/"
+            className="inline-flex h-9 items-center rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-bold text-slate-300 transition hover:border-white/25 hover:text-white"
+          >
+            {t.search.resetFilters}
+          </Link>
+        </div>
+      </div>
+
+      {/* Main Search Inputs: Keyword, Region, District, Submit */}
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.5fr)_minmax(170px,210px)_minmax(170px,210px)_auto]">
+        <div className="sm:col-span-2 lg:col-span-1">
+          <label htmlFor="q" className="sr-only">
             {t.search.searchLabel}
           </label>
           <div className="relative">
             <svg
               aria-hidden="true"
               viewBox="0 0 24 24"
-              className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink/40"
+              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-400"
               fill="none"
               stroke="currentColor"
-              strokeWidth="1.8"
+              strokeWidth="2.2"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
@@ -86,23 +130,24 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
               name="q"
               placeholder={t.search.searchPlaceholder}
               defaultValue={values.q}
-              className="input h-12 rounded-[18px] pl-11 pr-4 text-base shadow-sm placeholder:text-sm sm:h-14 sm:rounded-[20px] sm:pl-12"
+              className="input h-12 rounded-2xl pl-11 pr-4 text-sm font-medium"
             />
           </div>
         </div>
 
-        <LocationSelect
-          id="region"
-          name="region"
-          label={t.search.region}
-          defaultValue={values.region}
-          options={getRegionOptions(locale)}
-          emptyLabel={t.search.allRegions}
-          className="h-12 rounded-[18px] text-base sm:h-14 sm:rounded-[20px]"
-        />
+        <div>
+          <LocationSelect
+            id="region"
+            name="region"
+            defaultValue={values.region}
+            options={getRegionOptions(locale)}
+            emptyLabel={t.search.allRegions}
+            className="h-12 rounded-2xl text-sm font-medium"
+          />
+        </div>
 
         <div>
-          <label htmlFor="district" className="mb-1 block text-sm font-medium text-ink/80">
+          <label htmlFor="district" className="sr-only">
             {t.search.districtCity}
           </label>
           <input
@@ -110,38 +155,114 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
             name="district"
             defaultValue={values.district}
             placeholder={t.search.districtCityPlaceholder}
-            className="input h-12 rounded-[18px] text-base placeholder:text-sm sm:h-14 sm:rounded-[20px]"
+            className="input h-12 rounded-2xl text-sm font-medium"
           />
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-end">
-        <div className="flex-1">
-          <p className="mb-1 text-sm font-medium text-ink/80">{t.common.listingType}</p>
-          <div className="grid grid-cols-3 gap-2">
-            {listingTypeOptions.map((option) => (
-              <label key={option.value || "all"} className="cursor-pointer">
-                <input
-                  type="radio"
-                  name="listingType"
-                  value={option.value}
-                  defaultChecked={currentListingType === option.value}
-                  className="peer sr-only"
-                />
-                <span className="flex h-11 items-center justify-center rounded-[14px] border border-line bg-white px-2 text-center text-sm font-medium text-ink/70 transition peer-checked:border-accent peer-checked:bg-accent/10 peer-checked:text-accent sm:h-14 sm:rounded-[18px]">
-                  {option.label}
-                </span>
-              </label>
-            ))}
-          </div>
         </div>
 
         <button
           type="submit"
-          className="btn-primary h-12 px-6 shadow-[0_18px_40px_rgba(15,23,42,0.16)] sm:h-14 sm:px-8"
+          className="btn-primary h-12 rounded-2xl px-6 text-sm font-extrabold shadow-lg shadow-cyan-500/20 sm:col-span-2 lg:col-span-1"
         >
           {t.search.searchButton}
         </button>
+      </div>
+
+      {/* Quick Filter Chips Bar: Rooms, Property Type, Rent Duration, Furnishing, Verified, Sort */}
+      <div className="mt-3.5 flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
+        {/* Rooms Pills */}
+        <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-black/30 p-1">
+          <span className="px-2 text-[11px] font-bold text-slate-400">
+            {t.common.rooms}:
+          </span>
+          {roomOptions.map((room) => (
+            <label key={room.value || "any"} className="cursor-pointer">
+              <input
+                type="radio"
+                name="rooms"
+                value={room.value}
+                defaultChecked={currentRooms === room.value}
+                className="peer sr-only"
+              />
+              <span className="inline-flex h-7 items-center justify-center rounded-lg px-2 text-xs font-bold text-slate-300 transition peer-checked:bg-cyan-500/25 peer-checked:text-cyan-300 peer-checked:ring-1 peer-checked:ring-cyan-400/50">
+                {room.label}
+              </span>
+            </label>
+          ))}
+        </div>
+
+        {/* Property Type Select */}
+        <select
+          name="propertyType"
+          defaultValue={currentPropertyType}
+          aria-label={t.common.propertyType}
+          className="select h-9 w-auto min-w-[125px] rounded-xl py-0 pl-3 pr-8 text-xs font-bold"
+        >
+          <option value="">{t.common.propertyType}: {t.search.anyOption}</option>
+          {PROPERTY_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {t.enums.propertyTypes[type]}
+            </option>
+          ))}
+        </select>
+
+        {/* Rent Duration Select */}
+        <select
+          name="rentType"
+          defaultValue={currentRentType}
+          aria-label={t.search.rentDuration}
+          className="select h-9 w-auto min-w-[125px] rounded-xl py-0 pl-3 pr-8 text-xs font-bold"
+        >
+          <option value="">{t.search.rentDuration}: {t.search.anyOption}</option>
+          {RENT_TYPES.map((rt) => (
+            <option key={rt} value={rt}>
+              {t.enums.rentTypes[rt]}
+            </option>
+          ))}
+        </select>
+
+        {/* Furnishing Select */}
+        <select
+          name="furnishing"
+          defaultValue={currentFurnishing}
+          aria-label="Furnishing"
+          className="select h-9 w-auto min-w-[125px] rounded-xl py-0 pl-3 pr-8 text-xs font-bold"
+        >
+          <option value="">{t.search.anyOption}</option>
+          {FURNISHING_STATUSES.map((fs) => (
+            <option key={fs} value={fs}>
+              {t.enums.furnishingStatuses[fs]}
+            </option>
+          ))}
+        </select>
+
+        {/* Verified Owner Toggle */}
+        <label className="cursor-pointer">
+          <input
+            type="checkbox"
+            name="verifiedOnly"
+            value="1"
+            defaultChecked={isVerifiedOnly}
+            className="peer sr-only"
+          />
+          <span className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-[#0D131C] px-3 text-xs font-bold text-slate-300 transition peer-checked:border-emerald-400/50 peer-checked:bg-emerald-500/15 peer-checked:text-emerald-300">
+            <span>✓</span>
+            <span>{t.search.verifiedOnly}</span>
+          </span>
+        </label>
+
+        {/* Sort Select */}
+        <div className="ml-auto flex items-center gap-1.5">
+          <select
+            name="sort"
+            defaultValue={currentSort}
+            aria-label={t.search.sort}
+            className="select h-9 w-auto min-w-[145px] rounded-xl py-0 pl-3 pr-8 text-xs font-bold"
+          >
+            <option value="newest">{t.search.sortNewest}</option>
+            <option value="price_asc">{t.search.sortPriceAsc}</option>
+            <option value="price_desc">{t.search.sortPriceDesc}</option>
+          </select>
+        </div>
       </div>
     </form>
   );

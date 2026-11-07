@@ -101,7 +101,7 @@ export function PendingListingsManager({ listings, copy }: PendingListingsManage
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line/70 bg-white px-4 py-3 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#0D131C] px-4 py-3 text-sm">
         <label className="flex items-center gap-2 text-ink/70">
           <input
             type="checkbox"
@@ -119,7 +119,7 @@ export function PendingListingsManager({ listings, copy }: PendingListingsManage
               type="button"
               disabled={isSubmitting}
               onClick={() => bulkAction("APPROVED")}
-              className="rounded-full bg-ink px-4 py-2 text-xs font-semibold text-white transition hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:from-cyan-300 hover:to-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {copy.bulkApprove}
             </button>

@@ -90,7 +90,7 @@ export function LocationDetectButton({
         type="button"
         onClick={handleDetect}
         disabled={status === "loading"}
-        className="inline-flex items-center gap-1.5 rounded-full border border-line/80 bg-white px-3 py-1.5 text-xs font-semibold text-ink transition hover:border-ink/20 hover:bg-mist/60 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-bold text-cyan-300 transition hover:border-cyan-400/40 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <svg
           aria-hidden="true"

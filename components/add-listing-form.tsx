@@ -17,10 +17,12 @@ import { getDistrictCentroid } from "@/lib/district-coordinates";
 import { isLocalImageUrl } from "@/lib/image-url";
 import {
   CURRENCIES,
+  FURNISHING_STATUSES,
   LISTING_TYPES,
   PROPERTY_TYPES,
   RENT_TYPES,
   type CurrencyValue,
+  type FurnishingStatusValue,
   type ListingTypeValue,
   type RentTypeValue
 } from "@/lib/constants";
@@ -59,6 +61,7 @@ type DraftValues = {
   area?: string;
   propertyType?: string;
   rentType?: string;
+  furnishing?: string;
   phone?: string;
   images?: string[];
 };
@@ -75,6 +78,7 @@ type AddListingFormProps = {
   listingTypeLabels: Record<(typeof LISTING_TYPES)[number], string>;
   propertyTypeLabels: Record<(typeof PROPERTY_TYPES)[number], string>;
   rentTypeLabels: Record<(typeof RENT_TYPES)[number], string>;
+  furnishingLabels: Record<FurnishingStatusValue, string>;
   copy: {
     success: string;
     draftRestored?: string;
@@ -110,6 +114,8 @@ type AddListingFormProps = {
     area: string;
     propertyType: string;
     rentType: string;
+    furnishing: string;
+    furnishingNotSpecified: string;
     phone: string;
     images: string;
     uploadNote: string;
@@ -145,6 +151,7 @@ type AddListingFormProps = {
     area: number;
     propertyType: (typeof PROPERTY_TYPES)[number];
     rentType: RentTypeValue | null;
+    furnishing: FurnishingStatusValue | null;
     latitude: number;
     longitude: number;
     phone: string;
@@ -161,6 +168,7 @@ export function AddListingForm({
   listingTypeLabels,
   propertyTypeLabels,
   rentTypeLabels,
+  furnishingLabels,
   copy,
   showSuccess = false,
   initialPhone,
@@ -261,6 +269,7 @@ export function AddListingForm({
       area: String(formData.get("area") ?? ""),
       propertyType: String(formData.get("propertyType") ?? ""),
       rentType: String(formData.get("rentType") ?? selectedRentType),
+      furnishing: String(formData.get("furnishing") ?? ""),
       phone: String(formData.get("phone") ?? ""),
       images: overrideImages ?? doneUrls(photos)
     };
@@ -293,6 +302,7 @@ export function AddListingForm({
         rooms: restoredDraft.rooms,
         area: restoredDraft.area,
         propertyType: restoredDraft.propertyType as (typeof PROPERTY_TYPES)[number] | undefined,
+        furnishing: restoredDraft.furnishing as FurnishingStatusValue | undefined,
         phone: restoredDraft.phone || initialPhone
       }
     : {
@@ -306,6 +316,7 @@ export function AddListingForm({
         rooms: initialValues?.rooms,
         area: initialValues?.area,
         propertyType: initialValues?.propertyType,
+        furnishing: initialValues?.furnishing ?? undefined,
         phone: initialValues?.phone || initialPhone
       };
 
@@ -448,6 +459,7 @@ export function AddListingForm({
       area: getValue("area"),
       propertyType: getValue("propertyType"),
       rentType: listingType === "rent" ? getValue("rentType") : "",
+      furnishing: getValue("furnishing"),
       latitude: position.lat,
       longitude: position.lng,
       phone: getValue("phone") ? `+998${getValue("phone")}` : "",
@@ -547,8 +559,8 @@ export function AddListingForm({
                   key={option}
                   className={`flex cursor-pointer items-center justify-between gap-2 rounded-xl border px-4 py-3 transition ${
                     checked
-                      ? "border-accent bg-accent/5 shadow-sm"
-                      : "border-line bg-white hover:border-ink/20 hover:bg-mist/40"
+                      ? "border-cyan-400 bg-cyan-500/15 shadow-sm"
+                      : "border-white/10 bg-[#0D131C] hover:border-white/25 hover:bg-white/5"
                   }`}
                 >
                   <input
@@ -559,10 +571,10 @@ export function AddListingForm({
                     onChange={() => setListingType(option)}
                     className="sr-only"
                   />
-                  <span className="font-medium text-ink">{listingTypeLabels[option]}</span>
+                  <span className="font-bold text-white">{listingTypeLabels[option]}</span>
                   <span
                     className={`h-4 w-4 shrink-0 rounded-full border ${
-                      checked ? "border-accent bg-accent" : "border-line bg-white"
+                      checked ? "border-cyan-400 bg-cyan-400" : "border-white/20 bg-white/5"
                     }`}
                   />
                 </label>
@@ -829,6 +841,26 @@ export function AddListingForm({
                 </select>
               </div>
             ) : null}
+
+            <div className="col-span-2">
+              <label htmlFor="furnishing" className="mb-2 block text-sm font-medium text-ink/80">
+                {copy.furnishing}
+                <span className="font-normal text-ink/40"> {copy.optionalSuffix}</span>
+              </label>
+              <select
+                id="furnishing"
+                name="furnishing"
+                className="select"
+                defaultValue={effectiveValues.furnishing ?? ""}
+              >
+                <option value="">{copy.furnishingNotSpecified}</option>
+                {FURNISHING_STATUSES.map((furnishing) => (
+                  <option key={furnishing} value={furnishing}>
+                    {furnishingLabels[furnishing]}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </section>
 
@@ -841,8 +873,8 @@ export function AddListingForm({
             <label htmlFor="phone" className="mb-2 block text-sm font-medium text-ink/80">
               {copy.phone}
             </label>
-            <div className="flex items-stretch overflow-hidden rounded-2xl border border-line bg-white transition focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15">
-              <span className="flex items-center border-r border-line bg-mist px-4 text-sm font-medium text-ink/60">
+            <div className="flex items-stretch overflow-hidden rounded-2xl border border-white/10 bg-[#0D131C] transition focus-within:border-cyan-400/60 focus-within:ring-2 focus-within:ring-cyan-400/20">
+              <span className="flex items-center border-r border-white/10 bg-white/5 px-4 text-sm font-bold text-slate-300">
                 +998
               </span>
               <input
@@ -854,7 +886,7 @@ export function AddListingForm({
                 maxLength={9}
                 required
                 defaultValue={stripUzPrefix(effectiveValues.phone ?? "")}
-                className="h-12 w-full flex-1 border-0 bg-transparent px-4 text-sm text-ink outline-none"
+                className="h-12 w-full flex-1 border-0 bg-transparent px-4 text-sm text-white outline-none"
                 placeholder="901234567"
               />
             </div>
@@ -871,7 +903,7 @@ export function AddListingForm({
               {photos.map((photo) => (
                 <div
                   key={photo.id}
-                  className="relative aspect-[4/3] w-[42%] shrink-0 snap-start overflow-hidden rounded-[20px] border bg-white sm:w-[28%] lg:w-[18%]"
+                  className="relative aspect-[4/3] w-[42%] shrink-0 snap-start overflow-hidden rounded-[20px] border border-white/10 bg-[#0D131C] sm:w-[28%] lg:w-[18%]"
                 >
                   <Image
                     src={photo.previewUrl}
@@ -883,7 +915,7 @@ export function AddListingForm({
                   />
 
                   {photo.status === "uploading" ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-ink/55 text-white">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/70 text-white">
                       <svg
                         aria-hidden="true"
                         viewBox="0 0 24 24"
@@ -901,7 +933,7 @@ export function AddListingForm({
                       type="button"
                       onClick={() => removeImage(photo.id)}
                       aria-label={copy.removeImage}
-                      className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-ink/70 text-white transition hover:bg-ink"
+                      className="badge-blur absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full text-white transition hover:bg-rose-500"
                     >
                       <svg
                         aria-hidden="true"

@@ -9,33 +9,48 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#12202F",
-        mist: "#F3F6F8",
-        tint: "#EEF6F5",
-        accent: "#0F766E",
+        ink: "#F1F5F9",
+        mist: "#131B26",
+        tint: "#0E1722",
+        accent: "#22D3EE",
         saffron: "#EAB308",
         coral: "#F97316",
-        pine: "#1D3B34",
-        brass: "#B07D2B",
-        "brass-light": "#D8A557",
-        line: "#D7E0E7",
+        pine: "#38BDF8",
+        brass: "#D8A557",
+        "brass-light": "#F3C878",
+        line: "#1E293B",
+        obsidian: "#06080B",
+        surface: "#0D1219",
         teal: {
-          50: "#F0FDFA",
-          100: "#CCFBF1",
-          200: "#99F6E4",
+          50: "#0A151D",
+          100: "#0F2230",
+          200: "#163547",
           500: "#14B8A6",
           600: "#0D9488",
           700: "#0F766E",
-          800: "#115E59",
-          900: "#134E4A"
+          800: "#5EEAD4",
+          900: "#99F6E4"
         }
       },
       fontFamily: {
-        sans: ['"Avenir Next"', '"Segoe UI"', "sans-serif"],
-        display: ['"Iowan Old Style"', '"Palatino Linotype"', "serif"]
+        sans: [
+          '"Plus Jakarta Sans"',
+          '"Inter"',
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Segoe UI"',
+          "sans-serif"
+        ],
+        display: [
+          '"Plus Jakarta Sans"',
+          '"Inter"',
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "sans-serif"
+        ]
       },
       boxShadow: {
-        soft: "0 20px 60px -30px rgba(18, 32, 47, 0.35)"
+        soft: "0 20px 60px -20px rgba(0, 0, 0, 0.7), 0 0 30px -10px rgba(6, 182, 212, 0.12)"
       }
     }
   },

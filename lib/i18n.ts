@@ -4,11 +4,12 @@ export const LOCALE_COOKIE_NAME = "site-locale";
 export const LOCALES = ["uz", "ru"] as const;
 
 export type Locale = (typeof LOCALES)[number];
-type PropertyType = "flat" | "house" | "room";
+type PropertyType = "flat" | "house" | "studio" | "room";
 type RentType = "monthly" | "daily";
 type ListingStatus = "PENDING" | "APPROVED" | "REJECTED";
 type ListingAvailabilityStatus = "ACTIVE" | "RENTED" | "SOLD";
 type UserStatus = "ACTIVE" | "BLOCKED";
+type FurnishingStatus = "UNFURNISHED" | "PARTIAL" | "FURNISHED";
 
 const DEFAULT_LOCALE: Locale = "uz";
 
@@ -54,12 +55,18 @@ const translations = {
       propertyTypes: {
         flat: "Kvartira",
         house: "Hovli",
+        studio: "Studiya",
         room: "Xona"
       } satisfies Record<PropertyType, string>,
       rentTypes: {
         monthly: "Oylik",
         daily: "Kunlik"
       } satisfies Record<RentType, string>,
+      furnishingStatuses: {
+        UNFURNISHED: "Jihozsiz",
+        PARTIAL: "Qisman jihozlangan",
+        FURNISHED: "Jihozli"
+      } satisfies Record<FurnishingStatus, string>,
       listingStatuses: {
         PENDING: "Ko'rib chiqilmoqda",
         APPROVED: "Tasdiqlangan",
@@ -122,7 +129,9 @@ const translations = {
       save: "Saqlash",
       saved: "Saqlangan",
       saveListing: "E'lonni saqlash",
-      removeFromSaved: "Saqlanganlardan olib tashlash"
+      removeFromSaved: "Saqlanganlardan olib tashlash",
+      telegramDirect: "Telegramda yozish",
+      callDirect: "Qo'ng'iroq"
     },
     home: {
       subtitle:
@@ -158,7 +167,22 @@ const translations = {
       nearMe: "Atrofimdagi e'lonlar",
       locating: "Aniqlanmoqda...",
       nearMeActive: "Joylashuvim asosida",
-      nearMeError: "Joylashuvni aniqlab bo'lmadi. Brauzer sozlamalarida ruxsat berilganini tekshiring."
+      nearMeError: "Joylashuvni aniqlab bo'lmadi. Brauzer sozlamalarida ruxsat berilganini tekshiring.",
+      filters: "Filtrlar",
+      applyFilters: "Qo'llash",
+      resetFilters: "Hammasini",
+      rentDuration: "Ijara muddati",
+      anyOption: "Barchasi",
+      roomsPlus: "5+",
+      priceRange: "Narx oralig'i",
+      priceMin: "Dan",
+      priceMax: "Gacha",
+      sort: "Saralash",
+      sortNewest: "Yangi e'lonlar",
+      sortPriceAsc: "Arzondan qimmatga",
+      sortPriceDesc: "Qimmatdan arzonga",
+      verifiedOnly: "Faqat tekshirilgan",
+      verifiedOnlyHint: "Telefon raqami tasdiqlangan egalar"
     },
     listingDetail: {
       revealContact: "Kirish orqali egasi bilan bog‘laning.",
@@ -379,6 +403,8 @@ const translations = {
         area: "Maydon (m²)",
         propertyType: "Uy turi",
         rentType: "Ijara turi",
+        furnishing: "Jihozlanganlik",
+        furnishingNotSpecified: "Ko'rsatilmagan",
         phone: "Telefon raqami",
         images: "Rasmlar",
         uploadNote: "10 tagacha rasm yuklang. Kamida bitta rasm talab qilinadi.",
@@ -617,12 +643,18 @@ const translations = {
       propertyTypes: {
         flat: "Квартира",
         house: "Дом",
+        studio: "Студия",
         room: "Комната"
       } satisfies Record<PropertyType, string>,
       rentTypes: {
         monthly: "Помесячно",
         daily: "Посуточно"
       } satisfies Record<RentType, string>,
+      furnishingStatuses: {
+        UNFURNISHED: "Без мебели",
+        PARTIAL: "Частично меблирована",
+        FURNISHED: "С мебелью"
+      } satisfies Record<FurnishingStatus, string>,
       listingStatuses: {
         PENDING: "На проверке",
         APPROVED: "Одобрено",
@@ -685,7 +717,9 @@ const translations = {
       save: "Сохранить",
       saved: "Сохранено",
       saveListing: "Сохранить объявление",
-      removeFromSaved: "Убрать из сохранённого"
+      removeFromSaved: "Убрать из сохранённого",
+      telegramDirect: "Написать в Telegram",
+      callDirect: "Позвонить"
     },
     home: {
       subtitle:
@@ -721,7 +755,22 @@ const translations = {
       nearMe: "Рядом со мной",
       locating: "Определяем...",
       nearMeActive: "По моему местоположению",
-      nearMeError: "Не удалось определить местоположение. Проверьте разрешения браузера."
+      nearMeError: "Не удалось определить местоположение. Проверьте разрешения браузера.",
+      filters: "Фильтры",
+      applyFilters: "Применить",
+      resetFilters: "Сбросить",
+      rentDuration: "Срок аренды",
+      anyOption: "Все",
+      roomsPlus: "5+",
+      priceRange: "Диапазон цен",
+      priceMin: "От",
+      priceMax: "До",
+      sort: "Сортировка",
+      sortNewest: "Новые объявления",
+      sortPriceAsc: "Сначала дешевле",
+      sortPriceDesc: "Сначала дороже",
+      verifiedOnly: "Только проверенные",
+      verifiedOnlyHint: "Владельцы с подтверждённым телефоном"
     },
     listingDetail: {
       revealContact: "Войдите, чтобы связаться с владельцем.",
@@ -941,6 +990,8 @@ const translations = {
         area: "Площадь (м²)",
         propertyType: "Тип жилья",
         rentType: "Тип аренды",
+        furnishing: "Меблировка",
+        furnishingNotSpecified: "Не указано",
         phone: "Номер телефона",
         images: "Фотографии",
         uploadNote: "Загрузите до 10 изображений. Требуется хотя бы одна фотография.",

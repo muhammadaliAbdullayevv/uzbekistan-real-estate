@@ -154,7 +154,7 @@ export default async function SessionsPage() {
                   <button
                     type="submit"
                     id={`revoke-session-${session.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-500 transition hover:bg-rose-50 hover:border-rose-300"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/15 px-3 py-1.5 text-xs font-bold text-rose-400 transition hover:border-rose-400/50 hover:bg-rose-500/25"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

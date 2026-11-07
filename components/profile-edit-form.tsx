@@ -137,8 +137,8 @@ export function ProfileEditForm({
             <label htmlFor="profile-phone" className="mb-2 block text-sm font-medium text-ink/80">
               {copy.phone}
             </label>
-            <div className="flex items-stretch overflow-hidden rounded-2xl border border-line bg-white transition focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15">
-              <span className="flex items-center border-r border-line bg-mist px-4 text-sm font-medium text-ink/60">
+            <div className="flex items-stretch overflow-hidden rounded-2xl border border-white/10 bg-[#0D131C] transition focus-within:border-cyan-400/60 focus-within:ring-2 focus-within:ring-cyan-400/20">
+              <span className="flex items-center border-r border-white/10 bg-white/5 px-4 text-sm font-bold text-slate-300">
                 +998
               </span>
               <input
@@ -150,7 +150,7 @@ export function ProfileEditForm({
                 maxLength={9}
                 defaultValue={stripUzPrefix(phone)}
                 placeholder="901234567"
-                className="h-12 w-full flex-1 border-0 bg-transparent px-4 text-sm text-ink outline-none"
+                className="h-12 w-full flex-1 border-0 bg-transparent px-4 text-sm text-white outline-none"
               />
             </div>
             {phoneVerifiedAt ? null : (

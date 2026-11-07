@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    color-scheme: light;
+    color-scheme: dark;
   }
 
   * {
@@ -12,7 +12,7 @@
   }
 
   body {
-    @apply min-h-screen bg-white text-ink antialiased;
+    @apply min-h-screen bg-[#06080B] text-ink antialiased selection:bg-cyan-400 selection:text-slate-950;
   }
 
   a {
@@ -26,11 +26,18 @@
   }
 
   .panel {
-    @apply rounded-[28px] border bg-white shadow-soft;
+    @apply rounded-[28px] border border-white/10 bg-gradient-to-b from-[#131922] to-[#0D1219] shadow-soft;
   }
 
   .pill {
-    @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink/70;
+    @apply inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-300;
+  }
+
+  .badge-blur {
+    background: rgba(10, 14, 20, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
   }
 
   /* Hides the scrollbar on swipeable strips (photo galleries, upload
@@ -45,64 +52,65 @@
   }
 
   .input {
-    @apply h-12 w-full rounded-2xl border border-line bg-white px-4 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15;
+    @apply h-12 w-full rounded-2xl border border-white/10 bg-[#0D131C] px-4 text-sm text-white placeholder:text-slate-500 outline-none transition focus:border-cyan-400/60 focus:bg-[#111926] focus:ring-2 focus:ring-cyan-400/20;
   }
 
   .select {
-    @apply h-12 w-full truncate appearance-none rounded-2xl border border-line bg-white bg-no-repeat px-4 pr-10 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2312202F' stroke-opacity='0.5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    @apply h-12 w-full truncate appearance-none rounded-2xl border border-white/10 bg-[#0D131C] bg-no-repeat px-4 pr-10 text-sm text-white outline-none transition focus:border-cyan-400/60 focus:bg-[#111926] focus:ring-2 focus:ring-cyan-400/20;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-position: right 0.9rem center;
     background-size: 16px 16px;
   }
 
+  .select option {
+    background-color: #0D131C;
+    color: #F1F5F9;
+  }
+
   .textarea {
-    @apply min-h-[140px] w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15;
+    @apply min-h-[140px] w-full rounded-2xl border border-white/10 bg-[#0D131C] px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition focus:border-cyan-400/60 focus:bg-[#111926] focus:ring-2 focus:ring-cyan-400/20;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent;
+    @apply inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-400 to-teal-400 px-5 py-3 text-sm font-extrabold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:from-cyan-300 hover:to-teal-300;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-full border border-line bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink hover:text-ink;
+    @apply inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-bold text-white transition hover:border-cyan-400/40 hover:bg-white/10;
   }
 
   .auth-stage {
-    @apply relative overflow-hidden rounded-[36px] border border-line/70 p-4 shadow-soft sm:p-6 lg:p-8;
+    @apply relative overflow-hidden rounded-[36px] border border-white/10 p-4 shadow-soft sm:p-6 lg:p-8;
     background:
-      radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 34%),
-      radial-gradient(circle at bottom right, rgba(234, 179, 8, 0.16), transparent 30%),
-      linear-gradient(135deg, #f7fbfc 0%, #ffffff 48%, #eef6f5 100%);
+      radial-gradient(circle at top left, rgba(6, 182, 212, 0.16), transparent 36%),
+      radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.14), transparent 34%),
+      linear-gradient(135deg, #0b1017 0%, #0d131c 50%, #090d14 100%);
   }
 
-  /* Tinted surface: secondary/grouping sections (search bars, results headers) --
-     distinct from the default white panel and the dark hero surface below. */
   .surface-tint {
-    @apply rounded-[28px] border border-teal-100/70 bg-tint;
+    @apply rounded-[28px] border border-white/10 bg-gradient-to-b from-[#121822] to-[#0E131B] shadow-xl;
   }
 
-  /* Dark gradient surface: the login page's showcase recipe, generalized so any
-     high-weight hero/CTA moment can reuse it instead of duplicating the gradient. */
   .surface-dark {
     @apply relative overflow-hidden text-white;
     background:
-      radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 28%),
-      linear-gradient(155deg, #12202f 0%, #0f766e 100%);
+      radial-gradient(circle at top right, rgba(34, 211, 238, 0.22), transparent 32%),
+      linear-gradient(155deg, #0f172a 0%, #0d2833 55%, #063936 100%);
   }
 
   .auth-showcase {
-    @apply surface-dark rounded-[32px] px-6 py-7 sm:px-8 sm:py-9;
+    @apply surface-dark rounded-[32px] border border-white/10 px-6 py-7 sm:px-8 sm:py-9;
   }
 
   .auth-card {
-    @apply relative rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-soft backdrop-blur-sm sm:p-8;
+    @apply relative rounded-[32px] border border-white/10 bg-[#111722]/90 p-6 shadow-soft backdrop-blur-xl sm:p-8;
   }
 
   .auth-orb {
     position: absolute;
     border-radius: 9999px;
-    filter: blur(38px);
-    opacity: 0.55;
+    filter: blur(42px);
+    opacity: 0.45;
     animation: auth-float 14s ease-in-out infinite;
     pointer-events: none;
   }
@@ -112,7 +120,7 @@
     right: -2rem;
     height: 10rem;
     width: 10rem;
-    background: rgba(15, 118, 110, 0.18);
+    background: rgba(34, 211, 238, 0.25);
   }
 
   .auth-orb-b {
@@ -120,7 +128,7 @@
     left: -2rem;
     height: 11rem;
     width: 11rem;
-    background: rgba(234, 179, 8, 0.18);
+    background: rgba(99, 102, 241, 0.22);
     animation-delay: -7s;
   }
 

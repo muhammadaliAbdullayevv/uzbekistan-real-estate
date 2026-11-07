@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   CURRENCIES,
+  FURNISHING_STATUSES,
   LISTING_TYPES,
   PROPERTY_TYPES,
   RENT_TYPES
@@ -37,6 +38,7 @@ export const listingInputSchema = z
     area: z.coerce.number().int().min(10).max(1000),
     propertyType: z.enum(PROPERTY_TYPES),
     rentType: z.enum(RENT_TYPES).optional().nullable().or(z.literal("")),
+    furnishing: z.enum(FURNISHING_STATUSES).optional().nullable().or(z.literal("")),
     latitude: z.coerce.number().min(-90, "Location is required.").max(90),
     longitude: z.coerce.number().min(-180, "Location is required.").max(180),
     phone: z.string().trim().min(7, "Phone number is required.").max(30),
@@ -73,7 +75,8 @@ export const listingInputSchema = z
   .transform((value) => ({
     ...value,
     city: value.city?.trim() || null,
-    rentType: value.listingType === "rent" ? value.rentType ?? "monthly" : null
+    rentType: value.listingType === "rent" ? value.rentType ?? "monthly" : null,
+    furnishing: value.furnishing || null
   }));
 
 export const listingStatusSchema = z.object({

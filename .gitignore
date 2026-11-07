@@ -7,3 +7,7 @@ coverage
 prisma/dev.db
 public/uploads/*
 !public/uploads/.gitkeep
+
+# Local-only ops runbook: has the real VPS IP/port/SSH username, and this
+# repo is public on GitHub -- never commit it.
+BUILD_DEPLOY_SHIP.md

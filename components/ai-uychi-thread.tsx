@@ -122,28 +122,28 @@ function ListingChip({ id, listings, locale, viewLabel }: { id: string; listings
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="flex items-center gap-3 rounded-2xl border border-line bg-white p-2.5 shadow-sm transition hover:border-accent/40"
+      className="flex items-center gap-3 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-2.5 shadow-sm transition hover:border-cyan-400 hover:bg-cyan-500/15"
     >
       <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-mist">
         <PropertyImage src={listing.image} alt={listing.title} fill className="object-cover" sizes="56px" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium text-ink">{listing.title}</span>
-        <span className="block text-xs text-ink/50">
+        <span className="block truncate text-sm font-bold text-white">{listing.title}</span>
+        <span className="block text-xs text-slate-300">
           {listing.district} · {listing.rooms} · {listing.area} m²
         </span>
-        <span className="block text-sm font-semibold text-accent">
+        <span className="block text-sm font-extrabold text-cyan-400">
           {formatCompactPrice(listing, locale)}
         </span>
       </span>
-      <span className="shrink-0 text-xs font-medium text-accent">{viewLabel}</span>
+      <span className="shrink-0 rounded-lg bg-cyan-400 px-2.5 py-1 text-xs font-extrabold text-slate-950">{viewLabel}</span>
     </Link>
   );
 }
 
 function BotAvatar() {
   return (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ink to-accent text-white">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-400 to-indigo-500 text-slate-950 shadow-md shadow-cyan-500/20">
       <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
         <path d="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3z" />
       </svg>
@@ -232,22 +232,47 @@ export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
     }
   }
 
+  const samplePrompts =
+    locale === "ru"
+      ? [
+          "Найди 2-комнатную квартиру в Чиланзаре до $450",
+          "Посуточная студия в Юнусабаде",
+          "Дом в Ташкенте на продажу"
+        ]
+      : [
+          "Chilonzorda 450$ gacha 2 xonali toza kvartira top",
+          "Yunusobodda kunlik ijaraga studiya",
+          "Toshkentda sotiladigan hovli uy"
+        ];
+
   return (
-    <div className="fixed inset-x-0 top-[61px] bottom-0 flex flex-col bg-mist sm:static sm:top-auto sm:bottom-auto sm:mx-auto sm:mt-6 sm:h-[75vh] sm:max-h-[720px] sm:max-w-2xl sm:overflow-hidden sm:rounded-[28px] sm:border sm:border-line/70 sm:shadow-soft">
-      <div className="flex shrink-0 items-center gap-3 border-b border-line/70 bg-white px-3 py-2.5 sm:px-5">
+    <div className="fixed inset-x-0 top-[61px] bottom-0 flex flex-col bg-[#090C10] sm:static sm:top-auto sm:bottom-auto sm:mx-auto sm:mt-6 sm:h-[75vh] sm:max-h-[720px] sm:max-w-2xl sm:overflow-hidden sm:rounded-[28px] sm:border sm:border-white/10 sm:shadow-soft">
+      <div className="flex shrink-0 items-center gap-3 border-b border-white/10 bg-gradient-to-r from-[#111926] to-[#0A1018] px-3 py-3 sm:px-5">
         <BackIconButton href="/" label={copy.backLabel} />
         <BotAvatar />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display text-base font-semibold text-ink">{copy.title}</p>
-          <p className="truncate text-xs text-ink/50">{copy.subtitle}</p>
+          <p className="truncate font-display text-base font-extrabold text-white">{copy.title}</p>
+          <p className="truncate text-xs text-cyan-400">{copy.subtitle}</p>
         </div>
       </div>
 
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-3 py-3 sm:px-5">
         {messages.length === 0 ? (
           <div className="flex justify-start">
-            <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 text-[14.5px] leading-[1.45] text-ink shadow-sm">
-              {copy.emptyState}
+            <div className="max-w-[88%] space-y-2.5 rounded-2xl rounded-bl-md border border-white/10 bg-[#121822] px-4 py-3 text-[14.5px] leading-[1.45] text-slate-200 shadow-sm">
+              <p>{copy.emptyState}</p>
+              <div className="space-y-1.5 pt-1">
+                {samplePrompts.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => setDraft(prompt)}
+                    className="block w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-left text-xs font-bold text-cyan-300 transition hover:border-cyan-400/40 hover:bg-cyan-500/15"
+                  >
+                    💡 &ldquo;{prompt}&rdquo;
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
@@ -257,10 +282,10 @@ export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
               <div key={index} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                 <div className={`flex max-w-[85%] flex-col space-y-1.5 ${isUser ? "items-end" : "items-start"}`}>
                   <div
-                    className={`rounded-2xl px-3.5 py-2 text-[14.5px] leading-[1.45] shadow-sm ${
+                    className={`rounded-2xl px-3.5 py-2.5 text-[14.5px] leading-[1.45] shadow-md ${
                       isUser
-                        ? "rounded-br-md bg-accent text-white"
-                        : "rounded-bl-md bg-white text-ink"
+                        ? "rounded-br-md bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
+                        : "rounded-bl-md border border-white/10 bg-[#121822] text-slate-100"
                     }`}
                   >
                     {message.role === "model"
@@ -272,7 +297,7 @@ export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
                           ) : null
                         )
                       : <span className="whitespace-pre-line">{message.text}</span>}
-                    <span className={`mt-1 block text-right text-[10px] ${isUser ? "text-white/70" : "text-ink/35"}`}>
+                    <span className={`mt-1 block text-right text-[10px] ${isUser ? "text-cyan-100/80" : "text-slate-400"}`}>
                       {message.time}
                     </span>
                   </div>
@@ -300,10 +325,10 @@ export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
 
         {isSending ? (
           <div className="flex justify-start">
-            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-sm">
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink/40 [animation-delay:-0.3s]" />
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink/40 [animation-delay:-0.15s]" />
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink/40" />
+            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-white/10 bg-[#121822] px-4 py-3 shadow-sm">
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-cyan-400 [animation-delay:-0.3s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-cyan-400 [animation-delay:-0.15s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-cyan-400" />
             </div>
           </div>
         ) : null}
@@ -313,22 +338,22 @@ export function AiUychiThread({ locale, copy }: AiUychiThreadProps) {
         <div className="shrink-0 border-t border-coral/20 bg-coral/10 px-4 py-2 text-sm text-coral">{error}</div>
       ) : null}
 
-      <form onSubmit={handleSend} className="flex shrink-0 items-center gap-2 border-t border-line/70 bg-white px-3 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:px-4 sm:pb-2.5">
+      <form onSubmit={handleSend} className="flex shrink-0 items-center gap-2 border-t border-white/10 bg-[#0C1118] px-3 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:px-4 sm:pb-2.5">
         <input
           type="text"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           placeholder={copy.placeholder}
           maxLength={2000}
-          className="h-11 flex-1 rounded-full border border-line bg-mist px-4 text-sm text-ink outline-none transition focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/15"
+          className="h-11 flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-slate-500 outline-none transition focus:border-cyan-400 focus:bg-white/10"
         />
         <button
           type="submit"
           disabled={isSending || !draft.trim()}
           aria-label={copy.send}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent text-white transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:from-cyan-300 hover:to-teal-300 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 -translate-x-px translate-y-px" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 -translate-x-px translate-y-px" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" />
           </svg>
         </button>

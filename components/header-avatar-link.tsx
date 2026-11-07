@@ -35,7 +35,7 @@ export function HeaderAvatarLink({ avatarUrl, initial, label }: HeaderAvatarLink
         aria-current="page"
         aria-label={label}
         title={label}
-        className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent bg-accent text-sm font-bold text-white sm:h-10 sm:w-10"
+        className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-tr from-cyan-400 to-indigo-500 text-sm font-extrabold text-slate-950 shadow-md shadow-cyan-500/25 sm:h-10 sm:w-10"
       >
         {content}
       </span>
@@ -47,7 +47,7 @@ export function HeaderAvatarLink({ avatarUrl, initial, label }: HeaderAvatarLink
       href="/account"
       aria-label={label}
       title={label}
-      className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent/25 bg-accent/10 text-sm font-bold text-accent transition hover:bg-accent/15 sm:h-10 sm:w-10"
+      className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-cyan-400/40 bg-gradient-to-tr from-cyan-500/20 to-indigo-500/20 text-sm font-extrabold text-cyan-300 transition hover:border-cyan-400 hover:text-white sm:h-10 sm:w-10"
     >
       {content}
     </Link>

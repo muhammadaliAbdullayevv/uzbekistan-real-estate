@@ -4,9 +4,7 @@ export { privatePageMetadata as metadata } from "@/lib/site";
 import { BackLink } from "@/components/back-link";
 import { ProfileEditForm } from "@/components/profile-edit-form";
 import { ProfileSummary } from "@/components/profile-summary";
-import { hasUnreadMessages } from "@/lib/conversations";
 import { getFavoriteListingIds, getVisitorId } from "@/lib/favorites";
-import { hasGeminiConfig } from "@/lib/gemini";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { getRegionLabel, getRegionOptions } from "@/lib/locations";
 import { getOwnerDashboardPath, isOwner } from "@/lib/owner";
@@ -69,10 +67,10 @@ function NavRow({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between gap-3 py-3 text-sm font-medium text-ink transition hover:text-accent"
+      className="flex items-center justify-between gap-3 py-3 text-sm font-bold text-slate-200 transition hover:text-cyan-400"
     >
       <span className="flex items-center gap-3">
-        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-ink/60 shadow-sm">
+        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-cyan-300 shadow-sm">
           <NavIcon path={icon} />
           {showDot ? (
             <span
@@ -103,9 +101,9 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
         <BackLink href="/" label={t.common.backToListings} />
 
         <section className="panel overflow-hidden p-0">
-          <div className="h-20 bg-gradient-to-r from-ink to-accent sm:h-24" />
+          <div className="h-20 bg-gradient-to-r from-cyan-500/30 via-teal-500/20 to-indigo-500/30 sm:h-24" />
           <div className="flex flex-col items-center px-6 pb-8">
-            <span className="-mt-12 flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-mist text-ink/35 shadow-md sm:-mt-14 sm:h-28 sm:w-28">
+            <span className="-mt-12 flex h-24 w-24 items-center justify-center rounded-full border-4 border-[#0D1219] bg-mist text-cyan-400 shadow-md sm:-mt-14 sm:h-28 sm:w-28">
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
@@ -141,7 +139,6 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
     );
   }
 
-  const hasUnread = await hasUnreadMessages(user.id);
   const showOwnerDashboardLink = isOwner({ email: user.email });
   const profileUpdated = searchParams.updated === "1";
   const telegramError = typeof searchParams.telegramError === "string" ? searchParams.telegramError : null;
@@ -177,13 +174,13 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
       ) : null}
 
       {telegramErrorMessage ? (
-        <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+        <div className="rounded-[24px] border border-amber-400/30 bg-amber-500/15 px-4 py-3 text-sm leading-6 text-amber-200">
           {telegramErrorMessage}
         </div>
       ) : null}
 
       {!isProfileComplete ? (
-        <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+        <div className="rounded-[24px] border border-amber-400/30 bg-amber-500/15 px-4 py-3 text-sm leading-6 text-amber-200">
           <strong className="font-semibold">{t.account.incompleteProfileTitle}</strong>{" "}
           {t.account.incompleteProfileBody}
         </div>
@@ -255,26 +252,13 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
           <div className="lg:sticky lg:top-24">
             <Link
               href="/add-listing"
-              className="flex items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent"
+              className="btn-primary flex w-full items-center justify-center gap-2"
             >
               <NavIcon path="M12 5v14M5 12h14" />
               {t.account.submitListing}
             </Link>
 
-            <nav className="mt-2 divide-y divide-teal-100/70 px-1">
-              <NavRow
-                href="/chat"
-                label={t.nav.chat}
-                icon="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
-                showDot={hasUnread}
-              />
-              {hasGeminiConfig() ? (
-                <NavRow
-                  href="/ai-uychi"
-                  label={t.aiUychi.title}
-                  icon="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3z"
-                />
-              ) : null}
+            <nav className="mt-2 divide-y divide-white/10 px-1">
               <NavRow
                 href="/my-listings"
                 label={t.account.trackListings}
@@ -294,13 +278,13 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
               />
             </nav>
 
-            <form action="/api/auth/logout" method="post" className="mt-2 border-t border-teal-100/70 px-1 pt-2">
+            <form action="/api/auth/logout" method="post" className="mt-2 border-t border-white/10 px-1 pt-2">
               <input type="hidden" name="next" value="/" />
               <button
                 type="submit"
-                className="flex w-full items-center gap-3 py-3 text-sm font-medium text-rose-600 transition hover:text-rose-700"
+                className="flex w-full items-center gap-3 py-3 text-sm font-bold text-rose-400 transition hover:text-rose-300"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rose-500/30 bg-rose-500/15 text-rose-400">
                   <NavIcon path="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
                 </span>
                 {t.common.signOut}

@@ -61,9 +61,9 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
             aria-label="Previous photo"
             onClick={() => scrollToIndex(activeIndex - 1)}
             disabled={activeIndex === 0}
-            className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow-soft backdrop-blur transition hover:bg-white disabled:pointer-events-none disabled:opacity-0"
+            className="badge-blur absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-white shadow-xl transition hover:scale-105 disabled:pointer-events-none disabled:opacity-0"
           >
-            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m15 18-6-6 6-6" />
             </svg>
           </button>
@@ -72,15 +72,15 @@ export function ListingGallery({ images, title }: ListingGalleryProps) {
             aria-label="Next photo"
             onClick={() => scrollToIndex(activeIndex + 1)}
             disabled={activeIndex === gallery.length - 1}
-            className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow-soft backdrop-blur transition hover:bg-white disabled:pointer-events-none disabled:opacity-0"
+            className="badge-blur absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-white shadow-xl transition hover:scale-105 disabled:pointer-events-none disabled:opacity-0"
           >
-            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m9 18 6-6-6-6" />
             </svg>
           </button>
 
-          <div className="absolute bottom-3 right-3 rounded-full bg-ink/70 px-2.5 py-1 text-xs font-medium text-white">
-            {activeIndex + 1} / {gallery.length}
+          <div className="badge-blur absolute bottom-3 right-3 rounded-full px-3 py-1 font-mono text-xs font-bold text-white">
+            📷 {activeIndex + 1} / {gallery.length}
           </div>
         </>
       ) : null}

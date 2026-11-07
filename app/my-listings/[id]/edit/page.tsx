@@ -49,6 +49,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
           listingTypeLabels={t.enums.listingTypes}
           propertyTypeLabels={t.enums.propertyTypes}
           rentTypeLabels={t.enums.rentTypes}
+          furnishingLabels={t.enums.furnishingStatuses}
           copy={{
             success: t.addListing.success,
             sectionBasic: t.addListing.form.sectionBasic,
@@ -83,6 +84,8 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             area: t.addListing.form.area,
             propertyType: t.addListing.form.propertyType,
             rentType: t.addListing.form.rentType,
+            furnishing: t.addListing.form.furnishing,
+            furnishingNotSpecified: t.addListing.form.furnishingNotSpecified,
             phone: t.addListing.form.phone,
             images: t.addListing.form.images,
             uploadNote: t.addListing.form.uploadNote,
@@ -116,6 +119,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
             area: listing.area,
             propertyType: listing.propertyType,
             rentType: listing.rentType,
+            furnishing: listing.furnishing,
             latitude: listing.latitude ?? 41.311158,
             longitude: listing.longitude ?? 69.279737,
             phone: listing.phone,

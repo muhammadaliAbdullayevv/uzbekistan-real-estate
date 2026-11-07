@@ -19,11 +19,6 @@ export function NearMeButton({ copy }: NearMeButtonProps) {
   const [isLocating, setIsLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // .has() alone would also be true for the hidden nearLat/nearLng inputs
-  // that ride along on every normal search submit as empty strings -- the
-  // button would then show "active" even though no location was ever set
-  // (the backend already guards the same empty-string case, see
-  // parseNearPoint in lib/listings.ts).
   const isActive = Boolean(searchParams.get("nearLat")) && Boolean(searchParams.get("nearLng"));
 
   function navigateWithParams(mutate: (params: URLSearchParams) => void) {
@@ -71,14 +66,14 @@ export function NearMeButton({ copy }: NearMeButtonProps) {
         type="button"
         onClick={handleClick}
         disabled={isLocating}
-        className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
+        className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-70 sm:text-sm ${
           isActive
-            ? "border-accent bg-accent text-white"
-            : "border-line bg-white text-ink hover:border-accent/50 hover:text-accent"
+            ? "border-cyan-400 bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 shadow-md shadow-cyan-500/20"
+            : "border-cyan-500/30 bg-cyan-500/10 text-cyan-300 hover:border-cyan-400/60 hover:bg-cyan-500/20"
         }`}
       >
         {isActive ? (
-          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         ) : (

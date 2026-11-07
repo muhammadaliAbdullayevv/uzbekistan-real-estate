@@ -9,18 +9,6 @@ type SmartBackLinkProps = {
   fallbackHref: string;
 };
 
-/**
- * Unlike BackLink (a static href to one fixed destination), this actually
- * returns to whatever page the user came from -- home search results, AI
- * Uychi, near-me results, a favorites-style list, etc. A listing (or
- * add-listing, reachable from several different CTAs) can be reached from
- * many different places, so a single hardcoded destination sent users
- * somewhere they didn't come from.
- *
- * Renders as a real Link to fallbackHref (so middle-click / "open in new
- * tab" still does something sensible) and only intercepts a normal click to
- * go back through real browser history when there's history to go back to.
- */
 export function SmartBackLink({ label, fallbackHref }: SmartBackLinkProps) {
   const router = useRouter();
   const [isPressed, setIsPressed] = useState(false);
@@ -56,8 +44,8 @@ export function SmartBackLink({ label, fallbackHref }: SmartBackLinkProps) {
       onPointerCancel={clearPressed}
       onPointerLeave={clearPressed}
       style={{ WebkitTapHighlightColor: "transparent" }}
-      className={`inline-flex items-center gap-1.5 rounded-full border border-line/70 bg-white py-1.5 pl-2 pr-3.5 text-sm font-medium text-ink/70 shadow-sm transition-all duration-150 ease-out hover:border-ink/25 hover:text-ink ${
-        isPressed ? "scale-95 bg-mist" : "scale-100"
+      className={`inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 py-1.5 pl-2.5 pr-4 text-sm font-bold text-slate-300 shadow-sm transition-all duration-150 ease-out hover:border-cyan-400/40 hover:bg-white/10 hover:text-white ${
+        isPressed ? "scale-95 bg-white/15" : "scale-100"
       }`}
     >
       <svg
@@ -66,7 +54,7 @@ export function SmartBackLink({ label, fallbackHref }: SmartBackLinkProps) {
         className="h-4 w-4 shrink-0"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="2.2"
         strokeLinecap="round"
         strokeLinejoin="round"
       >

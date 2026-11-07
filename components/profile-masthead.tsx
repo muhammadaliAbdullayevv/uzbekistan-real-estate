@@ -41,14 +41,14 @@ function CheckIcon() {
 function StatusBadge({ tone, children }: { tone: "positive" | "warning" | "neutral"; children: string }) {
   const toneClasses =
     tone === "positive"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
       : tone === "warning"
-        ? "border-amber-200 bg-amber-50 text-amber-800"
-        : "border-line bg-mist text-ink/55";
+        ? "border-amber-400/30 bg-amber-500/15 text-amber-300"
+        : "border-white/15 bg-white/5 text-slate-400";
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${toneClasses}`}
+      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${toneClasses}`}
     >
       {tone === "positive" ? <CheckIcon /> : null}
       {children}

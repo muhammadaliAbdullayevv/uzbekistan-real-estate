@@ -16,11 +16,18 @@ enum PropertyType {
   flat
   house
   room
+  studio
 }
 
 enum RentType {
   monthly
   daily
+}
+
+enum FurnishingStatus {
+  UNFURNISHED
+  PARTIAL
+  FURNISHED
 }
 
 enum ListingStatus {
@@ -113,6 +120,7 @@ model Listing {
   area             Int
   propertyType     PropertyType
   rentType         RentType?      @default(monthly)
+  furnishing       FurnishingStatus?
   latitude         Float?
   longitude        Float?
   locationPrecision LocationPrecision @default(APPROXIMATE)

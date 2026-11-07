@@ -24,15 +24,15 @@ type UserListingCardProps = {
 };
 
 const STATUS_STYLES: Record<ListingStatus, string> = {
-  PENDING: "border-amber-200 bg-amber-50 text-amber-700",
-  APPROVED: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  REJECTED: "border-coral/20 bg-coral/10 text-coral"
+  PENDING: "border-amber-400/30 bg-amber-500/15 text-amber-300",
+  APPROVED: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
+  REJECTED: "border-coral/30 bg-coral/15 text-coral"
 };
 
 const AVAILABILITY_STYLES: Record<ListingAvailabilityStatusValue, string> = {
-  ACTIVE: "border-slate-200 bg-slate-50 text-slate-700",
-  RENTED: "border-sky-200 bg-sky-50 text-sky-700",
-  SOLD: "border-violet-200 bg-violet-50 text-violet-700"
+  ACTIVE: "border-cyan-400/30 bg-cyan-500/15 text-cyan-300",
+  RENTED: "border-sky-400/30 bg-sky-500/15 text-sky-300",
+  SOLD: "border-violet-400/30 bg-violet-500/15 text-violet-300"
 };
 
 export function UserListingCard({ locale, listing }: UserListingCardProps) {

@@ -28,14 +28,14 @@ export function LanguageSwitcher({
   return (
     <div className="flex items-center gap-2">
       <span className="sr-only">{label}</span>
-      <div className="inline-flex rounded-full border border-line/80 bg-mist/70 p-0.5 shadow-sm">
+      <div className="inline-flex rounded-xl border border-white/10 bg-white/5 p-0.5 shadow-sm">
         <button
           type="button"
           onClick={() => setLocale("uz")}
-          className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] transition sm:text-[11px] ${
+          className={`rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] transition sm:text-[11px] ${
             currentLocale === "uz"
-              ? "bg-ink text-white shadow-sm"
-              : "text-ink/60 hover:text-ink"
+              ? "bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 shadow-sm"
+              : "text-slate-400 hover:text-white"
           }`}
         >
           UZ
@@ -43,10 +43,10 @@ export function LanguageSwitcher({
         <button
           type="button"
           onClick={() => setLocale("ru")}
-          className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] transition sm:text-[11px] ${
+          className={`rounded-lg px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] transition sm:text-[11px] ${
             currentLocale === "ru"
-              ? "bg-ink text-white shadow-sm"
-              : "text-ink/60 hover:text-ink"
+              ? "bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 shadow-sm"
+              : "text-slate-400 hover:text-white"
           }`}
         >
           RU

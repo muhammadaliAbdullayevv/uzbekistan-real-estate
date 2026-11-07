@@ -86,6 +86,9 @@ export async function POST(request: Request) {
     const rentTypeSql = listingData.rentType
       ? Prisma.sql`CAST(${listingData.rentType} AS "RentType")`
       : Prisma.sql`NULL`;
+    const furnishingSql = listingData.furnishing
+      ? Prisma.sql`CAST(${listingData.furnishing} AS "FurnishingStatus")`
+      : Prisma.sql`NULL`;
 
     await prisma.$executeRaw(
       Prisma.sql`
@@ -104,6 +107,7 @@ export async function POST(request: Request) {
           "area",
           "propertyType",
           "rentType",
+          "furnishing",
           "latitude",
           "longitude",
           "locationPrecision",
@@ -128,6 +132,7 @@ export async function POST(request: Request) {
           ${listingData.area},
           CAST(${listingData.propertyType} AS "PropertyType"),
           ${rentTypeSql},
+          ${furnishingSql},
           ${listingData.latitude},
           ${listingData.longitude},
           CAST('EXACT' AS "LocationPrecision"),

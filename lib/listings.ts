@@ -9,6 +9,10 @@ import {
 
 import {
   LISTING_TYPES,
+  PROPERTY_TYPES,
+  RENT_TYPES,
+  FURNISHING_STATUSES,
+  type FurnishingStatusValue,
   type ListingTypeValue,
   type RentTypeValue
 } from "@/lib/constants";
@@ -25,6 +29,9 @@ export type ListingSearchParams = {
   maxPrice?: string;
   rooms?: string;
   propertyType?: string;
+  rentType?: string;
+  furnishing?: string;
+  verifiedOnly?: string;
   currency?: string;
   sort?: string;
   nearLat?: string;
@@ -54,6 +61,7 @@ export type ListingWithImages = {
   area: number;
   propertyType: PropertyType;
   rentType: RentTypeValue | null;
+  furnishing: FurnishingStatusValue | null;
   latitude: number | null;
   longitude: number | null;
   locationPrecision: "EXACT" | "APPROXIMATE";
@@ -118,6 +126,7 @@ function buildSelectSql(near?: NearPoint) {
       l."area",
       l."propertyType",
       l."rentType",
+      l."furnishing",
       l."latitude",
       l."longitude",
       l."locationPrecision",
@@ -142,6 +151,7 @@ function buildSelectSql(near?: NearPoint) {
       ${distanceColumn}
     FROM "Listing" l
     LEFT JOIN "ListingImage" li ON li."listingId" = l."id"
+    LEFT JOIN "User" u ON u."id" = l."userId"
   `;
 }
 
@@ -212,6 +222,11 @@ function buildWhereSql(filters: ListingSearchParams, near?: NearPoint) {
   const propertyType = getFirstParam(filters.propertyType)?.trim() as
     | PropertyType
     | undefined;
+  const rentType = getFirstParam(filters.rentType)?.trim() as RentTypeValue | undefined;
+  const furnishing = getFirstParam(filters.furnishing)?.trim() as
+    | FurnishingStatusValue
+    | undefined;
+  const verifiedOnly = getFirstParam(filters.verifiedOnly)?.trim() === "1";
   const currency = getFirstParam(filters.currency)?.trim() as Currency | undefined;
   const conditions: Prisma.Sql[] = [
     Prisma.sql`l."status" = ${listingStatusSql(ListingStatus.APPROVED)}`,
@@ -252,11 +267,26 @@ function buildWhereSql(filters: ListingSearchParams, near?: NearPoint) {
   }
 
   if (rooms) {
-    conditions.push(Prisma.sql`l."rooms" = ${rooms}`);
+    // The UI's "5+" option submits rooms=5 -- treated as a floor, not an
+    // exact match, since almost nothing above 5 exists and bucketing it
+    // under "5+" is what a renter actually means by picking it.
+    conditions.push(rooms >= 5 ? Prisma.sql`l."rooms" >= 5` : Prisma.sql`l."rooms" = ${rooms}`);
   }
 
-  if (propertyType && ["flat", "house", "room"].includes(propertyType)) {
+  if (propertyType && PROPERTY_TYPES.includes(propertyType)) {
     conditions.push(Prisma.sql`l."propertyType" = CAST(${propertyType} AS "PropertyType")`);
+  }
+
+  if (rentType && RENT_TYPES.includes(rentType)) {
+    conditions.push(Prisma.sql`l."rentType" = CAST(${rentType} AS "RentType")`);
+  }
+
+  if (furnishing && FURNISHING_STATUSES.includes(furnishing)) {
+    conditions.push(Prisma.sql`l."furnishing" = CAST(${furnishing} AS "FurnishingStatus")`);
+  }
+
+  if (verifiedOnly) {
+    conditions.push(Prisma.sql`u."phoneVerifiedAt" IS NOT NULL`);
   }
 
   if (currency && ["USD", "UZS"].includes(currency)) {
@@ -503,6 +533,7 @@ export async function updateListingForUser(
     area: number;
     propertyType: PropertyType;
     rentType: RentTypeValue | null;
+    furnishing: FurnishingStatusValue | null;
     latitude: number;
     longitude: number;
     phone: string;
@@ -531,6 +562,9 @@ export async function updateListingForUser(
     const rentTypeSql = input.rentType
       ? Prisma.sql`CAST(${input.rentType} AS "RentType")`
       : Prisma.sql`NULL`;
+    const furnishingSql = input.furnishing
+      ? Prisma.sql`CAST(${input.furnishing} AS "FurnishingStatus")`
+      : Prisma.sql`NULL`;
 
     await tx.$executeRaw(
       Prisma.sql`
@@ -549,6 +583,7 @@ export async function updateListingForUser(
           "area" = ${input.area},
           "propertyType" = CAST(${input.propertyType} AS "PropertyType"),
           "rentType" = ${rentTypeSql},
+          "furnishing" = ${furnishingSql},
           "latitude" = ${input.latitude},
           "longitude" = ${input.longitude},
           "locationPrecision" = CAST('EXACT' AS "LocationPrecision"),

@@ -12,6 +12,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { SessionRefresher } from "@/components/session-refresher";
 import { SiteHeader } from "@/components/site-header";
 import { TelegramWebAppInit } from "@/components/telegram-webapp-init";
+import { hasUnreadMessages } from "@/lib/conversations";
+import { hasGeminiConfig } from "@/lib/gemini";
 import {
   getLocale,
   getLocaleForOpenGraph,
@@ -59,14 +61,15 @@ export default async function RootLayout({
   const locale = getLocale();
   const t = getTranslations(locale);
   const session = await getUserSession();
+  const hasUnread = session ? await hasUnreadMessages(session.userId) : false;
   // Set by middleware -- never the actual admin path string, just whether
   // this request is the admin page, so the real (possibly customized) path
   // never has to appear in a client bundle shipped on every page.
   const isAdminPage = headers().get(ADMIN_PAGE_HEADER) === "1";
 
-  // Kept deliberately short -- Add listing, Messages and AI Uychi still
-  // exist, just reachable from the Profile page instead of a primary tab,
-  // so the core bar stays Home/Saved/Profile on both mobile and desktop.
+  // AI Uychi sits in the middle as a raised, brand-gradient button (see
+  // Tab.elevated in mobile-tab-bar.tsx) -- not a plain tab -- so it reads
+  // as the one special action, same idea as a camera/compose button.
   const tabs = [
     {
       href: "/",
@@ -77,6 +80,22 @@ export default async function RootLayout({
       href: "/saved",
       label: t.nav.saved,
       icon: "M12 20.5 4.8 13.7a4.9 4.9 0 0 1 0-7 4.7 4.7 0 0 1 6.8 0L12 7.2l.4-.5a4.7 4.7 0 0 1 6.8 0 4.9 4.9 0 0 1 0 7Z"
+    },
+    ...(hasGeminiConfig()
+      ? [
+          {
+            href: "/ai-uychi",
+            label: t.aiUychi.title,
+            icon: "M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3z",
+            elevated: true
+          }
+        ]
+      : []),
+    {
+      href: "/chat",
+      label: t.nav.chat,
+      icon: "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z",
+      showDot: hasUnread
     },
     {
       href: "/account",
