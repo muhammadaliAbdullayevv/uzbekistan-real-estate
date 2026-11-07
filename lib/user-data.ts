@@ -246,6 +246,36 @@ export async function getUserProfileById(userId: string) {
   return rows[0] ? normalizeUser(rows[0]) : null;
 }
 
+export async function getUserByTelegramChatId(chatId: string) {
+  const cleanId = chatId.trim();
+  if (!cleanId) return null;
+
+  const rows = await prisma.$queryRaw<UserRow[]>`
+    SELECT ${publicUserColumns}
+    FROM "User"
+    WHERE "telegramChatId" = ${cleanId}
+    ORDER BY "phoneVerifiedAt" DESC NULLS LAST, "updatedAt" DESC
+    LIMIT 1
+  `;
+
+  return rows[0] ? normalizeUser(rows[0]) : null;
+}
+
+export async function getUserByTelegramUsername(username: string) {
+  const clean = username.replace(/^@+/, "").trim().toLowerCase();
+  if (!clean) return null;
+
+  const rows = await prisma.$queryRaw<UserRow[]>`
+    SELECT ${publicUserColumns}
+    FROM "User"
+    WHERE LOWER(COALESCE("telegramUsername", '')) = ${clean}
+    ORDER BY "phoneVerifiedAt" DESC NULLS LAST, "updatedAt" DESC
+    LIMIT 1
+  `;
+
+  return rows[0] ? normalizeUser(rows[0]) : null;
+}
+
 export async function createUserProfile(input: {
   name: string;
   email: string;

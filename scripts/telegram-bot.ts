@@ -41,6 +41,7 @@ import { getAbsoluteUrl } from "../lib/site";
 import { sendTelegramNotification } from "../lib/telegram-notify";
 import {
   completeTelegramLoginAttempt,
+  createCompletedTelegramLoginToken,
   generateMemorablePassword,
   getTelegramLoginAttemptStatus,
   normalizePhoneDigits
@@ -314,10 +315,8 @@ async function handleContact(chatId: number, message: TelegramMessage, contact: 
     });
   }
 
-  const siteUrl = getAbsoluteUrl("/login");
-  const loginUrlWithPhone = user.phone
-    ? `${siteUrl}?email=${encodeURIComponent(user.phone)}`
-    : siteUrl;
+  const directToken = await createCompletedTelegramLoginToken(user.id, plainPass);
+  const directLoginUrl = getAbsoluteUrl(`/api/auth/telegram/direct?t=${directToken}&next=/account`);
 
   await sendMessage(
     chatId,
@@ -342,7 +341,7 @@ async function handleContact(chatId: number, message: TelegramMessage, contact: 
           [
             {
               text: "🌐 Saytga kirish (uychi.site)",
-              url: loginUrlWithPhone
+              url: directLoginUrl
             }
           ]
         ]

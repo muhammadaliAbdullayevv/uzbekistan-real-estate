@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomInt, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomInt, randomUUID } from "node:crypto";
 
 import { prisma } from "@/lib/db";
 import { getUserProfileById } from "@/lib/user-data";
@@ -201,3 +201,107 @@ export async function createTelegramVerifyRedirect(
 
   return { ok: true, url: getTelegramVerifyDeepLink(token) };
 }
+
+/**
+ * Creates a ready-to-consume one-time login token for a user.
+ * Used when the Telegram Bot sends a 1-tap direct login link to the user.
+ */
+export async function createCompletedTelegramLoginToken(
+  userId: string,
+  plainPass?: string | null,
+  ttlMinutes = 120
+): Promise<string> {
+  const token = randomBytes(24).toString("hex");
+  const tokenHash = hashAttemptToken(token);
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + ttlMinutes * 60 * 1000);
+
+  await prisma.$executeRaw`
+    INSERT INTO "TelegramAuthAttempt" (
+      "id",
+      "tokenHash",
+      "userId",
+      "plainPass",
+      "expiresAt",
+      "completedAt",
+      "createdAt"
+    )
+    VALUES (
+      ${randomUUID()},
+      ${tokenHash},
+      ${userId},
+      ${plainPass ?? null},
+      ${expiresAt},
+      ${now},
+      ${now}
+    )
+  `;
+
+  return token;
+}
+
+export type TelegramWebAppDataUser = {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  language_code?: string;
+};
+
+/**
+ * Validates Telegram WebApp initData string using HMAC-SHA256
+ * per official Telegram Bot API specification.
+ */
+export function validateTelegramWebAppData(
+  initData: string,
+  botToken: string
+): { valid: boolean; user?: TelegramWebAppDataUser } {
+  try {
+    const raw = initData.trim();
+    if (!raw) return { valid: false };
+
+    const params = new URLSearchParams(raw);
+    const hash = params.get("hash");
+    if (!hash) return { valid: false };
+
+    params.delete("hash");
+
+    const authDateStr = params.get("auth_date");
+    if (!authDateStr) return { valid: false };
+
+    const authDate = parseInt(authDateStr, 10);
+    const now = Math.floor(Date.now() / 1000);
+    // Allow up to 48 hours for valid initData
+    if (now - authDate > 86400 * 2) {
+      return { valid: false };
+    }
+
+    const pairs: string[] = [];
+    Array.from(params.keys())
+      .sort()
+      .forEach((key) => {
+        const val = params.get(key);
+        if (val !== null) {
+          pairs.push(`${key}=${val}`);
+        }
+      });
+    const dataCheckString = pairs.join("\n");
+
+    const secretKey = createHmac("sha256", "WebAppData").update(botToken).digest();
+    const calculatedHash = createHmac("sha256", secretKey)
+      .update(dataCheckString)
+      .digest("hex");
+
+    if (calculatedHash !== hash) {
+      return { valid: false };
+    }
+
+    const userRaw = params.get("user");
+    const user = userRaw ? (JSON.parse(userRaw) as TelegramWebAppDataUser) : undefined;
+    return { valid: true, user };
+  } catch {
+    return { valid: false };
+  }
+}
+
