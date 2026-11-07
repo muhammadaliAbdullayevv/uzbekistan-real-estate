@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { AvatarUpload } from "@/components/avatar-upload";
+import { useRouter } from "next/navigation";
+import { isLocalImageUrl } from "@/lib/image-url";
 import type { UzbekistanRegion } from "@/lib/locations";
 
 type ProfileViewProps = {
@@ -45,11 +47,43 @@ export function ProfileView({
   regionOptions,
   copy
 }: ProfileViewProps) {
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(user.avatarUrl);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [passVisible, setPassVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currency, setCurrency] = useState<"USD" | "UZS">("USD");
   const [tgNotify, setTgNotify] = useState<boolean>(Boolean(user.telegramChatId));
+
+  async function handleAvatarChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingAvatar(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.error || "Rasm yuklashda xatolik");
+      const uploadedUrl = payload.url as string;
+      const saveRes = await fetch("/api/account/avatar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatarUrl: uploadedUrl })
+      });
+      if (!saveRes.ok) throw new Error("Rasm saqlashda xatolik");
+      setAvatarUrl(uploadedUrl);
+      showToast("Rasm muvaffaqiyatli yuklandi!");
+      router.refresh();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Rasm yuklashda xatolik");
+    } finally {
+      setIsUploadingAvatar(false);
+      e.target.value = "";
+    }
+  }
 
   function showToast(msg: string) {
     setToastMessage(msg);
@@ -94,16 +128,39 @@ export function ProfileView({
         <div className="flex items-center gap-3.5">
           {/* Avatar with Upload Capability */}
           <div className="relative shrink-0">
-            <AvatarUpload
-              initialUrl={user.avatarUrl}
-              initial={initial}
-              size="md"
-              copy={{
-                change: copy.avatarChange,
-                uploading: copy.avatarUploading,
-                uploadFailed: copy.avatarUploadFailed
-              }}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
             />
+            <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-xl font-black text-white shadow-md shadow-blue-600/20">
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt={user.name || "Avatar"}
+                  fill
+                  className="object-cover"
+                  unoptimized={isLocalImageUrl(avatarUrl)}
+                />
+              ) : (
+                <span>{initial}</span>
+              )}
+              {isUploadingAvatar ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs font-bold text-white">
+                  ...
+                </div>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[10px] text-white shadow transition hover:bg-blue-600"
+              title="Rasm yuklash"
+            >
+              📷
+            </button>
           </div>
 
           <div className="min-w-0 flex-1">
