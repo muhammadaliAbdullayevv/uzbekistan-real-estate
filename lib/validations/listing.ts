@@ -185,7 +185,7 @@ export const userRegisterSchema = z
   }));
 
 export const userLoginSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Valid email is required."),
+  email: z.string().trim().min(3, "Login or phone is required.").max(120),
   password: z.string().min(1, "Password is required.")
 });
 

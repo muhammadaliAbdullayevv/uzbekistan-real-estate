@@ -7,6 +7,8 @@ type ProfileEditFormProps = {
   name: string;
   phone: string;
   email: string;
+  telegramUsername?: string | null;
+  telegramChatId?: string | null;
   avatarUrl: string | null;
   emailVerifiedAt: Date | null;
   phoneVerifiedAt: Date | null;
@@ -58,6 +60,8 @@ export function ProfileEditForm({
   name,
   phone,
   email,
+  telegramUsername,
+  telegramChatId,
   avatarUrl,
   emailVerifiedAt,
   phoneVerifiedAt,
@@ -71,6 +75,8 @@ export function ProfileEditForm({
         name={name}
         email={email}
         phone={phone}
+        telegramUsername={telegramUsername}
+        telegramChatId={telegramChatId}
         avatarUrl={avatarUrl}
         emailVerifiedAt={emailVerifiedAt}
         phoneVerifiedAt={phoneVerifiedAt}

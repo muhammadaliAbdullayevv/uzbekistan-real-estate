@@ -35,11 +35,22 @@ import { CURRENCIES, LISTING_TYPES, PROPERTY_TYPES, RENT_TYPES } from "../lib/co
 import { runGeminiJson } from "../lib/gemini";
 import { saveUploadedImageLocally } from "../lib/local-upload";
 import { UZBEKISTAN_REGIONS } from "../lib/locations";
+import { hashPassword } from "../lib/password";
 import { getOwnerDashboardPath, getOwnerEmail } from "../lib/owner";
 import { getAbsoluteUrl } from "../lib/site";
 import { sendTelegramNotification } from "../lib/telegram-notify";
-import { normalizePhoneDigits } from "../lib/telegram-verification";
-import { getUserByEmail, getUserProfileById, markPhoneVerifiedByTelegram } from "../lib/user-data";
+import {
+  completeTelegramLoginAttempt,
+  generateMemorablePassword,
+  getTelegramLoginAttemptStatus,
+  normalizePhoneDigits
+} from "../lib/telegram-verification";
+import {
+  getUserByEmail,
+  getUserProfileById,
+  markPhoneVerifiedByTelegram,
+  upsertUserFromTelegramContact
+} from "../lib/user-data";
 import { consumeUserToken, getUserTokenStatus } from "../lib/user-tokens";
 import { listingInputSchema } from "../lib/validations/listing";
 
@@ -55,15 +66,31 @@ if (!BOT_TOKEN) {
 const API_BASE = `https://api.telegram.org/bot${BOT_TOKEN}`;
 const FILE_BASE = `https://api.telegram.org/file/bot${BOT_TOKEN}`;
 
-// Bridges "/start <token>" to the contact-share that follows it. In-memory
-// only: if the process restarts mid-flow, the user just taps the link again.
-const pendingByChat = new Map<number, string>();
+type PendingChatState =
+  | { kind: "phone_verify"; token: string }
+  | { kind: "website_login"; token: string }
+  | { kind: "direct_credentials"; forceNewPassword: boolean };
+
+// Bridges "/start <token>" or "/parol" to the contact-share that follows it.
+const pendingByChat = new Map<number, PendingChatState>();
 
 type TelegramChat = { id: number };
-type TelegramContact = { phone_number: string };
+type TelegramUser = {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+};
+type TelegramContact = {
+  phone_number: string;
+  first_name?: string;
+  last_name?: string;
+  user_id?: number;
+};
 type TelegramPhotoSize = { file_id: string; width: number; height: number };
 type TelegramMessage = {
   chat: TelegramChat;
+  from?: TelegramUser;
   text?: string;
   contact?: TelegramContact;
   photo?: TelegramPhotoSize[];
@@ -97,78 +124,243 @@ function sendMessage(chatId: number, text: string, extra: Record<string, unknown
   return callTelegramApi("sendMessage", { chat_id: chatId, text, ...extra });
 }
 
-async function handleStart(chatId: number, token: string) {
-  const status = await getUserTokenStatus(token, "PHONE_VERIFY");
+const NEW_PASSWORD_BUTTON = "🔑 Yangi parol olish";
+const ADD_LISTING_BUTTON = "🏠 E'lon joylash";
 
-  if (!status.valid) {
+async function handleStart(chatId: number, rawToken?: string) {
+  listingDraftByChat.delete(chatId);
+
+  if (rawToken === "parol") {
+    pendingByChat.set(chatId, { kind: "direct_credentials", forceNewPassword: true });
     await sendMessage(
       chatId,
-      "Bu havola yaroqsiz yoki muddati tugagan. Saytga qaytib, telefon raqamini qayta tasdiqlashga urinib ko'ring."
+      "🔑 Yangi Login va Parol olish uchun quyidagi «📱 Telefon raqamimni ulashish» tugmasini bosing:",
+      {
+        reply_markup: {
+          keyboard: [[{ text: "📱 Telefon raqamimni ulashish", request_contact: true }]],
+          resize_keyboard: true,
+          one_time_keyboard: true
+        }
+      }
     );
     return;
   }
 
-  pendingByChat.set(chatId, token);
+  if (rawToken?.startsWith("login_")) {
+    const loginToken = rawToken.slice("login_".length).trim();
+    const attemptStatus = await getTelegramLoginAttemptStatus(loginToken);
 
-  await sendMessage(chatId, "Telefon raqamingizni tasdiqlash uchun quyidagi tugmani bosing:", {
-    reply_markup: {
-      keyboard: [[{ text: "📱 Telefon raqamimni ulashish", request_contact: true }]],
-      resize_keyboard: true,
-      one_time_keyboard: true
+    if (attemptStatus.status !== "pending") {
+      pendingByChat.set(chatId, { kind: "direct_credentials", forceNewPassword: true });
+      await sendMessage(
+        chatId,
+        [
+          "⏳ Saytdagi havola muddati tugagan bo'lishi mumkin, lekin shu yerning o'zida Login va Parol olishingiz mumkin!",
+          "",
+          "Quyidagi «📱 Telefon raqamimni ulashish» tugmasini bosing:"
+        ].join("\n"),
+        {
+          reply_markup: {
+            keyboard: [[{ text: "📱 Telefon raqamimni ulashish", request_contact: true }]],
+            resize_keyboard: true,
+            one_time_keyboard: true
+          }
+        }
+      );
+      return;
     }
-  });
-}
 
-async function handleContact(chatId: number, contact: TelegramContact) {
-  const token = pendingByChat.get(chatId);
+    pendingByChat.set(chatId, { kind: "website_login", token: loginToken });
 
-  if (!token) {
     await sendMessage(
       chatId,
-      'Iltimos, avval saytda "Telegram orqali tasdiqlash" tugmasini bosing, so\'ng shu botga qayting.'
+      [
+        "👋 Uychi.site tizimiga xush kelibsiz!",
+        "",
+        "Shaxsingizni tasdiqlash, saytga avtomatik kirish hamda boshqa qurilmalar uchun Login va Parol olish uchun quyidagi tugmani bosing:"
+      ].join("\n"),
+      {
+        reply_markup: {
+          keyboard: [[{ text: "📱 Telefon raqamimni ulashish", request_contact: true }]],
+          resize_keyboard: true,
+          one_time_keyboard: true
+        }
+      }
     );
     return;
   }
 
-  const userId = await consumeUserToken(token, "PHONE_VERIFY");
-  pendingByChat.delete(chatId);
+  if (rawToken) {
+    const status = await getUserTokenStatus(rawToken, "PHONE_VERIFY");
 
-  if (!userId) {
-    await sendMessage(chatId, "Havola muddati tugagan. Saytda qayta urinib ko'ring.", {
-      reply_markup: { remove_keyboard: true }
+    if (!status.valid) {
+      await sendMessage(
+        chatId,
+        "Bu havola yaroqsiz yoki muddati tugagan. Saytga qaytib, telefon raqamini qayta tasdiqlashga urinib ko'ring."
+      );
+      return;
+    }
+
+    pendingByChat.set(chatId, { kind: "phone_verify", token: rawToken });
+
+    await sendMessage(chatId, "Telefon raqamingizni tasdiqlash uchun quyidagi tugmani bosing:", {
+      reply_markup: {
+        keyboard: [[{ text: "📱 Telefon raqamimni ulashish", request_contact: true }]],
+        resize_keyboard: true,
+        one_time_keyboard: true
+      }
     });
     return;
   }
+
+  // Direct /start without token: offer instant phone identification + login/password generation
+  pendingByChat.set(chatId, { kind: "direct_credentials", forceNewPassword: false });
+
+  await sendMessage(
+    chatId,
+    [
+      "🏠 Uychi.site rasmiy botiga xush kelibsiz!",
+      "",
+      "Saytdan foydalanish va har qanday brauzer/qurilmadan kirish uchun Login va Parol olish uchun pastdagi «📱 Telefon raqamimni ulashish» tugmasini bosing:"
+    ].join("\n"),
+    {
+      reply_markup: {
+        keyboard: [
+          [{ text: "📱 Telefon raqamimni ulashish", request_contact: true }],
+          [ADD_LISTING_BUTTON]
+        ],
+        resize_keyboard: true,
+        one_time_keyboard: true
+      }
+    }
+  );
+}
+
+async function handleContact(chatId: number, message: TelegramMessage, contact: TelegramContact) {
+  // Security guard: ensure the shared contact belongs to the sender's own Telegram account
+  if (contact.user_id && message.from?.id && contact.user_id !== message.from.id) {
+    await sendMessage(
+      chatId,
+      "❗ Iltimos, faqat o'zingizning Telegram akkauntingizga biriktirilgan telefon raqamni ulashing («📱 Telefon raqamimni ulashish» tugmasi orqali)."
+    );
+    return;
+  }
+
+  const pending = pendingByChat.get(chatId) ?? {
+    kind: "direct_credentials" as const,
+    forceNewPassword: true
+  };
+  pendingByChat.delete(chatId);
 
   const telegramPhone = contact.phone_number.startsWith("+")
     ? contact.phone_number
     : `+${contact.phone_number}`;
 
-  const user = await getUserProfileById(userId);
+  if (pending.kind === "phone_verify") {
+    const userId = await consumeUserToken(pending.token, "PHONE_VERIFY");
 
-  if (!user?.phone) {
-    await sendMessage(
-      chatId,
-      "Saytdagi profilingizda telefon raqami kiritilmagan. Avval saytda raqamingizni kiriting va saqlang, so'ng qayta urinib ko'ring.",
-      { reply_markup: { remove_keyboard: true } }
-    );
+    if (!userId) {
+      await sendMessage(chatId, "Havola muddati tugagan. Saytda qayta urinib ko'ring.", {
+        reply_markup: { remove_keyboard: true }
+      });
+      return;
+    }
+
+    const user = await getUserProfileById(userId);
+
+    if (!user?.phone) {
+      await sendMessage(
+        chatId,
+        "Saytdagi profilingizda telefon raqami kiritilmagan. Avval saytda raqamingizni kiriting va saqlang, so'ng qayta urinib ko'ring.",
+        { reply_markup: { remove_keyboard: true } }
+      );
+      return;
+    }
+
+    if (normalizePhoneDigits(user.phone) !== normalizePhoneDigits(telegramPhone)) {
+      await sendMessage(
+        chatId,
+        `❗ Siz ulashgan raqam (${telegramPhone}) saytda kiritilgan raqamdan (${user.phone}) farq qiladi. Saytdagi profilda ushbu Telegram akkauntingizga tegishli raqamni kiriting va "Telegram orqali tasdiqlash" tugmasini qaytadan bosing.`,
+        { reply_markup: { remove_keyboard: true } }
+      );
+      return;
+    }
+
+    await markPhoneVerifiedByTelegram({
+      userId,
+      phone: user.phone,
+      telegramChatId: String(chatId),
+      telegramUsername: message.from?.username
+    });
+
+    await sendMessage(chatId, `✅ Telefon raqamingiz (${user.phone}) muvaffaqiyatli tasdiqlandi!`, {
+      reply_markup: { remove_keyboard: true }
+    });
     return;
   }
 
-  if (normalizePhoneDigits(user.phone) !== normalizePhoneDigits(telegramPhone)) {
-    await sendMessage(
-      chatId,
-      `❗ Siz ulashgan raqam (${telegramPhone}) saytda kiritilgan raqamdan (${user.phone}) farq qiladi. Saytdagi profilda ushbu Telegram akkauntingizga tegishli raqamni kiriting va "Telegram orqali tasdiqlash" tugmasini qaytadan bosing.`,
-      { reply_markup: { remove_keyboard: true } }
-    );
-    return;
-  }
+  // Website login OR Direct credentials flow:
+  const plainPass = generateMemorablePassword();
+  const passwordHash = await hashPassword(plainPass);
+  const forceNewPassword =
+    pending.kind === "direct_credentials" ? pending.forceNewPassword : true;
 
-  await markPhoneVerifiedByTelegram({ userId, phone: user.phone, telegramChatId: String(chatId) });
-
-  await sendMessage(chatId, `✅ Telefon raqamingiz (${user.phone}) muvaffaqiyatli tasdiqlandi!`, {
-    reply_markup: { remove_keyboard: true }
+  const { user, passwordSet } = await upsertUserFromTelegramContact({
+    phone: telegramPhone,
+    firstName: message.from?.first_name ?? contact.first_name ?? null,
+    lastName: message.from?.last_name ?? contact.last_name ?? null,
+    telegramUsername: message.from?.username ?? null,
+    telegramChatId: String(chatId),
+    newPasswordHash: passwordHash,
+    forceNewPassword
   });
+
+  if (pending.kind === "website_login") {
+    await completeTelegramLoginAttempt({
+      token: pending.token,
+      userId: user.id,
+      plainPass: passwordSet ? plainPass : null
+    });
+  }
+
+  const siteUrl = getAbsoluteUrl("/login");
+  const credentialsLines = passwordSet
+    ? [
+        "🔐 Boshqa qurilma yoki kompyuter brauzeridan saytga kirish uchun ma'lumotlaringiz:",
+        `• Login (Telefon): ${user.phone}`,
+        `• Parol: ${plainPass}`,
+        `• Sayt manzili: ${siteUrl}`
+      ]
+    : [
+        "🔐 Boshqa qurilmadan kirish uchun Login:",
+        `• Login (Telefon): ${user.phone}`,
+        `• Parol: avval berilgan parolingiz (yangi parol olish uchun "${NEW_PASSWORD_BUTTON}" tugmasini bosing)`
+      ];
+
+  await sendMessage(
+    chatId,
+    [
+      "✅ Shaxsingiz va telefon raqamingiz muvaffaqiyatli tasdiqlandi!",
+      "",
+      `👤 Ism: ${user.name || "Foydalanuvchi"}`,
+      `📞 Telefon: ${user.phone}`,
+      user.telegramUsername ? `🌐 Telegram: @${user.telegramUsername}` : "",
+      "",
+      ...credentialsLines,
+      "",
+      pending.kind === "website_login"
+        ? "🚀 Saytda avtomatik tizimga kirdingiz! Brauzerga qaytishingiz mumkin."
+        : "🚀 Endi saytga ushbu Login va Parol orqali istalgan qurilmadan kirishingiz mumkin."
+    ]
+      .filter(Boolean)
+      .join("\n"),
+    {
+      reply_markup: {
+        keyboard: [[NEW_PASSWORD_BUTTON, ADD_LISTING_BUTTON]],
+        resize_keyboard: true
+      }
+    }
+  );
 }
 
 // --- Listing submission flow -----------------------------------------
@@ -594,23 +786,49 @@ async function handleUpdate(update: TelegramUpdate) {
   }
 
   const chatId = message.chat.id;
+  const text = message.text?.trim();
 
-  if (message.text?.startsWith("/start")) {
-    const token = message.text.split(" ")[1];
-    if (token) {
-      await handleStart(chatId, token);
-    } else {
-      await sendMessage(
-        chatId,
-        'Saytdagi "Telegram orqali tasdiqlash" tugmasi orqali bu botga kiring.'
-      );
-    }
+  if (text?.startsWith("/start")) {
+    const token = text.split(/\s+/)[1];
+    await handleStart(chatId, token);
+    return;
+  }
+
+  if (text === "/parol" || text === "/login" || text === NEW_PASSWORD_BUTTON) {
+    listingDraftByChat.delete(chatId);
+    pendingByChat.set(chatId, { kind: "direct_credentials", forceNewPassword: true });
+    await sendMessage(
+      chatId,
+      "🔑 Yangi Login va Parol olish uchun quyidagi «📱 Telefon raqamimni ulashish» tugmasini bosing:",
+      {
+        reply_markup: {
+          keyboard: [[{ text: "📱 Telefon raqamimni ulashish", request_contact: true }]],
+          resize_keyboard: true,
+          one_time_keyboard: true
+        }
+      }
+    );
+    return;
+  }
+
+  if (text === "/addlisting" || text === ADD_LISTING_BUTTON) {
+    pendingByChat.delete(chatId);
+    await handleAddListingStart(chatId);
+    return;
+  }
+
+  const activeDraft = listingDraftByChat.get(chatId);
+  if (activeDraft) {
+    await handleListingDraftMessage(chatId, message, activeDraft);
     return;
   }
 
   if (message.contact) {
-    await handleContact(chatId, message.contact);
+    await handleContact(chatId, message, message.contact);
+    return;
   }
+
+  await handleStart(chatId);
 }
 
 async function poll() {

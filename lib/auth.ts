@@ -8,6 +8,7 @@ import {
   createUserProfile,
   getUserByEmail,
   getUserByGoogleId,
+  getUserByLoginIdentifier,
   linkGoogleAccount,
   updateUserPassword
 } from "@/lib/user-data";
@@ -69,7 +70,7 @@ export async function registerUser(input: {
 export async function authenticateUser(
   input: { email: string; password: string }
 ): Promise<AuthenticateUserResult> {
-  const user = await getUserByEmail(input.email.trim().toLowerCase());
+  const user = await getUserByLoginIdentifier(input.email.trim());
 
   if (!user?.passwordHash) {
     return {

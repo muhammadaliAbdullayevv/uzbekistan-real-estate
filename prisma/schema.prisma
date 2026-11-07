@@ -103,6 +103,7 @@ model User {
   conversationsAsOwner  Conversation[]   @relation("ConversationsAsOwner")
   messages              Message[]
   favorites             FavoriteListing[]
+  telegramAuthAttempts  TelegramAuthAttempt[]
 }
 
 model Listing {
@@ -262,4 +263,19 @@ model LoginAttempt {
   failures    Int      @default(0)
   windowStart DateTime
   updatedAt   DateTime @updatedAt
+}
+
+model TelegramAuthAttempt {
+  id          String    @id @default(cuid())
+  tokenHash   String    @unique
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plainPass   String?
+  expiresAt   DateTime
+  completedAt DateTime?
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([tokenHash])
+  @@index([expiresAt])
 }

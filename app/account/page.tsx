@@ -4,6 +4,7 @@ export { privatePageMetadata as metadata } from "@/lib/site";
 import { BackLink } from "@/components/back-link";
 import { ProfileEditForm } from "@/components/profile-edit-form";
 import { ProfileSummary } from "@/components/profile-summary";
+import { TelegramLoginButton } from "@/components/telegram-login-button";
 import { getFavoriteListingIds, getVisitorId } from "@/lib/favorites";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { getRegionLabel, getRegionOptions } from "@/lib/locations";
@@ -46,7 +47,7 @@ function ChevronRight() {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
-      className="shrink-0 text-ink/25"
+      className="shrink-0 text-slate-400"
     >
       <path d="m9 18 6-6-6-6" />
     </svg>
@@ -67,10 +68,10 @@ function NavRow({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between gap-3 py-3 text-sm font-bold text-slate-200 transition hover:text-cyan-400"
+      className="flex items-center justify-between gap-3 py-3 text-sm font-bold text-slate-800 transition hover:text-blue-600"
     >
       <span className="flex items-center gap-3">
-        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-cyan-300 shadow-sm">
+        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-blue-600 shadow-sm">
           <NavIcon path={icon} />
           {showDot ? (
             <span
@@ -90,6 +91,7 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
   const locale = getLocale();
   const t = getTranslations(locale);
   const user = await getCurrentUser();
+  const botUsername = (process.env.TELEGRAM_BOT_USERNAME ?? "uychisite_bot").replace(/^@/, "");
 
   if (!user) {
     const visitorId = getVisitorId();
@@ -97,40 +99,55 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
     const savedCount = (await getFavoriteListingIds(visitorId, null)).size;
 
     return (
-      <div className="shell space-y-8">
+      <div className="shell space-y-6">
         <BackLink href="/" label={t.common.backToListings} />
 
         <section className="panel overflow-hidden p-0">
-          <div className="h-20 bg-gradient-to-r from-cyan-500/30 via-teal-500/20 to-indigo-500/30 sm:h-24" />
-          <div className="flex flex-col items-center px-6 pb-8">
-            <span className="-mt-12 flex h-24 w-24 items-center justify-center rounded-full border-4 border-[#0D1219] bg-mist text-cyan-400 shadow-md sm:-mt-14 sm:h-28 sm:w-28">
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="h-12 w-12 sm:h-14 sm:w-14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+          <div className="h-24 bg-gradient-to-r from-[#2563EB] via-[#1D4ED8] to-[#0284C7] sm:h-28" />
+          <div className="mx-auto max-w-xl px-5 pb-8 sm:px-8">
+            <div className="flex flex-col items-center text-center">
+              <span className="-mt-12 flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-[#F3F6FB] text-blue-600 shadow-md sm:-mt-14 sm:h-28 sm:w-28">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  className="h-12 w-12 sm:h-14 sm:w-14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0" />
+                </svg>
+              </span>
+
+              <p className="mt-3 font-display text-xl font-extrabold text-slate-900">
+                Mehmon profili (@{displayId})
+              </p>
+              <p className="mt-1 max-w-md text-xs font-medium leading-relaxed text-slate-500">
+                Shaxsingizni Telegram bot orqali tasdiqlab tizimga kiring. Saytda telefon raqamingiz va Telegram ismingiz ko&apos;rinadi hamda boshqa qurilmalarda kirish uchun Login va Parol beriladi.
+              </p>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <TelegramLoginButton
+                nextPath="/account"
+                label="Telegram orqali tasdiqlash va kirish"
+              />
+              <Link
+                href="/login?next=%2Faccount"
+                className="btn-secondary flex w-full items-center justify-center gap-2 py-3.5 text-sm font-extrabold"
               >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0" />
-              </svg>
-            </span>
+                🔑 Login va parol bilan kirish (Boshqa qurilmadan)
+              </Link>
+            </div>
 
-            <p className="mt-3 font-display text-xl font-semibold tabular-nums text-ink">
-              @{displayId}
-            </p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink/40">
-              {t.account.guestIdLabel}
-            </p>
-
-            <div className="mt-6 flex items-center gap-10 border-t border-line/70 pt-5">
+            <div className="mt-6 flex items-center justify-center gap-10 border-t border-slate-200 pt-5">
               <Link href="/saved" className="flex flex-col items-center gap-0.5 text-center">
-                <span className="font-display text-xl font-semibold tabular-nums text-ink">
+                <span className="font-display text-xl font-extrabold tabular-nums text-slate-900">
                   {savedCount}
                 </span>
-                <span className="text-xs text-ink/50">{t.nav.saved}</span>
+                <span className="text-xs font-semibold text-slate-500">{t.nav.saved}</span>
               </Link>
             </div>
           </div>
@@ -149,7 +166,7 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
         ? t.account.phoneVerifyNoPhone
         : null;
 
-  const isProfileComplete = Boolean(user.phone && user.preferredRegion);
+  const isProfileComplete = Boolean(user.phone);
   const isEditMode = searchParams.edit === "1" || !isProfileComplete || Boolean(telegramErrorMessage);
 
   const mastheadCopy = {
@@ -164,24 +181,24 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
   };
 
   return (
-    <div className="shell space-y-8">
+    <div className="shell space-y-6">
       <BackLink href="/" label={t.common.backToListings} />
 
       {profileUpdated ? (
-        <div className="rounded-[24px] border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-accent">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
           {t.account.profileUpdated}
         </div>
       ) : null}
 
       {telegramErrorMessage ? (
-        <div className="rounded-[24px] border border-amber-400/30 bg-amber-500/15 px-4 py-3 text-sm leading-6 text-amber-200">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium leading-6 text-amber-800">
           {telegramErrorMessage}
         </div>
       ) : null}
 
       {!isProfileComplete ? (
-        <div className="rounded-[24px] border border-amber-400/30 bg-amber-500/15 px-4 py-3 text-sm leading-6 text-amber-200">
-          <strong className="font-semibold">{t.account.incompleteProfileTitle}</strong>{" "}
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium leading-6 text-amber-800">
+          <strong className="font-bold">{t.account.incompleteProfileTitle}</strong>{" "}
           {t.account.incompleteProfileBody}
         </div>
       ) : null}
@@ -192,6 +209,8 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
             name={user.name ?? ""}
             phone={user.phone ?? ""}
             email={user.email}
+            telegramUsername={user.telegramUsername}
+            telegramChatId={user.telegramChatId}
             avatarUrl={user.avatarUrl}
             emailVerifiedAt={user.emailVerifiedAt}
             phoneVerifiedAt={user.phoneVerifiedAt}
@@ -232,6 +251,9 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
             name={user.name ?? ""}
             email={user.email}
             phone={user.phone ?? ""}
+            telegramUsername={user.telegramUsername}
+            telegramChatId={user.telegramChatId}
+            botUsername={botUsername}
             avatarUrl={user.avatarUrl}
             emailVerifiedAt={user.emailVerifiedAt}
             phoneVerifiedAt={user.phoneVerifiedAt}
@@ -258,7 +280,7 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
               {t.account.submitListing}
             </Link>
 
-            <nav className="mt-2 divide-y divide-white/10 px-1">
+            <nav className="mt-2 divide-y divide-slate-200 px-1">
               <NavRow
                 href="/my-listings"
                 label={t.account.trackListings}
@@ -278,13 +300,13 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
               />
             </nav>
 
-            <form action="/api/auth/logout" method="post" className="mt-2 border-t border-white/10 px-1 pt-2">
+            <form action="/api/auth/logout" method="post" className="mt-2 border-t border-slate-200 px-1 pt-2">
               <input type="hidden" name="next" value="/" />
               <button
                 type="submit"
-                className="flex w-full items-center gap-3 py-3 text-sm font-bold text-rose-400 transition hover:text-rose-300"
+                className="flex w-full items-center gap-3 py-3 text-sm font-bold text-rose-600 transition hover:text-rose-700"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rose-500/30 bg-rose-500/15 text-rose-400">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-600">
                   <NavIcon path="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
                 </span>
                 {t.common.signOut}

@@ -2,11 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AuthShell } from "@/components/auth-shell";
-import { GoogleSignInButton } from "@/components/google-signin-button";
-import { PasswordInput } from "@/components/password-input";
-import { AuthSubmitForm } from "@/components/auth-submit-form";
+import { TelegramLoginButton } from "@/components/telegram-login-button";
 export { privatePageMetadata as metadata } from "@/lib/site";
-import { getLocale, getTranslations } from "@/lib/i18n";
 import { resolvePostAuthPath } from "@/lib/owner";
 import { getSafeUserNextPath, getUserSession } from "@/lib/user-session";
 
@@ -15,8 +12,6 @@ type RegisterPageProps = {
 };
 
 export default async function RegisterPage({ searchParams = {} }: RegisterPageProps) {
-  const locale = getLocale();
-  const t = getTranslations(locale);
   const session = await getUserSession();
   const nextPath = getSafeUserNextPath(
     typeof searchParams.next === "string" ? searchParams.next : "/"
@@ -26,195 +21,80 @@ export default async function RegisterPage({ searchParams = {} }: RegisterPagePr
     redirect(resolvePostAuthPath(session, nextPath));
   }
 
-  const error =
-    searchParams.error === "exists"
-      ? t.auth.accountExists
-      : searchParams.error === "rate-limited"
-        ? t.auth.rateLimited
-      : searchParams.error === "password-short"
-        ? t.auth.passwordTooShort
-      : searchParams.error === "password-mismatch"
-        ? t.auth.passwordMismatch
-      : searchParams.error === "terms"
-        ? t.auth.termsRequired
-      : searchParams.error === "invalid"
-        ? t.auth.fillFormCorrectly
-        : null;
-
-  const prefilledEmail = typeof searchParams.email === "string" ? searchParams.email : "";
-  const prefilledName = typeof searchParams.name === "string" ? searchParams.name : "";
-  const prefilledPhone = typeof searchParams.phone === "string" ? searchParams.phone : "";
-
   return (
     <AuthShell
-      pill={t.auth.registerPill}
-      title={t.auth.registerTitle}
-      description={t.auth.registerDescription}
+      pill="Yangi profil ochish"
+      title="Ro'yxatdan o'tish va shaxsni tasdiqlash Telegram bot orqali"
+      description="Uychi platformasida haqiqiy foydalanuvchilar va ishonchli e'lonlarni ta'minlash uchun ro'yxatdan o'tish rasmiy Telegram botimiz orqali 10 soniyada amalga oshiriladi."
       primaryFeature={{
-        title: t.auth.featurePrimaryTitle,
-        copy: t.auth.featurePrimaryCopy
+        title: "Avtomatik Login va Parol",
+        copy: "Telefon raqamingizni botda ulashishingiz bilan saytda profilingiz ochiladi va boshqa qurilmalarda kirish uchun Login (+998...) hamda Parol beriladi."
       }}
       secondaryFeatures={[
         {
-          title: t.auth.featureSecurityTitle,
-          copy: t.auth.featureSecurityCopy
+          title: "Tasdiqlangan profil",
+          copy: "Saytda sizning tasdiqlangan telefon raqamingiz va Telegram ismingiz ko'rsatiladi."
         },
         {
-          title: t.auth.featureSavedTitle,
-          copy: t.auth.featureSavedCopy
+          title: "Kompyuter va telefon uchun",
+          copy: "Bot bergan Login va Parol yordamida istalgan brauzerdan profilingizga kira olasiz."
         }
       ]}
     >
-      <h2 className="font-display text-2xl font-semibold text-ink sm:text-[1.75rem]">
-        {t.auth.createAccount}
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-blue-700">
+        Rasmiy identifikatsiya
+      </span>
+      <h2 className="mt-2 font-display text-2xl font-extrabold text-slate-900 sm:text-[1.75rem]">
+        Telegram orqali ro&apos;yxatdan o&apos;tish
       </h2>
+      <p className="mt-1.5 text-sm font-medium leading-relaxed text-slate-600">
+        Quyidagi tugmani bosing va Telegram botimizda <strong>«📱 Telefon raqamimni ulashish»</strong> tugmasini tasdiqlang.
+      </p>
 
-      <div className="mt-6">
-        <GoogleSignInButton
+      <div className="mt-5">
+        <TelegramLoginButton
           nextPath={nextPath}
-          label={t.auth.continueWithGoogle}
-          dividerLabel={t.auth.orDivider}
+          label="Telegram orqali tasdiqlash va Login olish"
         />
       </div>
 
-      <AuthSubmitForm action="/api/auth/register" method="post" className="mt-5 space-y-5">
-        <input type="hidden" name="next" value={nextPath} />
-
-        <div>
-          <label htmlFor="name" className="mb-2 block text-sm font-medium text-ink/80">
-            {t.auth.fullName}
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            autoComplete="name"
-            required
-            className="input"
-            placeholder={t.auth.noAccountNamePlaceholder}
-            defaultValue={prefilledName}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="email" className="mb-2 block text-sm font-medium text-ink/80">
-            {t.auth.email}
-          </label>
-          <div className="relative">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink/35">
-              @
-            </span>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              inputMode="email"
-              required
-              className="input pl-10"
-              placeholder="you@example.com"
-              defaultValue={prefilledEmail}
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="phone" className="mb-2 block text-sm font-medium text-ink/80">
-            {t.auth.phoneOptional}
-          </label>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            autoComplete="tel"
-            inputMode="tel"
-            minLength={7}
-            className="input"
-            placeholder="+998901234567"
-            defaultValue={prefilledPhone}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password" className="mb-2 block text-sm font-medium text-ink/80">
-            {t.auth.password}
-          </label>
-          <PasswordInput
-            id="password"
-            name="password"
-            autoComplete="new-password"
-            minLength={8}
-            required
-            placeholder={t.auth.strongPasswordPlaceholder}
-            showLabel={t.auth.showPassword}
-            hideLabel={t.auth.hidePassword}
-            showAriaLabel={t.auth.showPasswordAria}
-            hideAriaLabel={t.auth.hidePasswordAria}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="confirmPassword"
-            className="mb-2 block text-sm font-medium text-ink/80"
-          >
-            {t.auth.confirmPassword}
-          </label>
-          <PasswordInput
-            id="confirmPassword"
-            name="confirmPassword"
-            autoComplete="new-password"
-            minLength={8}
-            required
-            placeholder={t.auth.confirmPasswordPlaceholder}
-            showLabel={t.auth.showPassword}
-            hideLabel={t.auth.hidePassword}
-            showAriaLabel={t.auth.showPasswordAria}
-            hideAriaLabel={t.auth.hidePasswordAria}
-          />
-        </div>
-
-        <label className="flex items-start gap-3 rounded-[24px] border border-line/80 bg-mist/45 px-4 py-4 text-sm leading-6 text-ink/70">
-          <input
-            type="checkbox"
-            name="acceptedTerms"
-            required
-            className="mt-1 h-4 w-4 rounded border-line text-accent focus:ring-accent/20"
-          />
-          <span>
-            {t.auth.acceptTermsPrefix}
-            <Link href="/privacy" className="font-medium text-accent">
-              {t.auth.acceptTermsPrivacy}
-            </Link>
-            {t.auth.acceptTermsMiddle}
-            <Link href="/terms" className="font-medium text-accent">
-              {t.auth.acceptTermsTerms}
-            </Link>
-            {t.auth.acceptTermsSuffix}
+      <div className="mt-6 space-y-2.5 rounded-2xl border border-slate-200 bg-[#F3F6FB] p-4 text-xs text-slate-700">
+        <p className="font-extrabold uppercase tracking-wider text-slate-900">
+          3 ta oddiy qadam:
+        </p>
+        <div className="flex items-start gap-2.5">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-extrabold text-white">
+            1
           </span>
-        </label>
+          <p className="leading-relaxed">
+            <strong>Telegram orqali tasdiqlash</strong> tugmasini bosib rasmiy botimizni oching va <code>Start</code> bosing.
+          </p>
+        </div>
+        <div className="flex items-start gap-2.5">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-extrabold text-white">
+            2
+          </span>
+          <p className="leading-relaxed">
+            Botdagi <strong>«📱 Telefon raqamimni ulashish»</strong> tugmasini bosing.
+          </p>
+        </div>
+        <div className="flex items-start gap-2.5">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-extrabold text-white">
+            3
+          </span>
+          <p className="leading-relaxed">
+            Shu brauzerda avtomatik tizimga kirasiz, bot esa sizga boshqa qurilmalar uchun <strong>Login (+998...)</strong> va <strong>Parol</strong> yuboradi!
+          </p>
+        </div>
+      </div>
 
-        {error ? (
-          <div className="rounded-[24px] border border-coral/20 bg-coral/10 px-4 py-3 text-sm text-coral">
-            {error}
-          </div>
-        ) : null}
-
-        <button
-          type="submit"
-          className="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-ink to-accent px-5 py-3.5 text-sm font-semibold text-white shadow-[0_20px_45px_-24px_rgba(15,118,110,0.9)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-24px_rgba(15,118,110,0.95)]"
-        >
-          {t.auth.createAccount}
-        </button>
-      </AuthSubmitForm>
-
-      <p className="mt-5 text-sm text-ink/60">
-        {t.auth.alreadyRegistered}{" "}
+      <p className="mt-6 text-center text-sm font-medium text-slate-600">
+        Login va parolingiz bormi?{" "}
         <Link
-          href={`/login?next=${encodeURIComponent(nextPath)}${prefilledEmail ? `&email=${encodeURIComponent(prefilledEmail)}` : ""}`}
-          className="font-medium text-accent"
+          href={`/login?next=${encodeURIComponent(nextPath)}`}
+          className="font-extrabold text-blue-600 hover:text-blue-700 underline"
         >
-          {t.auth.logIn}
+          Login va parol bilan kirish
         </Link>
       </p>
     </AuthShell>

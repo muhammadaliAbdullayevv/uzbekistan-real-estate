@@ -107,11 +107,103 @@ export async function getUserByEmail(email: string): Promise<UserAuthRecord | nu
       "createdAt",
       "updatedAt"
     FROM "User"
-    WHERE "email" = ${email}
+    WHERE LOWER("email") = LOWER(${email})
     LIMIT 1
   `;
 
   return rows[0] ? normalizeAuthRow(rows[0]) : null;
+}
+
+/**
+ * Looks up a user for login by Phone Number (+998901234567 / 901234567),
+ * Telegram Username (@username), or Email.
+ */
+export async function getUserByLoginIdentifier(identifier: string): Promise<UserAuthRecord | null> {
+  const raw = identifier.trim();
+  if (!raw) {
+    return null;
+  }
+
+  if (raw.includes("@") && !raw.startsWith("@")) {
+    return getUserByEmail(raw.toLowerCase());
+  }
+
+  const digits = raw.replace(/\D/g, "");
+  const normalizedPhoneDigits =
+    digits.length === 9 ? `998${digits}` : digits.length >= 10 ? digits : "";
+
+  if (normalizedPhoneDigits) {
+    const phoneRows = await prisma.$queryRaw<UserAuthRow[]>`
+      SELECT
+        "id",
+        "email",
+        "emailVerifiedAt",
+        "name",
+        "avatarUrl",
+        "role",
+        "status",
+        "passwordHash",
+        "phone",
+        "telegramUsername",
+        "telegramChatId",
+        "phoneVerifiedAt",
+        "preferredRegion",
+        "preferredDistrict",
+        "preferredPropertyType",
+        "preferredRentType",
+        "preferredMinPrice",
+        "preferredMaxPrice",
+        "preferencesPromptDismissedAt",
+        "createdAt",
+        "updatedAt"
+      FROM "User"
+      WHERE REGEXP_REPLACE(COALESCE("phone", ''), '[^0-9]', '', 'g') = ${normalizedPhoneDigits}
+      ORDER BY "phoneVerifiedAt" DESC NULLS LAST, "updatedAt" DESC
+      LIMIT 1
+    `;
+
+    if (phoneRows[0]) {
+      return normalizeAuthRow(phoneRows[0]);
+    }
+  }
+
+  const cleanUsername = raw.replace(/^@+/, "").trim().toLowerCase();
+  if (cleanUsername) {
+    const usernameRows = await prisma.$queryRaw<UserAuthRow[]>`
+      SELECT
+        "id",
+        "email",
+        "emailVerifiedAt",
+        "name",
+        "avatarUrl",
+        "role",
+        "status",
+        "passwordHash",
+        "phone",
+        "telegramUsername",
+        "telegramChatId",
+        "phoneVerifiedAt",
+        "preferredRegion",
+        "preferredDistrict",
+        "preferredPropertyType",
+        "preferredRentType",
+        "preferredMinPrice",
+        "preferredMaxPrice",
+        "preferencesPromptDismissedAt",
+        "createdAt",
+        "updatedAt"
+      FROM "User"
+      WHERE LOWER(COALESCE("telegramUsername", '')) = ${cleanUsername}
+      ORDER BY "updatedAt" DESC
+      LIMIT 1
+    `;
+
+    if (usernameRows[0]) {
+      return normalizeAuthRow(usernameRows[0]);
+    }
+  }
+
+  return getUserByEmail(raw.toLowerCase());
 }
 
 const publicUserColumns = Prisma.sql`
@@ -402,8 +494,10 @@ export async function markPhoneVerifiedByTelegram(input: {
   userId: string;
   phone: string;
   telegramChatId: string;
+  telegramUsername?: string | null;
 }) {
   const now = new Date();
+  const cleanUsername = input.telegramUsername?.replace(/^@+/, "").trim() || null;
 
   await prisma.$executeRaw`
     UPDATE "User"
@@ -411,9 +505,156 @@ export async function markPhoneVerifiedByTelegram(input: {
       "phone" = ${input.phone},
       "phoneVerifiedAt" = ${now},
       "telegramChatId" = ${input.telegramChatId},
+      "telegramUsername" = COALESCE(${cleanUsername}, "telegramUsername"),
       "updatedAt" = ${now}
     WHERE "id" = ${input.userId}
   `;
 
   return getUserProfileById(input.userId);
+}
+
+/**
+ * Finds or creates a User when someone identifies via the Telegram Bot by
+ * sharing their verified phone number.
+ */
+export async function upsertUserFromTelegramContact(input: {
+  phone: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  telegramUsername?: string | null;
+  telegramChatId: string;
+  newPasswordHash: string;
+  forceNewPassword?: boolean;
+}) {
+  const now = new Date();
+  const digits = input.phone.replace(/\D/g, "");
+  const normalizedPhone = `+${digits}`;
+  const cleanUsername = input.telegramUsername?.replace(/^@+/, "").trim() || null;
+  const telegramFullName = [input.firstName?.trim(), input.lastName?.trim()]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+  const existingRows = await prisma.$queryRaw<UserAuthRow[]>`
+    SELECT
+      "id",
+      "email",
+      "emailVerifiedAt",
+      "name",
+      "avatarUrl",
+      "role",
+      "status",
+      "passwordHash",
+      "phone",
+      "telegramUsername",
+      "telegramChatId",
+      "phoneVerifiedAt",
+      "preferredRegion",
+      "preferredDistrict",
+      "preferredPropertyType",
+      "preferredRentType",
+      "preferredMinPrice",
+      "preferredMaxPrice",
+      "preferencesPromptDismissedAt",
+      "createdAt",
+      "updatedAt"
+    FROM "User"
+    WHERE
+      REGEXP_REPLACE(COALESCE("phone", ''), '[^0-9]', '', 'g') = ${digits}
+      OR "telegramChatId" = ${input.telegramChatId}
+    ORDER BY
+      CASE WHEN REGEXP_REPLACE(COALESCE("phone", ''), '[^0-9]', '', 'g') = ${digits} THEN 0 ELSE 1 END,
+      "updatedAt" DESC
+    LIMIT 1
+  `;
+
+  const existing = existingRows[0];
+
+  if (existing) {
+    const shouldSetPassword = !existing.passwordHash || Boolean(input.forceNewPassword);
+    const updatedName =
+      existing.name && existing.name.trim() ? existing.name.trim() : telegramFullName || normalizedPhone;
+
+    if (shouldSetPassword) {
+      await prisma.$executeRaw`
+        UPDATE "User"
+        SET
+          "name" = ${updatedName},
+          "phone" = ${normalizedPhone},
+          "phoneVerifiedAt" = ${now},
+          "telegramChatId" = ${input.telegramChatId},
+          "telegramUsername" = COALESCE(${cleanUsername}, "telegramUsername"),
+          "passwordHash" = ${input.newPasswordHash},
+          "updatedAt" = ${now}
+        WHERE "id" = ${existing.id}
+      `;
+    } else {
+      await prisma.$executeRaw`
+        UPDATE "User"
+        SET
+          "name" = ${updatedName},
+          "phone" = ${normalizedPhone},
+          "phoneVerifiedAt" = ${now},
+          "telegramChatId" = ${input.telegramChatId},
+          "telegramUsername" = COALESCE(${cleanUsername}, "telegramUsername"),
+          "updatedAt" = ${now}
+        WHERE "id" = ${existing.id}
+      `;
+    }
+
+    const updated = await getUserProfileById(existing.id);
+    if (!updated) {
+      throw new Error("User not found after Telegram update.");
+    }
+
+    return {
+      user: updated,
+      isNewUser: false,
+      passwordSet: shouldSetPassword
+    };
+  }
+
+  const id = randomUUID();
+  const syntheticEmail = `${digits}@tg.uychi.site`;
+  const displayName = telegramFullName || normalizedPhone;
+
+  await prisma.$executeRaw`
+    INSERT INTO "User" (
+      "id",
+      "email",
+      "emailVerifiedAt",
+      "name",
+      "passwordHash",
+      "phone",
+      "phoneVerifiedAt",
+      "telegramUsername",
+      "telegramChatId",
+      "createdAt",
+      "updatedAt"
+    )
+    VALUES (
+      ${id},
+      ${syntheticEmail},
+      ${now},
+      ${displayName},
+      ${input.newPasswordHash},
+      ${normalizedPhone},
+      ${now},
+      ${cleanUsername},
+      ${input.telegramChatId},
+      ${now},
+      ${now}
+    )
+  `;
+
+  const created = await getUserProfileById(id);
+  if (!created) {
+    throw new Error("User not found after Telegram insert.");
+  }
+
+  return {
+    user: created,
+    isNewUser: true,
+    passwordSet: true
+  };
 }
