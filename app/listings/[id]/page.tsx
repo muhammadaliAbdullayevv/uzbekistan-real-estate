@@ -160,13 +160,15 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const isRu = locale === "ru";
 
   return (
-    <div className="shell space-y-6 pb-28 sm:space-y-8 sm:pb-12">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
 
       <TrackListingView listingId={listing.id} enabled={Boolean(session)} />
+
+      <div className="shell -mt-8 space-y-5 pb-28 sm:mt-0 sm:space-y-8 sm:pb-12">
 
       {/* ============================================================== */}
       {/* DESKTOP BREADCRUMBS & TOP BAR                                  */}
@@ -729,5 +731,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       </div>
 
     </div>
+    </>
   );
 }

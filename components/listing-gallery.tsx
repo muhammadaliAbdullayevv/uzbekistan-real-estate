@@ -194,7 +194,7 @@ export function ListingGallery({
       {/* ============================================================== */}
       {/* 2. MOBILE IMMERSIVE SLIDER (Visible on mobile & tablet)       */}
       {/* ============================================================== */}
-      <div className="relative -mx-4 -mt-4 overflow-hidden bg-slate-900 sm:mx-0 sm:mt-0 sm:rounded-[28px] lg:hidden">
+      <div className="relative -mx-4 overflow-hidden bg-slate-900 sm:mx-0 sm:rounded-[28px] lg:hidden">
         {/* Floating Top Actions (Back, Share, Heart) */}
         {topActions ? (
           <div className="absolute inset-x-3.5 top-3.5 z-20 flex items-center justify-between">
