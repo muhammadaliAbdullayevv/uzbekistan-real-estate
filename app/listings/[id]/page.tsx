@@ -214,7 +214,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         {/* PHOTO GALLERY (Starts at top: 0 with zero gap!)               */}
         {/* ============================================================== */}
         <div className="w-full">
-          <div className="shell lg:px-8 px-0 sm:px-6">
+          <div className="w-full mx-auto max-w-7xl px-0 sm:px-6 lg:px-8">
             <ListingGallery
               images={listing.images.map((image) => image.url)}
               title={listing.title}

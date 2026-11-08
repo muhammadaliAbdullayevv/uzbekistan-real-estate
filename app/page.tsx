@@ -3,6 +3,7 @@ import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
 import { SearchFilters } from "@/components/search-filters";
+import { SiteFooter } from "@/components/site-footer";
 import { getFavoriteListingIds, getVisitorId } from "@/lib/favorites";
 import { hasGeminiConfig } from "@/lib/gemini";
 import { getLocale, getTranslations } from "@/lib/i18n";
@@ -169,6 +170,10 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
           />
         )}
       </section>
+
+      <div className="-mx-4 sm:mx-0 mt-8">
+        <SiteFooter />
+      </div>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export default function ListingLoading() {
 
       {/* 2. Photo Gallery skeleton (at top: 0) */}
       <div className="w-full">
-        <div className="shell lg:px-8 px-0 sm:px-6">
+        <div className="w-full mx-auto max-w-7xl px-0 sm:px-6 lg:px-8">
           {/* Desktop Mosaic */}
           <div className="hidden lg:grid h-[420px] grid-cols-3 gap-3 overflow-hidden rounded-[28px]">
             <div className="col-span-2 h-full animate-pulse rounded-[28px] bg-slate-200" />
