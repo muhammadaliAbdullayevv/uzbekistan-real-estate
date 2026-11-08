@@ -1697,48 +1697,6 @@ export function AddListingForm({
                 </div>
               </div>
 
-              {/* Dynamic Section: "Kimlar uchun mos?" (for Rent) OR "Hujjatlar va uy holati" (for Sale) */}
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-slate-900 sm:text-sm">
-                    {listingType === "sale"
-                      ? locale === "ru"
-                        ? "Документы и состояние дома"
-                        : "Hujjatlar va uy holati"
-                      : locale === "ru"
-                        ? "Кому подходит?"
-                        : "Kimlar uchun mos?"}
-                  </span>
-                  <span className="text-[11px] font-semibold text-slate-400">
-                    {locale === "ru" ? "Можно несколько" : "Bir nechta tanlash mumkin"}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {activePreferenceKeys.map((pref) => {
-                    const active = tenantPreferences.includes(pref);
-                    return (
-                      <button
-                        key={pref}
-                        type="button"
-                        onClick={() => toggleTenantPref(pref)}
-                        className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-extrabold transition ${
-                          active
-                            ? "border-blue-600 bg-[#EFF6FF] text-blue-700 shadow-2xs"
-                            : "border-slate-200 bg-[#F3F6FB] text-slate-700 hover:border-slate-300"
-                        }`}
-                      >
-                        {active ? (
-                          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        ) : null}
-                        <span>{TENANT_PREFERENCE_LABELS[locale][pref]}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Uyda nimalar bor? (Property-type-aware amenities with crisp SVG icons) */}
               <div>
                 <div className="mb-2 flex items-center justify-between">

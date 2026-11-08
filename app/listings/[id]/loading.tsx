@@ -48,19 +48,12 @@ export default function ListingLoading() {
           
           {/* Left column */}
           <div className="space-y-4 sm:space-y-5">
-            {/* Sub-badge, Title & Price skeleton */}
+            {/* Sub-badge, Title & Views skeleton */}
             <div className="space-y-2 pt-1 lg:panel lg:p-5 animate-pulse">
               <div className="h-3.5 w-36 rounded bg-slate-200" />
               <div className="h-6 w-5/6 rounded-lg bg-slate-200" />
               <div className="h-3.5 w-1/2 rounded bg-slate-100" />
-              
-              <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-                <div className="space-y-1">
-                  <div className="h-7 w-32 rounded bg-slate-200" />
-                  <div className="h-3 w-20 rounded bg-slate-100" />
-                </div>
-                <div className="h-5 w-24 rounded-full bg-slate-100" />
-              </div>
+              <div className="h-3 w-16 rounded bg-slate-100" />
             </div>
 
             {/* 4-Specs in One Row skeleton */}
@@ -111,13 +104,12 @@ export default function ListingLoading() {
       </div>
 
       {/* 4. Unclosable Sticky Bottom Bar skeleton */}
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t border-slate-200/90 bg-white/95 px-4 py-3 backdrop-blur-xl lg:hidden animate-pulse">
-        <div className="min-w-[85px] space-y-1">
-          <div className="h-5 w-20 rounded bg-slate-200" />
-          <div className="h-3 w-12 rounded bg-slate-100" />
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/90 bg-white/95 px-4 pt-3 pb-3 backdrop-blur-xl lg:hidden animate-pulse space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="h-6 w-24 rounded bg-slate-200" />
+          <div className="h-4 w-28 rounded bg-slate-100" />
         </div>
-        <div className="h-11 flex-1 rounded-xl bg-slate-100" />
-        <div className="h-11 flex-1 rounded-xl bg-slate-200" />
+        <div className="h-11 w-full rounded-xl bg-slate-200" />
       </div>
     </div>
   );

@@ -7,15 +7,13 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { ListingCard } from "@/components/listing-card";
 import { ListingGallery } from "@/components/listing-gallery";
 import { LocationSection } from "@/components/location-display";
-import { NeighborhoodHighlights } from "@/components/neighborhood-highlights";
 import { ScheduleViewingModal } from "@/components/schedule-viewing-modal";
 import { ShareButton } from "@/components/share-button";
 import { SmartBackLink } from "@/components/smart-back-link";
 import { TrackListingView } from "@/components/track-listing-view";
 import {
   getAmenityLabel,
-  getIncludedInPriceLabel,
-  getTenantPreferenceLabel
+  getIncludedInPriceLabel
 } from "@/lib/amenity-labels";
 import { prisma } from "@/lib/db";
 import { getFavoriteListingIds, getVisitorId } from "@/lib/favorites";
@@ -158,14 +156,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         .toUpperCase()
     : "UY";
 
+  const cleanedPhone = listing.phone ? listing.phone.trim() : "";
+  const maskedPhone =
+    cleanedPhone.length >= 6
+      ? `${cleanedPhone.slice(0, 4)} *** ${cleanedPhone.slice(-2)}`
+      : cleanedPhone;
   const isRu = locale === "ru";
-
-  const mainLocationSnippet = `${
-    listing.district ? `${listing.district}, ${listing.region}` : listing.region
-  } · ${listing.rooms} ${t.common.roomsShort} · ${getPropertyTypeLabel(
-    listing.propertyType,
-    locale
-  )} · ${listing.area} m²`;
 
   return (
     <>
@@ -271,14 +267,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             {/* ========================================================== */}
             <div className="space-y-4 sm:space-y-5">
 
-              {/* 1. ABOVE-THE-FOLD: SUB-BADGE, TITLE, LOCATION & PRICE */}
+              {/* 1. ABOVE-THE-FOLD: SUB-BADGE, TITLE, LOCATION & VIEWS */}
               <div className="space-y-1.5 pt-1 lg:panel lg:p-5">
-                {/* Sub-badge: Direct from owner / Verified (like modern screenshot) */}
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                {/* Sub-badge: Direct from owner / Verified */}
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
                   <svg
                     aria-hidden="true"
                     viewBox="0 0 24 24"
-                    className="h-3.5 w-3.5 text-slate-400"
+                    className="h-3.5 w-3.5 text-slate-400 shrink-0"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2.2"
@@ -297,85 +293,69 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   {listing.title}
                 </h1>
 
-                {/* Exact Location & Address */}
-                <p className="flex items-center gap-1 text-xs font-semibold text-slate-500">
-                  <span className="text-blue-600">📍</span>
-                  <span>{listing.district ? `${listing.district}, ${listing.region}` : listing.region}</span>
-                  {listing.address ? <span className="text-slate-400 truncate">· {listing.address}</span> : null}
-                </p>
-
-                {/* Price directly below Title and Location */}
-                <div className="flex items-baseline justify-between border-t border-slate-100 pt-3 mt-2">
-                  <div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-display text-2xl font-black text-blue-600 tracking-tight sm:text-3xl">
-                        {formatPrice(
-                          listing.price,
-                          listing.currency,
-                          listing.listingType,
-                          listing.rentType,
-                          locale
-                        )}
-                      </span>
-                      {listing.negotiable ? (
-                        <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700 border border-emerald-200">
-                          {locale === "ru" ? "Торг" : "Kami bor"}
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className="text-xs font-bold text-slate-400 mt-0.5">
-                      {formatPriceEquiv(listing.price, listing.currency, locale)}
+                {/* Exact Location & Landmark */}
+                <div className="space-y-1 pt-0.5 text-xs font-medium text-slate-600">
+                  <p className="flex items-center gap-1.5">
+                    <span className="text-slate-400">📍</span>
+                    <span>{listing.district ? `${listing.district}, ${listing.region}` : listing.region}</span>
+                  </p>
+                  {listing.address ? (
+                    <p className="flex items-center gap-1.5 text-slate-500">
+                      <span className="text-slate-400">📍</span>
+                      <span>{isRu ? "Ориентир" : "Mo'ljal"}: {listing.address}</span>
                     </p>
-                  </div>
+                  ) : null}
+                </div>
 
-                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-600">
-                    👁 {viewCount} {isRu ? "просмотров" : "ko'rildi"}
-                  </span>
+                {/* Views count */}
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 pt-0.5">
+                  <span>👁</span>
+                  <span>{viewCount}</span>
                 </div>
               </div>
 
-              {/* 2. COMPACT 4-SPECS IN ONE ROW (Rooms · Area · Floor 4/9 · Jihoz) */}
-              <div className="rounded-2xl bg-slate-50 p-2.5 border border-slate-100 lg:panel lg:p-4">
-                <div className="grid grid-cols-4 gap-1 text-center divide-x divide-slate-100 sm:gap-2">
+              {/* 2. COMPACT 4-SPECS IN ONE ROW (Rooms · Area · Floor · Furnishing) */}
+              <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3 lg:panel lg:p-4">
+                <div className="grid grid-cols-4 text-center divide-x divide-slate-200/70">
                   {/* 1. Rooms */}
                   <div className="px-1">
-                    <p className="font-display text-base font-black text-slate-900 leading-tight sm:text-2xl">
+                    <p className="font-display text-xl font-black text-slate-900 leading-tight sm:text-2xl">
                       {listing.rooms}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 sm:text-xs">
+                    <p className="text-[11px] font-semibold text-slate-400 mt-0.5">
                       {t.common.roomsShort}
                     </p>
                   </div>
 
                   {/* 2. Area */}
                   <div className="px-1">
-                    <p className="font-display text-base font-black text-slate-900 leading-tight sm:text-2xl">
-                      {listing.area} <span className="text-[10px] sm:text-xs font-bold text-slate-500">m²</span>
+                    <p className="font-display text-xl font-black text-slate-900 leading-tight sm:text-2xl">
+                      {listing.area}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 sm:text-xs">
-                      {t.common.area}
+                    <p className="text-[11px] font-semibold text-slate-400 mt-0.5">
+                      m²
                     </p>
                   </div>
 
-                  {/* 3. Floor: 4/9 */}
+                  {/* 3. Floor */}
                   <div className="px-1">
-                    <p className="font-display text-base font-black text-slate-900 leading-tight sm:text-2xl">
+                    <p className="font-display text-xl font-black text-slate-900 leading-tight sm:text-2xl">
                       {floorSpecValue}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 sm:text-xs">
+                    <p className="text-[11px] font-semibold text-slate-400 mt-0.5">
                       {floorSpecLabel}
                     </p>
                   </div>
 
                   {/* 4. Furnishing */}
                   <div className="px-1">
-                    <p className="font-display text-xs font-black text-emerald-700 truncate leading-tight mt-0.5 sm:text-lg">
+                    <p className="font-display text-xs font-black text-slate-800 leading-tight mt-1 sm:text-base truncate">
                       {listing.furnishing
                         ? getFurnishingLabel(listing.furnishing, locale)
                         : (isRu ? "Нет" : "Bo'sh")}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 sm:text-xs">
-                      {isRu ? "Мебель" : "Jihoz"}
+                    <p className="text-[11px] font-semibold text-slate-400 mt-0.5">
+                      {isRu ? "мебель" : "jihoz"}
                     </p>
                   </div>
                 </div>
@@ -396,117 +376,109 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 ) : null}
               </div>
 
-              {/* 3. COLLAPSIBLE DESCRIPTION */}
-              <section className="rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 space-y-2 lg:panel lg:p-6">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <h2 className="font-display text-sm font-extrabold text-slate-900 sm:text-lg">
-                    {t.common.fullDescription}
-                  </h2>
-                  <span className="text-[11px] font-bold text-slate-400">
-                    {formatDate(listing.createdAt, locale)}
-                  </span>
-                </div>
+              {/* 3. BU UY HAQIDA (About this home) */}
+              <section className="space-y-3 pt-2">
+                <h2 className="font-display text-base font-extrabold text-slate-900 sm:text-lg">
+                  {isRu ? "Об этом жилье" : "Bu uy haqida"}
+                </h2>
 
-                <CollapsibleDescription description={listing.description} locale={locale} />
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 space-y-3 text-xs sm:text-sm">
+                  {/* Structured Details */}
+                  <div className="space-y-1.5 font-medium text-slate-700">
+                    <p className="font-bold text-slate-900 text-sm">
+                      {getPropertyTypeLabel(listing.propertyType, locale)} · {listingIndicator}
+                    </p>
+                    <p className="text-slate-400 font-mono text-[11px]">
+                      ID: {listing.id.slice(0, 8).toUpperCase()}
+                    </p>
+                    <ul className="space-y-1.5 pt-1 text-slate-600">
+                      {listing.district ? (
+                        <li>• <span className="text-slate-500">{isRu ? "Район" : "Rayon"}:</span> <span className="font-semibold text-slate-800">{listing.district}</span></li>
+                      ) : null}
+                      {listing.address ? (
+                        <li>• <span className="text-slate-500">{isRu ? "Ориентир / Адрес" : "Mo'ljal / Manzil"}:</span> <span className="font-semibold text-slate-800">{listing.address}</span></li>
+                      ) : null}
+                      <li>• <span className="text-slate-500">{isRu ? "Комнат" : "Xona"}:</span> <span className="font-semibold text-slate-800">{listing.rooms}</span></li>
+                      {listing.floor ? (
+                        <li>• <span className="text-slate-500">{isRu ? "Этаж" : "Qavati"}:</span> <span className="font-semibold text-slate-800">{floorSpecValue}</span></li>
+                      ) : null}
+                      <li>• <span className="text-slate-500">{isRu ? "Площадь" : "Maydoni"}:</span> <span className="font-semibold text-slate-800">{listing.area} m²</span></li>
+                      <li className="font-bold text-slate-900 pt-1.5">
+                        <span className="text-slate-500 font-normal">{isRu ? "Цена" : "Narxi"}:</span>{" "}
+                        <span className="text-blue-600 text-sm font-extrabold">
+                          {formatPrice(listing.price, listing.currency, listing.listingType, listing.rentType, locale)}
+                        </span>
+                        {listing.negotiable ? (
+                          <span className="ml-1.5 text-[10px] font-bold text-emerald-600">({isRu ? "торг уместен" : "kami bor"})</span>
+                        ) : null}
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* User custom description if present */}
+                  {listing.description ? (
+                    <div className="border-t border-slate-200/60 pt-3">
+                      <CollapsibleDescription description={listing.description} locale={locale} />
+                    </div>
+                  ) : null}
+                </div>
               </section>
 
-              {/* 4. COLLAPSIBLE AMENITIES (Uy qulayliklari) */}
-              {amenities.length > 0 || tenantPreferences.length > 0 ? (
-                <section className="rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 space-y-2.5 lg:panel lg:p-6">
-                  {amenities.length > 0 ? (
-                    <div className="space-y-2">
-                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                        {isRu ? "Удобства" : "Uy qulayliklari"}
-                      </h2>
-                      <div className="flex flex-wrap gap-1.5">
-                        {amenities.slice(0, 4).map((item) => (
+              {/* 4. UY QULAYLIKLARI (Amenities) */}
+              {amenities.length > 0 ? (
+                <section className="space-y-2.5 pt-1">
+                  <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                    {isRu ? "Удобства" : "Uy qulayliklari"}
+                  </h2>
+                  <div className="flex flex-wrap gap-1.5">
+                    {amenities.slice(0, 4).map((item) => (
+                      <span
+                        key={item}
+                        className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-white px-2.5 py-1 text-xs font-bold text-blue-800"
+                      >
+                        <span className="text-blue-600">✓</span>
+                        <span>{getAmenityLabel(item, locale)}</span>
+                      </span>
+                    ))}
+                  </div>
+                  {amenities.length > 4 ? (
+                    <details className="group pt-0.5">
+                      <summary className="cursor-pointer font-bold text-xs text-blue-600 list-none select-none flex items-center justify-between py-1 hover:text-blue-700">
+                        <span className="group-open:hidden">+ {amenities.length - 4} ta qulaylikni ko&apos;rish</span>
+                        <span className="hidden group-open:inline">{isRu ? "Скрыть" : "Yashirish"}</span>
+                        <span className="text-slate-400 transition-transform group-open:rotate-180">▾</span>
+                      </summary>
+                      <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-200/60 mt-1">
+                        {amenities.slice(4).map((item) => (
                           <span
                             key={item}
-                            className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-white px-2.5 py-1 text-xs font-extrabold text-blue-800"
+                            className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-white px-2.5 py-1 text-xs font-bold text-blue-800"
                           >
                             <span className="text-blue-600">✓</span>
                             <span>{getAmenityLabel(item, locale)}</span>
                           </span>
                         ))}
                       </div>
-                      {amenities.length > 4 ? (
-                        <details className="group pt-1">
-                          <summary className="cursor-pointer font-bold text-xs text-blue-600 list-none select-none flex items-center justify-between py-1 hover:text-blue-700">
-                            <span className="group-open:hidden">+ {amenities.length - 4} ta qulaylikni ko&apos;rish</span>
-                            <span className="hidden group-open:inline">{isRu ? "Скрыть" : "Yashirish"}</span>
-                            <span className="text-slate-400 transition-transform group-open:rotate-180">▾</span>
-                          </summary>
-                          <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-200/60 mt-1">
-                            {amenities.slice(4).map((item) => (
-                              <span
-                                key={item}
-                                className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-white px-2.5 py-1 text-xs font-extrabold text-blue-800"
-                              >
-                                <span className="text-blue-600">✓</span>
-                                <span>{getAmenityLabel(item, locale)}</span>
-                              </span>
-                            ))}
-                          </div>
-                        </details>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                  {tenantPreferences.length > 0 ? (
-                    <div className={amenities.length > 0 ? "border-t border-slate-100 pt-2.5" : ""}>
-                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                        {listing.listingType === "sale"
-                          ? isRu ? "Документы и состояние" : "Hujjatlar va uy holati"
-                          : isRu ? "Кому подходит" : "Kimlar uchun mos"}
-                      </h2>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {tenantPreferences.map((pref) => (
-                          <span
-                            key={pref}
-                            className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700"
-                          >
-                            {getTenantPreferenceLabel(pref, locale)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                    </details>
                   ) : null}
                 </section>
               ) : null}
 
-              {/* 5. COLLAPSIBLE NEIGHBORHOOD INFRASTRUCTURE */}
-              <details className="group rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 lg:panel lg:p-6">
-                <summary className="flex items-center justify-between cursor-pointer font-extrabold text-xs text-slate-800 list-none select-none">
-                  <span className="flex items-center gap-2">
-                    <span>🏫</span>
-                    <span>{isRu ? "Инфраструктура поблизости" : "Atrofdagi infratuzilma"}</span>
-                  </span>
-                  <span className="text-slate-400 text-xs transition-transform group-open:rotate-180">▾</span>
-                </summary>
-                <div className="pt-3 border-t border-slate-200/60 mt-2.5">
-                  <NeighborhoodHighlights locale={locale} />
-                </div>
-              </details>
-
-              {/* 6. COLLAPSIBLE LOCATION & MAP */}
-              <details className="group rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 lg:panel lg:p-6">
-                <summary className="flex items-center justify-between cursor-pointer font-extrabold text-xs text-slate-800 list-none select-none">
-                  <span className="flex items-center gap-2">
-                    <span>📍</span>
-                    <span>{t.common.location}</span>
-                  </span>
-                  <span className="text-slate-400 text-xs transition-transform group-open:rotate-180">▾</span>
-                </summary>
-                <div className="pt-3 border-t border-slate-200/60 mt-2.5">
+              {/* 5. JOYLASHUV (Location & Map) */}
+              <section className="space-y-2.5 pt-1">
+                <h2 className="font-display text-sm font-extrabold text-slate-900 sm:text-base">
+                  {t.common.location}
+                </h2>
+                <div className="rounded-2xl border border-slate-100 overflow-hidden bg-slate-50/50 p-3 lg:panel lg:p-4">
                   <LocationSection locale={locale} value={listing} />
                 </div>
-              </details>
+              </section>
 
-              {/* 7. SIMILAR LISTINGS */}
+              {/* 6. O'XSHASH UYLAR (Similar Listings) */}
               {similarListings.length > 0 ? (
                 <section className="space-y-3 pt-2">
-                  <h2 className="font-display text-base font-extrabold text-slate-900">
-                    {isRu ? "Похожие объявления" : "O'xshash e'lonlar"}
+                  <h2 className="font-display text-sm font-extrabold text-slate-900 sm:text-base">
+                    {isRu ? "Похожие дома" : "O'xshash uylar"}
                   </h2>
                   <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                     {similarListings.map((sim) => (
@@ -646,23 +618,37 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         {/* ============================================================== */}
         {/* UNCLOSABLE STICKY BOTTOM CONTACT BAR                           */}
         {/* ============================================================== */}
-        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t border-slate-200/90 bg-white/95 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur-xl lg:hidden">
-          <div className="min-w-[85px] leading-tight">
-            <p className="font-display text-lg font-black text-blue-600">
-              {formatPrice(
-                listing.price,
-                listing.currency,
-                listing.listingType,
-                listing.rentType,
-                locale
-              )}
-            </p>
-            <p className="text-[10px] font-bold text-slate-400">
-              {listing.listingType === "rent" ? (isRu ? "в месяц" : "oyiga") : (isRu ? "narxi" : "narxi")}
-            </p>
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/90 bg-white/95 px-4 pt-3 pb-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur-xl lg:hidden space-y-2">
+          {/* Row 1: Price on left, Masked phone on right */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-baseline gap-1.5">
+              <span className="font-display text-xl font-black text-slate-900">
+                {formatPrice(
+                  listing.price,
+                  listing.currency,
+                  listing.listingType,
+                  listing.rentType,
+                  locale
+                )}
+              </span>
+              <span className="text-[11px] font-bold text-slate-400">
+                {listing.listingType === "rent" ? (isRu ? "/мес" : "/oy") : ""}
+              </span>
+            </div>
+
+            {maskedPhone ? (
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <span>{maskedPhone}</span>
+              </div>
+            ) : null}
           </div>
 
-          <div className="flex items-center gap-2 flex-1">
+          {/* Row 2: Action buttons */}
+          <div className="flex items-center gap-2">
             {telegramHref ? (
               <a
                 href={telegramHref}
@@ -679,12 +665,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
             <a
               href={contactHref}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-600 py-3 text-xs font-black text-white shadow-md shadow-blue-600/30 hover:bg-blue-500 active:scale-95"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-xs font-black text-white shadow-md shadow-blue-600/30 hover:bg-blue-500 active:scale-95"
             >
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
               </svg>
-              <span>{isRu ? "Позвонить" : "Qo'ng'iroq"}</span>
+              <span>{isRu ? "Позвонить" : "Qo'ng'iroq qilish"}</span>
             </a>
           </div>
         </div>

@@ -217,13 +217,22 @@ export function ListingGallery({
               <div
                 key={`${image}-${index}`}
                 onClick={() => openLightbox(index)}
-                className="relative h-full w-full shrink-0 snap-center cursor-pointer bg-slate-950 flex items-center justify-center"
+                className="relative h-full w-full shrink-0 snap-center cursor-pointer bg-slate-950 flex items-center justify-center overflow-hidden"
               >
+                {/* Ambient Blurred Background for Portrait Photos */}
+                <PropertyImage
+                  src={image}
+                  alt=""
+                  fill
+                  className="object-cover blur-2xl opacity-30 scale-110 pointer-events-none"
+                  sizes="100vw"
+                />
+                {/* Main uncropped photo */}
                 <PropertyImage
                   src={image}
                   alt={`${title} ${index + 1}`}
                   fill
-                  className="object-contain"
+                  className="object-contain relative z-10"
                   sizes="(max-width: 1024px) 100vw, 70vw"
                   priority={index === 0}
                 />
