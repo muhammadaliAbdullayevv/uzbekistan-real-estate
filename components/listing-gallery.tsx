@@ -90,7 +90,7 @@ export function ListingGallery({
                 src={gallery[0]}
                 alt={`${title} 1`}
                 fill
-                className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                className="object-contain"
                 sizes="(max-width: 1280px) 60vw, 50vw"
                 priority
               />
@@ -107,7 +107,7 @@ export function ListingGallery({
                   src={gallery[1]}
                   alt={`${title} 2`}
                   fill
-                  className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                  className="object-contain"
                   sizes="(max-width: 1280px) 30vw, 25vw"
                 />
                 <div className="absolute inset-0 bg-slate-950/0 transition-colors group-hover:bg-slate-950/15" />
@@ -115,13 +115,13 @@ export function ListingGallery({
 
               <div
                 onClick={() => openLightbox(2)}
-                className="group relative h-full cursor-pointer overflow-hidden"
+                className="group relative h-full cursor-pointer overflow-hidden bg-slate-950"
               >
                 <PropertyImage
                   src={gallery[2]}
                   alt={`${title} 3`}
                   fill
-                  className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                  className="object-contain"
                   sizes="(max-width: 1280px) 30vw, 25vw"
                 />
                 <div className="absolute inset-0 bg-slate-950/0 transition-colors group-hover:bg-slate-950/15" />
@@ -165,7 +165,7 @@ export function ListingGallery({
                   src={img}
                   alt={`${title} ${idx + 1}`}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="object-contain"
                   sizes="50vw"
                   priority={idx === 0}
                 />
@@ -176,13 +176,13 @@ export function ListingGallery({
         ) : (
           <div
             onClick={() => openLightbox(0)}
-            className="group relative h-[400px] cursor-pointer overflow-hidden rounded-[28px] border border-slate-200/90 bg-slate-900 shadow-md"
+            className="group relative h-[400px] cursor-pointer overflow-hidden rounded-[28px] border border-slate-200/90 bg-slate-950 shadow-md"
           >
             <PropertyImage
               src={gallery[0]}
               alt={title}
               fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className="object-contain"
               sizes="100vw"
               priority
             />
@@ -212,13 +212,13 @@ export function ListingGallery({
             <div
               key={`${image}-${index}`}
               onClick={() => openLightbox(index)}
-              className="relative h-full w-full shrink-0 snap-center cursor-pointer"
+              className="relative h-full w-full shrink-0 snap-center cursor-pointer bg-slate-950 flex items-center justify-center"
             >
               <PropertyImage
                 src={image}
                 alt={`${title} ${index + 1}`}
                 fill
-                className="object-cover"
+                className="object-contain"
                 sizes="(max-width: 1024px) 100vw, 70vw"
                 priority={index === 0}
               />

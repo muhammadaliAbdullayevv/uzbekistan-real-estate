@@ -4,10 +4,12 @@ import { useRef, useState, type ChangeEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { isLocalImageUrl } from "@/lib/image-url";
 import type { UzbekistanRegion } from "@/lib/locations";
 
 type ProfileViewProps = {
+  locale?: "uz" | "ru";
   user: {
     id: string;
     email: string;
@@ -37,6 +39,7 @@ type ProfileViewProps = {
 };
 
 export function ProfileView({
+  locale = "uz",
   user,
   botUsername,
   isOwnerUser,
@@ -437,6 +440,22 @@ export function ProfileView({
                 UZS (so&apos;m)
               </button>
             </div>
+          </div>
+
+          {/* Ilova tili (Language Switcher) */}
+          <div className="flex items-center justify-between p-3">
+            <div className="flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                🌐
+              </span>
+              <div>
+                <span className="block">Ilova tili</span>
+                <span className="block text-[11px] font-normal text-slate-400">
+                  O&apos;zbekcha / Русский
+                </span>
+              </div>
+            </div>
+            <LanguageSwitcher currentLocale={locale} label="Ilova tili" />
           </div>
 
           {/* Telegram bildirishnomalar */}

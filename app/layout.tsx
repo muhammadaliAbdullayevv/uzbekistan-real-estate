@@ -7,7 +7,7 @@ import "@/app/globals.css";
 import { ADMIN_PAGE_HEADER } from "@/lib/admin-path";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
-import { HideFooterOnChatRoutes } from "@/components/route-visibility";
+import { HideFooterOnChatRoutes, HideHeaderOnListingRoutes } from "@/components/route-visibility";
 import { SiteFooter } from "@/components/site-footer";
 import { SessionRefresher } from "@/components/session-refresher";
 import { SiteHeader } from "@/components/site-header";
@@ -111,8 +111,10 @@ export default async function RootLayout({
         <TelegramWebAppInit />
         {session ? <SessionRefresher /> : null}
         <DesktopSidebar tabs={tabs} isAdminPage={isAdminPage} />
-        <SiteHeader />
-        <main className="flex-1 pb-24 pt-8 sm:pb-20">{children}</main>
+        <HideHeaderOnListingRoutes isAdminPage={isAdminPage}>
+          <SiteHeader />
+        </HideHeaderOnListingRoutes>
+        <main className="flex-1 pb-24 sm:pb-20">{children}</main>
         <HideFooterOnChatRoutes isAdminPage={isAdminPage}>
           <SiteFooter />
         </HideFooterOnChatRoutes>

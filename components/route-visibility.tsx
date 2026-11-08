@@ -20,6 +20,35 @@ const HIDDEN_ON = [
   "/reset-password"
 ];
 
+const HEADER_HIDDEN_ON = [
+  "/listings",
+  "/add-listing",
+  "/chat",
+  "/ai-uychi"
+];
+
+export function HideHeaderOnListingRoutes({
+  children,
+  isAdminPage
+}: {
+  children: ReactNode;
+  isAdminPage: boolean;
+}) {
+  const pathname = usePathname();
+  const currentPath = pathname ?? "";
+  const hide =
+    isAdminPage ||
+    HEADER_HIDDEN_ON.some(
+      (route) => currentPath === route || currentPath.startsWith(`${route}/`)
+    );
+
+  if (hide) {
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
 export function HideFooterOnChatRoutes({
   children,
   isAdminPage

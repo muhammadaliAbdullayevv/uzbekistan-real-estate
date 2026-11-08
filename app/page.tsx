@@ -75,7 +75,7 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
   ]);
 
   return (
-    <div className="shell space-y-5 sm:space-y-6">
+    <div className="shell pt-2 space-y-4 sm:pt-4 sm:space-y-6">
       <SearchFilters locale={locale} values={filters} />
 
       {/* Ambient AI Concierge Teaser Banner */}

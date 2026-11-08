@@ -18,7 +18,7 @@ export default async function SavedPage() {
   const favorites = await getFavoriteListings(visitorId, session?.userId ?? null);
 
   return (
-    <div className="shell space-y-8">
+    <div className="shell py-4 space-y-8 sm:py-6">
       <section className="panel flex flex-col gap-5 p-6 sm:flex-row sm:items-end sm:justify-between sm:p-8">
         <div>
           <span className="pill border-accent/25 bg-accent/5 text-accent">

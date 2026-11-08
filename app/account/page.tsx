@@ -2,6 +2,7 @@ import Link from "next/link";
 
 export { privatePageMetadata as metadata } from "@/lib/site";
 import { BackLink } from "@/components/back-link";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { ProfileView } from "@/components/profile-view";
 import { TelegramLoginButton } from "@/components/telegram-login-button";
 import { prisma } from "@/lib/db";
@@ -58,6 +59,16 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
             </div>
 
             <div className="mt-6 space-y-3">
+              <Link
+                href="/add-listing"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] py-3.5 text-sm font-extrabold text-white shadow-md shadow-blue-600/25 transition hover:brightness-110 active:scale-98"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                <span>{locale === "ru" ? "Разместить объявление" : "Yangi e'lon qo'shish"}</span>
+              </Link>
+
               <TelegramLoginButton
                 nextPath="/account"
                 label="Telegram orqali tasdiqlash va kirish"
@@ -68,6 +79,17 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
               >
                 🔑 Login va parol bilan kirish (Boshqa qurilmadan)
               </Link>
+
+              <div className="flex items-center justify-between rounded-2xl border border-slate-200/90 bg-white p-3.5 shadow-2xs">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">🌐</span>
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-slate-900">{locale === "ru" ? "Язык приложения" : "Ilova tili"}</p>
+                    <p className="text-[11px] text-slate-500 font-medium">{locale === "ru" ? "Русский / O'zbekcha" : "O'zbekcha / Русский"}</p>
+                  </div>
+                </div>
+                <LanguageSwitcher currentLocale={locale} label={t.language.label} />
+              </div>
             </div>
 
             <div className="mt-6 flex items-center justify-center gap-10 border-t border-slate-200 pt-5">
@@ -116,6 +138,7 @@ export default async function AccountPage({ searchParams = {} }: AccountPageProp
       ) : null}
 
       <ProfileView
+        locale={locale}
         user={user}
         botUsername={botUsername}
         isOwnerUser={isOwner({ email: user.email })}
