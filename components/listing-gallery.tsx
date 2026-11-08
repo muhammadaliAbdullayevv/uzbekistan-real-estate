@@ -255,8 +255,8 @@ export function ListingGallery({
           ) : null}
         </div>
 
-        {/* White Bottom Sheet Top: 4 Mini Thumbnails Strip */}
-        <div className="relative z-10 -mt-6 rounded-t-[32px] bg-white px-4 pt-4 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]">
+        {/* White Bottom Sheet Top: 4 Mini Thumbnails Strip or Sheet Handle */}
+        <div className="relative z-10 -mt-6 rounded-t-[32px] bg-white px-4 pt-3.5 pb-1 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]">
           {gallery.length > 1 ? (
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
               {gallery.slice(0, 4).map((img, idx) => {
@@ -291,7 +291,11 @@ export function ListingGallery({
                 );
               })}
             </div>
-          ) : null}
+          ) : (
+            <div className="flex justify-center py-2">
+              <span className="h-1.5 w-12 rounded-full bg-slate-200" />
+            </div>
+          )}
         </div>
       </div>
 

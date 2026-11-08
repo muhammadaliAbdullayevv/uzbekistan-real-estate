@@ -32,7 +32,7 @@ export default function ListingLoading() {
           <div className="lg:hidden w-full h-[50vh] min-h-[350px] max-h-[480px] animate-pulse bg-slate-900" />
 
           {/* Mobile Sheet Top: 4 Mini Thumbnails Strip Skeleton */}
-          <div className="lg:hidden relative z-10 -mt-6 rounded-t-[32px] bg-white px-4 pt-4">
+          <div className="lg:hidden relative z-10 -mt-6 rounded-t-[32px] bg-white px-4 pt-3.5 pb-1 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]">
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="h-16 flex-1 min-w-[70px] max-w-[95px] animate-pulse rounded-2xl bg-slate-200" />
