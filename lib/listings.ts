@@ -680,3 +680,49 @@ export async function deleteListingForUser(userId: string, listingId: string) {
   return rows.length > 0;
 }
 
+export async function getSimilarListings(
+  currentListing: { id: string; region: string; propertyType: PropertyType; listingType: ListingTypeValue },
+  limit = 4
+): Promise<ListingWithImages[]> {
+  try {
+    const rawListings = await prisma.listing.findMany({
+      where: {
+        status: "APPROVED",
+        id: { not: currentListing.id },
+        listingType: currentListing.listingType,
+        OR: [
+          { region: currentListing.region },
+          { propertyType: currentListing.propertyType }
+        ]
+      },
+      include: {
+        images: true
+      },
+      orderBy: {
+        createdAt: "desc"
+      },
+      take: limit
+    });
+
+    return rawListings.map((l) => ({
+      ...l,
+      listingType: l.listingType as ListingTypeValue,
+      rentType: l.rentType as RentTypeValue | null,
+      furnishing: l.furnishing as FurnishingStatusValue | null,
+      amenities: (l.amenities as string[]) ?? [],
+      tenantPreferences: (l.tenantPreferences as string[]) ?? [],
+      includedInPrice: (l.includedInPrice as string[]) ?? [],
+      locationPrecision: l.locationPrecision as "EXACT" | "APPROXIMATE",
+      availabilityStatus: l.availabilityStatus as ListingAvailabilityStatusValue,
+      images: l.images.map((img) => ({
+        id: img.id,
+        url: img.url,
+        listingId: img.listingId
+      }))
+    }));
+  } catch {
+    return [];
+  }
+}
+
+

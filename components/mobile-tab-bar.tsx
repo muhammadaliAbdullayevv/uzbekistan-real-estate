@@ -46,6 +46,7 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
   if (
     currentPath === "/ai-uychi" ||
     currentPath === "/add-listing" ||
+    currentPath.startsWith("/listings/") ||
     (currentPath.startsWith("/my-listings/") && currentPath.endsWith("/edit")) ||
     currentPath.startsWith("/chat/") ||
     isAdminPage
