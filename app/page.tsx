@@ -121,12 +121,18 @@ export default async function HomePage({ searchParams = {} }: HomePageProps) {
             <h2 className="font-display text-lg font-extrabold text-slate-900 sm:text-xl">
               {t.home.recentlyAddedTitle}
             </h2>
+            <Link
+              href="/?sort=newest"
+              className="text-xs font-bold text-blue-600 transition hover:text-blue-700"
+            >
+              {locale === "ru" ? "Все новые →" : "Barchasi →"}
+            </Link>
           </div>
-          <div className="no-scrollbar flex snap-x snap-mandatory gap-3.5 overflow-x-auto scroll-smooth pb-2 sm:gap-4">
+          <div className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 sm:gap-4">
             {recentListings.map((listing) => (
               <div
                 key={listing.id}
-                className="w-[82%] shrink-0 snap-start sm:w-[46%] lg:w-[310px]"
+                className="w-[60%] shrink-0 snap-start sm:w-[38%] lg:w-[280px]"
               >
                 <ListingCard
                   locale={locale}
