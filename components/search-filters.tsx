@@ -4,6 +4,7 @@ import { LISTING_TYPES } from "@/lib/constants";
 import type { Locale } from "@/lib/i18n";
 import { getTranslations } from "@/lib/i18n";
 import { getRegionOptions } from "@/lib/locations";
+import { NearMeButton } from "@/components/near-me-button";
 import { SearchFilterModal } from "@/components/search-filter-modal";
 
 type SearchFiltersProps = {
@@ -99,7 +100,7 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
   ];
 
   return (
-    <div className="space-y-2.5">
+    <div className="sticky top-0 z-30 -mx-4 -mt-2 bg-[#DCE5F2]/95 px-4 py-2.5 backdrop-blur-xl sm:static sm:mx-0 sm:mt-0 sm:px-0 sm:py-0 sm:bg-transparent sm:backdrop-blur-none space-y-2">
       <form
         action="/"
         method="get"
@@ -198,21 +199,36 @@ export function SearchFilters({ locale, values }: SearchFiltersProps) {
         </button>
       </form>
 
-      {/* Quick Category Pills */}
-      <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto pb-0.5">
-        {quickPills.map((pill) => (
-          <Link
-            key={pill.label}
-            href={pill.href}
-            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-extrabold transition ${
-              pill.active
-                ? "border-blue-600 bg-blue-600 text-white shadow-xs"
-                : "border-slate-200/90 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600"
-            }`}
-          >
-            {pill.label}
-          </Link>
-        ))}
+      {/* Under Search Section: Nearby Listings Button + Quick Category Pills */}
+      <div className="flex items-center gap-2 overflow-hidden">
+        {/* Search nearby listings feature moved to main screen under search */}
+        <div className="shrink-0">
+          <NearMeButton
+            copy={{
+              nearMe: t.search.nearMe,
+              locating: t.search.locating,
+              nearMeActive: t.search.nearMeActive,
+              nearMeError: t.search.nearMeError
+            }}
+          />
+        </div>
+
+        {/* Quick Category Pills */}
+        <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto pb-0.5">
+          {quickPills.map((pill) => (
+            <Link
+              key={pill.label}
+              href={pill.href}
+              className={`shrink-0 rounded-xl border px-3 py-2 text-xs font-extrabold transition ${
+                pill.active
+                  ? "border-blue-600 bg-blue-600 text-white shadow-xs"
+                  : "border-slate-200/90 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600 shadow-2xs"
+              }`}
+            >
+              {pill.label}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
