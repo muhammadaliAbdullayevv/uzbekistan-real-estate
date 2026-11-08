@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 const HIDDEN_ON = [
   "/ai-uychi",
   "/add-listing",
+  "/listings",
   "/chat",
   "/login",
   "/register",

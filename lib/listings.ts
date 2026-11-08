@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { cache } from "react";
 
 import {
   Currency,
@@ -453,14 +454,14 @@ export async function countApprovedListings(filters: ListingSearchParams) {
   return Number(rows[0]?.count ?? 0);
 }
 
-export async function getApprovedListingById(id: string) {
+export const getApprovedListingById = cache(async (id: string) => {
   const rows = await runListingQuery(
     Prisma.sql`WHERE l."status" = ${listingStatusSql(ListingStatus.APPROVED)} AND l."availabilityStatus" = CAST(${LISTING_AVAILABILITY_STATUS.ACTIVE} AS "ListingAvailabilityStatus") AND l."id" = ${id}`,
     Prisma.sql`ORDER BY l."createdAt" DESC`
   );
 
   return rows[0] ?? null;
-}
+});
 
 export async function getPendingListings(options?: { limit?: number; offset?: number }) {
   const limitSql =
