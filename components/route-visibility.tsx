@@ -11,6 +11,7 @@ import type { ReactNode } from "react";
 // version.
 const HIDDEN_ON = [
   "/ai-uychi",
+  "/add-listing",
   "/chat",
   "/login",
   "/register",

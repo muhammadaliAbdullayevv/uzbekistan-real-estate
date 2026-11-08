@@ -43,7 +43,13 @@ export function MobileTabBar({ tabs, isAdminPage }: { tabs: Tab[]; isAdminPage: 
     setPressedHref((current) => (current === href ? null : current));
   }
 
-  if (currentPath === "/ai-uychi" || currentPath.startsWith("/chat/") || isAdminPage) {
+  if (
+    currentPath === "/ai-uychi" ||
+    currentPath === "/add-listing" ||
+    (currentPath.startsWith("/my-listings/") && currentPath.endsWith("/edit")) ||
+    currentPath.startsWith("/chat/") ||
+    isAdminPage
+  ) {
     return null;
   }
 
