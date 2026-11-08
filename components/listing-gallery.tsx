@@ -9,6 +9,7 @@ type ListingGalleryProps = {
   title: string;
   locale?: "uz" | "ru";
   topActions?: React.ReactNode;
+  floatingActions?: React.ReactNode;
   badges?: React.ReactNode;
 };
 
@@ -17,6 +18,7 @@ export function ListingGallery({
   title,
   locale = "uz",
   topActions,
+  floatingActions,
   badges
 }: ListingGalleryProps) {
   const gallery = images.length > 0 ? images : [PLACEHOLDER_IMAGE];
@@ -30,6 +32,7 @@ export function ListingGallery({
     if (!track) return;
     const clamped = Math.max(0, Math.min(index, gallery.length - 1));
     track.scrollTo({ left: clamped * track.clientWidth, behavior: "smooth" });
+    setActiveIndex(clamped);
   }
 
   function handleScroll() {
@@ -192,68 +195,104 @@ export function ListingGallery({
       </div>
 
       {/* ============================================================== */}
-      {/* 2. MOBILE IMMERSIVE SLIDER (Visible on mobile & tablet)       */}
+      {/* 2. MOBILE IMMERSIVE SLIDER & SHEET HEADER (Visible on mobile) */}
       {/* ============================================================== */}
-      <div className="relative w-full overflow-hidden bg-slate-950 sm:rounded-[28px] lg:hidden">
-        {/* Floating Top Actions (Back, Share, Heart) */}
-        {topActions ? (
-          <div className="absolute inset-x-3.5 top-3.5 z-20 flex items-center justify-between">
-            {topActions}
-          </div>
-        ) : null}
-
-        {/* Swipe Track */}
-        <div
-          ref={trackRef}
-          onScroll={handleScroll}
-          className="no-scrollbar flex aspect-[4/3] snap-x snap-mandatory overflow-x-auto scroll-smooth sm:aspect-[16/10]"
-        >
-          {gallery.map((image, index) => (
-            <div
-              key={`${image}-${index}`}
-              onClick={() => openLightbox(index)}
-              className="relative h-full w-full shrink-0 snap-center cursor-pointer bg-slate-950 flex items-center justify-center"
-            >
-              <PropertyImage
-                src={image}
-                alt={`${title} ${index + 1}`}
-                fill
-                className="object-contain"
-                sizes="(max-width: 1024px) 100vw, 70vw"
-                priority={index === 0}
-              />
+      <div className="w-full lg:hidden">
+        {/* Tall Photo Slider */}
+        <div className="relative w-full h-[50vh] min-h-[350px] max-h-[480px] overflow-hidden bg-slate-950 sm:rounded-[28px]">
+          {/* Floating Top Actions (Back Button) */}
+          {topActions ? (
+            <div className="absolute left-3.5 top-3.5 z-20 flex items-center">
+              {topActions}
             </div>
-          ))}
+          ) : null}
+
+          {/* Swipe Track */}
+          <div
+            ref={trackRef}
+            onScroll={handleScroll}
+            className="no-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto scroll-smooth"
+          >
+            {gallery.map((image, index) => (
+              <div
+                key={`${image}-${index}`}
+                onClick={() => openLightbox(index)}
+                className="relative h-full w-full shrink-0 snap-center cursor-pointer bg-slate-950 flex items-center justify-center"
+              >
+                <PropertyImage
+                  src={image}
+                  alt={`${title} ${index + 1}`}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 1024px) 100vw, 70vw"
+                  priority={index === 0}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Floating Actions on Bottom Left of Photo (Share & Heart) */}
+          {floatingActions ? (
+            <div className="absolute bottom-7 left-4 z-20 flex items-center gap-2.5">
+              {floatingActions}
+            </div>
+          ) : null}
+
+          {/* Floating Badges on Mobile Photo if provided */}
+          {badges ? (
+            <div className="absolute top-16 left-3.5 z-10 flex flex-wrap items-center gap-1.5">
+              {badges}
+            </div>
+          ) : null}
+
+          {/* Photo Counter Pill on Bottom Right of Photo */}
+          {gallery.length > 1 ? (
+            <div className="badge-dark-blur absolute bottom-7 right-4 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black text-white shadow-lg backdrop-blur-md">
+              <span>
+                {activeIndex + 1} / {gallery.length}
+              </span>
+            </div>
+          ) : null}
         </div>
 
-        {/* Floating Badges on Mobile Photo */}
-        {badges ? (
-          <div className="absolute bottom-3.5 left-3.5 z-10 flex flex-wrap items-center gap-1.5">
-            {badges}
-          </div>
-        ) : null}
+        {/* White Bottom Sheet Top: 4 Mini Thumbnails Strip */}
+        <div className="relative z-10 -mt-6 rounded-t-[32px] bg-white px-4 pt-4 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]">
+          {gallery.length > 1 ? (
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              {gallery.slice(0, 4).map((img, idx) => {
+                const isLast = idx === 3 && gallery.length > 4;
+                const remainingCount = gallery.length - 3;
+                const isActive = activeIndex === idx;
 
-        {/* Photo Counter Pill on Mobile */}
-        {gallery.length > 1 ? (
-          <div className="badge-dark-blur absolute bottom-3.5 right-3.5 z-10 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold text-white shadow-md">
-            <svg
-              className="h-3 w-3 text-slate-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span>
-              {activeIndex + 1} / {gallery.length}
-            </span>
-          </div>
-        ) : null}
+                return (
+                  <button
+                    key={`${img}-${idx}`}
+                    type="button"
+                    onClick={() => (isLast ? openLightbox(3) : scrollToIndex(idx))}
+                    className={`relative h-16 flex-1 min-w-[70px] max-w-[95px] overflow-hidden rounded-2xl border-2 transition active:scale-95 ${
+                      isActive
+                        ? "border-blue-600 ring-2 ring-blue-500/30"
+                        : "border-transparent opacity-80 hover:opacity-100"
+                    }`}
+                  >
+                    <PropertyImage
+                      src={img}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="120px"
+                    />
+                    {isLast ? (
+                      <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-[1px] flex items-center justify-center text-white font-display text-xs font-black">
+                        +{remainingCount}
+                      </div>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {/* ============================================================== */}

@@ -220,10 +220,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               title={listing.title}
               locale={locale}
               topActions={
+                <SmartBackLink label={locale === "ru" ? "Назад" : "Orqaga"} fallbackHref="/" />
+              }
+              floatingActions={
                 <>
-                  <SmartBackLink label={locale === "ru" ? "Назад" : "Orqaga"} fallbackHref="/" />
-                  <div className="flex items-center gap-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-lg backdrop-blur-md transition active:scale-95">
                     <ShareButton title={listing.title} locale={locale} variant="icon" />
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-lg backdrop-blur-md transition active:scale-95">
                     <FavoriteButton
                       listingId={listing.id}
                       isFavorited={isFavorited}
@@ -257,9 +261,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         </div>
 
         {/* ============================================================== */}
-        {/* MAIN CONTENT                                                   */}
+        {/* MAIN CONTENT (Smooth bottom sheet on mobile, 2-col on desktop) */}
         {/* ============================================================== */}
-        <div className="shell mt-4 space-y-4 sm:space-y-6 sm:mt-6">
+        <div className="bg-white px-4 pb-28 space-y-4 sm:px-6 lg:shell lg:mt-6 lg:bg-transparent lg:p-0">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1.3fr)_410px] lg:gap-8 items-start">
             
             {/* ========================================================== */}
@@ -267,38 +271,41 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             {/* ========================================================== */}
             <div className="space-y-4 sm:space-y-5">
 
-              {/* 1. LOCATION, TITLE & PRICE BLOCK (Directly below photo!) */}
-              <div className="panel space-y-3 p-4 sm:p-5">
-                {/* Location and Main Details Snippet */}
-                <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold text-slate-500">
-                  <span className="flex items-center gap-1 text-blue-600 font-extrabold">
-                    <svg
-                      aria-hidden="true"
-                      viewBox="0 0 24 24"
-                      className="h-3.5 w-3.5 shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                    >
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                      <circle cx="12" cy="10" r="3" />
-                    </svg>
-                    <span>{mainLocationSnippet}</span>
+              {/* 1. ABOVE-THE-FOLD: SUB-BADGE, TITLE, LOCATION & PRICE */}
+              <div className="space-y-1.5 pt-1 lg:panel lg:p-5">
+                {/* Sub-badge: Direct from owner / Verified (like modern screenshot) */}
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    className="h-3.5 w-3.5 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0" />
+                  </svg>
+                  <span>
+                    {hasNoAgencyFee
+                      ? (isRu ? "Без комиссии · От хозяина" : "To'g'ridan-to'g'ri egasidan")
+                      : (isRu ? "Проверенное объявление" : "Tasdiqlangan e'lon")}
                   </span>
                 </div>
 
                 {/* Listing Title */}
-                <h1 className="font-display text-lg font-black leading-snug text-slate-900 sm:text-2xl">
+                <h1 className="font-display text-xl font-black text-slate-900 leading-snug sm:text-2xl">
                   {listing.title}
                 </h1>
 
-                {/* Exact Address */}
-                <p className="text-xs font-semibold text-slate-500">
-                  📍 {listing.address}
+                {/* Exact Location & Address */}
+                <p className="flex items-center gap-1 text-xs font-semibold text-slate-500">
+                  <span className="text-blue-600">📍</span>
+                  <span>{listing.district ? `${listing.district}, ${listing.region}` : listing.region}</span>
+                  {listing.address ? <span className="text-slate-400 truncate">· {listing.address}</span> : null}
                 </p>
 
                 {/* Price directly below Title and Location */}
-                <div className="flex items-baseline justify-between border-t border-slate-100 pt-3">
+                <div className="flex items-baseline justify-between border-t border-slate-100 pt-3 mt-2">
                   <div>
                     <div className="flex items-baseline gap-2">
                       <span className="font-display text-2xl font-black text-blue-600 tracking-tight sm:text-3xl">
@@ -327,47 +334,47 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </div>
               </div>
 
-              {/* 2. 4-SPECS IN ONE SINGLE ROW (Floor like 4/9, Big Numbers, Small Title Under) */}
-              <div className="panel p-3 sm:p-4">
+              {/* 2. COMPACT 4-SPECS IN ONE ROW (Rooms · Area · Floor 4/9 · Jihoz) */}
+              <div className="rounded-2xl bg-slate-50 p-2.5 border border-slate-100 lg:panel lg:p-4">
                 <div className="grid grid-cols-4 gap-1 text-center divide-x divide-slate-100 sm:gap-2">
                   {/* 1. Rooms */}
                   <div className="px-1">
-                    <p className="font-display text-lg font-black text-slate-900 leading-tight sm:text-2xl">
+                    <p className="font-display text-base font-black text-slate-900 leading-tight sm:text-2xl">
                       {listing.rooms}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1 sm:text-xs">
-                      {t.common.rooms}
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 sm:text-xs">
+                      {t.common.roomsShort}
                     </p>
                   </div>
 
                   {/* 2. Area */}
                   <div className="px-1">
-                    <p className="font-display text-lg font-black text-slate-900 leading-tight sm:text-2xl">
-                      {listing.area} <span className="text-xs font-bold text-slate-500">m²</span>
+                    <p className="font-display text-base font-black text-slate-900 leading-tight sm:text-2xl">
+                      {listing.area} <span className="text-[10px] sm:text-xs font-bold text-slate-500">m²</span>
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1 sm:text-xs">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 sm:text-xs">
                       {t.common.area}
                     </p>
                   </div>
 
                   {/* 3. Floor: 4/9 */}
                   <div className="px-1">
-                    <p className="font-display text-lg font-black text-slate-900 leading-tight sm:text-2xl">
+                    <p className="font-display text-base font-black text-slate-900 leading-tight sm:text-2xl">
                       {floorSpecValue}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1 sm:text-xs">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 sm:text-xs">
                       {floorSpecLabel}
                     </p>
                   </div>
 
                   {/* 4. Furnishing */}
                   <div className="px-1">
-                    <p className="font-display text-sm font-black text-emerald-600 leading-tight truncate sm:text-lg">
+                    <p className="font-display text-xs font-black text-emerald-700 truncate leading-tight mt-0.5 sm:text-lg">
                       {listing.furnishing
                         ? getFurnishingLabel(listing.furnishing, locale)
                         : (isRu ? "Нет" : "Bo'sh")}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1 sm:text-xs">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 sm:text-xs">
                       {isRu ? "Мебель" : "Jihoz"}
                     </p>
                   </div>
@@ -375,7 +382,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
                 {/* Included in price pills if present */}
                 {includedInPrice.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-1.5 border-t border-slate-100 pt-3">
+                  <div className="mt-2.5 flex flex-wrap gap-1.5 border-t border-slate-200/60 pt-2.5">
                     {includedInPrice.map((item) => (
                       <span
                         key={item}
@@ -389,42 +396,10 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 ) : null}
               </div>
 
-              {/* 3. MULKDOR (Clean, light & trustworthy trust card) */}
-              <div className="panel p-3.5 sm:p-4 bg-gradient-to-r from-blue-50/50 via-white to-white border border-blue-100 flex items-center justify-between shadow-xs">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 font-display text-sm font-black text-white shadow-xs">
-                      {ownerInitials}
-                    </span>
-                    <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-white" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <p className="font-display text-sm font-extrabold text-slate-900">
-                        {ownerName || (isRu ? "Владелец" : "Mulkdor")}
-                      </p>
-                      <span className="rounded-md bg-blue-100 px-1.5 py-0.2 text-[10px] font-bold text-blue-700">
-                        ✓ {isRu ? "Проверен" : "Egasi"}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                      {isRu ? "Быстрый ответ (в теч. 15 мин)" : "Tez javob beradi (15 daqiqada)"}
-                    </p>
-                  </div>
-                </div>
-
-                <a
-                  href={contactHref}
-                  className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-black text-white shadow-xs hover:bg-blue-500 active:scale-95"
-                >
-                  {isRu ? "Позвонить" : "Qo'ng'iroq"}
-                </a>
-              </div>
-
-              {/* 4. COLLAPSIBLE DESCRIPTION CARD */}
-              <section className="panel space-y-2.5 p-4 sm:p-6">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                  <h2 className="font-display text-base font-extrabold text-slate-900 sm:text-lg">
+              {/* 3. COLLAPSIBLE DESCRIPTION */}
+              <section className="rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 space-y-2 lg:panel lg:p-6">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <h2 className="font-display text-sm font-extrabold text-slate-900 sm:text-lg">
                     {t.common.fullDescription}
                   </h2>
                   <span className="text-[11px] font-bold text-slate-400">
@@ -435,55 +410,60 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <CollapsibleDescription description={listing.description} locale={locale} />
               </section>
 
-              {/* 5. AMENITIES & FEATURES */}
+              {/* 4. COLLAPSIBLE AMENITIES (Uy qulayliklari) */}
               {amenities.length > 0 || tenantPreferences.length > 0 ? (
-                <section className="panel space-y-4 p-4 sm:p-6">
+                <section className="rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 space-y-2.5 lg:panel lg:p-6">
                   {amenities.length > 0 ? (
-                    <div>
-                      <h2 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-400">
-                        {isRu ? "Что есть в доме" : "Uy qulayliklari"}
+                    <div className="space-y-2">
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                        {isRu ? "Удобства" : "Uy qulayliklari"}
                       </h2>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {amenities.map((item) => (
+                      <div className="flex flex-wrap gap-1.5">
+                        {amenities.slice(0, 4).map((item) => (
                           <span
                             key={item}
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-[#EFF6FF] px-3 py-1.5 text-xs font-extrabold text-blue-800"
+                            className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-white px-2.5 py-1 text-xs font-extrabold text-blue-800"
                           >
-                            <svg
-                              aria-hidden="true"
-                              viewBox="0 0 24 24"
-                              className="h-3.5 w-3.5 text-blue-600"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            {getAmenityLabel(item, locale)}
+                            <span className="text-blue-600">✓</span>
+                            <span>{getAmenityLabel(item, locale)}</span>
                           </span>
                         ))}
                       </div>
+                      {amenities.length > 4 ? (
+                        <details className="group pt-1">
+                          <summary className="cursor-pointer font-bold text-xs text-blue-600 list-none select-none flex items-center justify-between py-1 hover:text-blue-700">
+                            <span className="group-open:hidden">+ {amenities.length - 4} ta qulaylikni ko&apos;rish</span>
+                            <span className="hidden group-open:inline">{isRu ? "Скрыть" : "Yashirish"}</span>
+                            <span className="text-slate-400 transition-transform group-open:rotate-180">▾</span>
+                          </summary>
+                          <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-200/60 mt-1">
+                            {amenities.slice(4).map((item) => (
+                              <span
+                                key={item}
+                                className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-white px-2.5 py-1 text-xs font-extrabold text-blue-800"
+                              >
+                                <span className="text-blue-600">✓</span>
+                                <span>{getAmenityLabel(item, locale)}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </details>
+                      ) : null}
                     </div>
                   ) : null}
 
                   {tenantPreferences.length > 0 ? (
-                    <div className={amenities.length > 0 ? "border-t border-slate-100 pt-4" : ""}>
-                      <h2 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-400">
+                    <div className={amenities.length > 0 ? "border-t border-slate-100 pt-2.5" : ""}>
+                      <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
                         {listing.listingType === "sale"
-                          ? isRu
-                            ? "Документы и состояние"
-                            : "Hujjatlar va uy holati"
-                          : isRu
-                            ? "Кому подходит"
-                            : "Kimlar uchun mos"}
+                          ? isRu ? "Документы и состояние" : "Hujjatlar va uy holati"
+                          : isRu ? "Кому подходит" : "Kimlar uchun mos"}
                       </h2>
-                      <div className="mt-2.5 flex flex-wrap gap-2">
+                      <div className="mt-2 flex flex-wrap gap-1.5">
                         {tenantPreferences.map((pref) => (
                           <span
                             key={pref}
-                            className="inline-flex items-center rounded-xl border border-slate-200 bg-[#F3F6FB] px-3 py-1.5 text-xs font-bold text-slate-700"
+                            className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700"
                           >
                             {getTenantPreferenceLabel(pref, locale)}
                           </span>
@@ -494,43 +474,41 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </section>
               ) : null}
 
-              {/* 6. NEIGHBORHOOD INFRASTRUCTURE */}
-              <section className="panel space-y-3 p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-display text-base font-extrabold text-slate-900">
-                    {isRu ? "Инфраструктура поблизости" : "Atrofdagi infratuzilma"}
-                  </h2>
-                  <span className="text-[11px] font-bold text-blue-600">
-                    {isRu ? "Рядом" : "Yaqinida"}
+              {/* 5. COLLAPSIBLE NEIGHBORHOOD INFRASTRUCTURE */}
+              <details className="group rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 lg:panel lg:p-6">
+                <summary className="flex items-center justify-between cursor-pointer font-extrabold text-xs text-slate-800 list-none select-none">
+                  <span className="flex items-center gap-2">
+                    <span>🏫</span>
+                    <span>{isRu ? "Инфраструктура поблизости" : "Atrofdagi infratuzilma"}</span>
                   </span>
+                  <span className="text-slate-400 text-xs transition-transform group-open:rotate-180">▾</span>
+                </summary>
+                <div className="pt-3 border-t border-slate-200/60 mt-2.5">
+                  <NeighborhoodHighlights locale={locale} />
                 </div>
+              </details>
 
-                <NeighborhoodHighlights locale={locale} />
-              </section>
+              {/* 6. COLLAPSIBLE LOCATION & MAP */}
+              <details className="group rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 lg:panel lg:p-6">
+                <summary className="flex items-center justify-between cursor-pointer font-extrabold text-xs text-slate-800 list-none select-none">
+                  <span className="flex items-center gap-2">
+                    <span>📍</span>
+                    <span>{t.common.location}</span>
+                  </span>
+                  <span className="text-slate-400 text-xs transition-transform group-open:rotate-180">▾</span>
+                </summary>
+                <div className="pt-3 border-t border-slate-200/60 mt-2.5">
+                  <LocationSection locale={locale} value={listing} />
+                </div>
+              </details>
 
-              {/* 7. LOCATION & MAP */}
-              <section className="panel space-y-3 p-4 sm:p-6">
-                <h2 className="font-display text-base font-extrabold text-slate-900">
-                  {t.common.location}
-                </h2>
-                <LocationSection locale={locale} value={listing} />
-              </section>
-
-              {/* 8. SIMILAR LISTINGS */}
+              {/* 7. SIMILAR LISTINGS */}
               {similarListings.length > 0 ? (
-                <section className="space-y-4 pt-4">
-                  <div>
-                    <h2 className="font-display text-lg font-black text-slate-900 sm:text-xl">
-                      {isRu ? "Похожие объявления" : "O'xshash e'lonlar"}
-                    </h2>
-                    <p className="text-xs text-slate-500 font-semibold mt-0.5">
-                      {isRu
-                        ? `Другие варианты в регионе ${listing.region}`
-                        : `${listing.region} hududidagi boshqa e'lonlar`}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <section className="space-y-3 pt-2">
+                  <h2 className="font-display text-base font-extrabold text-slate-900">
+                    {isRu ? "Похожие объявления" : "O'xshash e'lonlar"}
+                  </h2>
+                  <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                     {similarListings.map((sim) => (
                       <ListingCard
                         key={sim.id}

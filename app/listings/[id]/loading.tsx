@@ -28,20 +28,29 @@ export default function ListingLoading() {
             </div>
           </div>
 
-          {/* Mobile Photo */}
-          <div className="lg:hidden w-full aspect-[4/3] sm:aspect-[16/10] animate-pulse bg-slate-900" />
+          {/* Mobile Tall Photo */}
+          <div className="lg:hidden w-full h-[50vh] min-h-[350px] max-h-[480px] animate-pulse bg-slate-900" />
+
+          {/* Mobile Sheet Top: 4 Mini Thumbnails Strip Skeleton */}
+          <div className="lg:hidden relative z-10 -mt-6 rounded-t-[32px] bg-white px-4 pt-4">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-16 flex-1 min-w-[70px] max-w-[95px] animate-pulse rounded-2xl bg-slate-200" />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* 3. Main Content Skeleton */}
-      <div className="shell mt-4 space-y-4 sm:space-y-6 sm:mt-6">
+      <div className="bg-white px-4 pb-28 space-y-4 sm:px-6 lg:shell lg:mt-6 lg:bg-transparent lg:p-0">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1.3fr)_410px] lg:gap-8 items-start">
           
           {/* Left column */}
           <div className="space-y-4 sm:space-y-5">
-            {/* Location, Title & Price skeleton */}
-            <div className="panel space-y-3 p-4 sm:p-5 animate-pulse">
-              <div className="h-4 w-3/4 rounded bg-slate-200" />
+            {/* Sub-badge, Title & Price skeleton */}
+            <div className="space-y-2 pt-1 lg:panel lg:p-5 animate-pulse">
+              <div className="h-3.5 w-36 rounded bg-slate-200" />
               <div className="h-6 w-5/6 rounded-lg bg-slate-200" />
               <div className="h-3.5 w-1/2 rounded bg-slate-100" />
               
@@ -55,7 +64,7 @@ export default function ListingLoading() {
             </div>
 
             {/* 4-Specs in One Row skeleton */}
-            <div className="panel p-3 sm:p-4">
+            <div className="rounded-2xl bg-slate-50 p-2.5 border border-slate-100 lg:panel lg:p-4">
               <div className="grid grid-cols-4 gap-2 text-center divide-x divide-slate-100 animate-pulse">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="px-1 space-y-1">
@@ -66,25 +75,12 @@ export default function ListingLoading() {
               </div>
             </div>
 
-            {/* Landlord card skeleton */}
-            <div className="panel p-3.5 sm:p-4 bg-slate-50 animate-pulse flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-11 w-11 rounded-2xl bg-slate-200" />
-                <div className="space-y-1.5">
-                  <div className="h-4 w-28 rounded bg-slate-200" />
-                  <div className="h-3 w-36 rounded bg-slate-100" />
-                </div>
-              </div>
-              <div className="h-8 w-20 rounded-xl bg-slate-200" />
-            </div>
-
             {/* Description skeleton */}
-            <div className="panel space-y-3 p-4 sm:p-6 animate-pulse">
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-3.5 space-y-2 lg:panel lg:p-6 animate-pulse">
               <div className="h-5 w-36 rounded bg-slate-200" />
               <div className="space-y-2 pt-1">
                 <div className="h-4 w-full rounded bg-slate-200" />
                 <div className="h-4 w-5/6 rounded bg-slate-200" />
-                <div className="h-4 w-3/4 rounded bg-slate-200" />
               </div>
             </div>
           </div>
