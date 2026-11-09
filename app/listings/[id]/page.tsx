@@ -6,7 +6,7 @@ import { CollapsibleDescription } from "@/components/collapsible-description";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ListingCard } from "@/components/listing-card";
 import { ListingGallery } from "@/components/listing-gallery";
-import { LocationSection } from "@/components/location-display";
+import { ListingLocationViewer } from "@/components/listing-location-viewer";
 import { ScheduleViewingModal } from "@/components/schedule-viewing-modal";
 import { ShareButton } from "@/components/share-button";
 import { SmartBackLink } from "@/components/smart-back-link";
@@ -114,7 +114,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     listing.listingType === "sale"
       ? "border-amber-200 bg-amber-50 text-amber-800"
       : "border-emerald-200 bg-emerald-50 text-emerald-700";
-  const canMessageOwner = listing.userId && (!session || session.userId !== listing.userId);
   const jsonLd = buildListingJsonLd(listing);
   const visitorId = getVisitorId();
   const favoriteIds = await getFavoriteListingIds(visitorId, session?.userId ?? null);
@@ -241,20 +240,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   </div>
                 </>
               }
-              badges={
-                <>
-                  <span
-                    className={`rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white backdrop-blur-xs ${
-                      listing.listingType === "sale" ? "bg-amber-600/90" : "bg-emerald-600/90"
-                    }`}
-                  >
-                    {listingIndicator}
-                  </span>
-                  <span className="rounded-md bg-blue-600/90 text-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wider backdrop-blur-xs">
-                    {getPropertyTypeLabel(listing.propertyType, locale)}
-                  </span>
-                </>
-              }
             />
           </div>
         </div>
@@ -270,50 +255,49 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             {/* ========================================================== */}
             <div className="space-y-4 sm:space-y-5">
 
-              {/* 1. ABOVE-THE-FOLD: SUB-BADGE, TITLE, LOCATION & VIEWS */}
-              <div className="space-y-1.5 pt-1 lg:panel lg:p-5">
-                {/* Sub-badge: Direct from owner / Verified */}
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 24 24"
-                    className="h-3.5 w-3.5 text-slate-400 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
+              {/* 1. ABOVE-THE-FOLD: STATUS BADGES, TITLE, LOCATION & VIEWS */}
+              <div className="space-y-2 pt-1 lg:panel lg:p-5">
+                {/* Status Badges: Rent/Sale · Property Type · Verified */}
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-black tracking-wide ${
+                      listing.listingType === "sale"
+                        ? "bg-amber-100 text-amber-900 border border-amber-200"
+                        : "bg-emerald-100 text-emerald-900 border border-emerald-200"
+                    }`}
                   >
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0" />
-                  </svg>
-                  <span>
-                    {hasNoAgencyFee
-                      ? (isRu ? "Без комиссии · От хозяина" : "To'g'ridan-to'g'ri egasidan")
-                      : (isRu ? "Проверенное объявление" : "Tasdiqlangan e'lon")}
+                    <span>{listing.listingType === "sale" ? "🏷️" : "🔑"}</span>
+                    <span>{listingIndicator}</span>
                   </span>
-                </div>
 
-                {/* Listing Title */}
-                <h1 className="font-display text-xl font-black text-slate-900 leading-snug sm:text-2xl">
-                  {listing.title}
-                </h1>
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-black text-blue-800">
+                    <span>🏠</span>
+                    <span>{getPropertyTypeLabel(listing.propertyType, locale)}</span>
+                  </span>
 
-                {/* Exact Location & Landmark */}
-                <div className="space-y-1 pt-0.5 text-xs font-medium text-slate-600">
-                  <p className="flex items-center gap-1.5">
-                    <span className="text-slate-400">📍</span>
-                    <span>{listing.district ? `${listing.district}, ${listing.region}` : listing.region}</span>
-                  </p>
-                  {listing.address ? (
-                    <p className="flex items-center gap-1.5 text-slate-500">
-                      <span className="text-slate-400">📍</span>
-                      <span>{isRu ? "Ориентир" : "Mo'ljal"}: {listing.address}</span>
-                    </p>
+                  {listing.status === "APPROVED" ? (
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-slate-100 border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-700">
+                      <span className="text-blue-600 font-black">✓</span>
+                      <span>{t.common.adminReviewed}</span>
+                    </span>
                   ) : null}
                 </div>
 
-                {/* Views count */}
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 pt-0.5">
-                  <span>👁</span>
-                  <span>{viewCount}</span>
+                {/* Listing Title */}
+                <h1 className="font-display text-xl font-black text-slate-900 leading-snug sm:text-2xl pt-0.5">
+                  {listing.title}
+                </h1>
+
+                {/* Single clean subtitle: location text + view count */}
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-500 pt-0.5">
+                  <p className="flex items-center gap-1.5 truncate">
+                    <span className="text-slate-400">📍</span>
+                    <span className="truncate">{listing.district ? `${listing.district}, ${listing.region}` : listing.region}</span>
+                  </p>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 shrink-0">
+                    <span>👁</span>
+                    <span>{viewCount}</span>
+                  </div>
                 </div>
               </div>
 
@@ -379,53 +363,17 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 ) : null}
               </div>
 
-              {/* 3. BU UY HAQIDA (About this home) */}
-              <section className="space-y-3 pt-2">
-                <h2 className="font-display text-base font-extrabold text-slate-900 sm:text-lg">
-                  {isRu ? "Об этом жилье" : "Bu uy haqida"}
-                </h2>
-
-                <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 space-y-3 text-xs sm:text-sm">
-                  {/* Structured Details */}
-                  <div className="space-y-1.5 font-medium text-slate-700">
-                    <p className="font-bold text-slate-900 text-sm">
-                      {getPropertyTypeLabel(listing.propertyType, locale)} · {listingIndicator}
-                    </p>
-                    <p className="text-slate-400 font-mono text-[11px]">
-                      ID: {listing.id.slice(0, 8).toUpperCase()}
-                    </p>
-                    <ul className="space-y-1.5 pt-1 text-slate-600">
-                      {listing.district ? (
-                        <li>• <span className="text-slate-500">{isRu ? "Район" : "Rayon"}:</span> <span className="font-semibold text-slate-800">{listing.district}</span></li>
-                      ) : null}
-                      {listing.address ? (
-                        <li>• <span className="text-slate-500">{isRu ? "Ориентир / Адрес" : "Mo'ljal / Manzil"}:</span> <span className="font-semibold text-slate-800">{listing.address}</span></li>
-                      ) : null}
-                      <li>• <span className="text-slate-500">{isRu ? "Комнат" : "Xona"}:</span> <span className="font-semibold text-slate-800">{listing.rooms}</span></li>
-                      {listing.floor ? (
-                        <li>• <span className="text-slate-500">{isRu ? "Этаж" : "Qavati"}:</span> <span className="font-semibold text-slate-800">{floorSpecValue}</span></li>
-                      ) : null}
-                      <li>• <span className="text-slate-500">{isRu ? "Площадь" : "Maydoni"}:</span> <span className="font-semibold text-slate-800">{listing.area} m²</span></li>
-                      <li className="font-bold text-slate-900 pt-1.5">
-                        <span className="text-slate-500 font-normal">{isRu ? "Цена" : "Narxi"}:</span>{" "}
-                        <span className="text-blue-600 text-sm font-extrabold">
-                          {formatPrice(listing.price, listing.currency, listing.listingType, listing.rentType, locale)}
-                        </span>
-                        {listing.negotiable ? (
-                          <span className="ml-1.5 text-[10px] font-bold text-emerald-600">({isRu ? "торг уместен" : "kami bor"})</span>
-                        ) : null}
-                      </li>
-                    </ul>
-                  </div>
-
-                  {/* User custom description if present */}
-                  {listing.description ? (
-                    <div className="border-t border-slate-200/60 pt-3">
-                      <CollapsibleDescription description={listing.description} locale={locale} />
-                    </div>
-                  ) : null}
-                </div>
-              </section>
+              {/* 3. CONSOLIDATED LOCATION & IN-APP MAP (Single dedicated place below specs!) */}
+              <ListingLocationViewer
+                region={listing.region}
+                district={listing.district}
+                address={listing.address}
+                street={listing.street}
+                title={listing.title}
+                latitude={listing.latitude}
+                longitude={listing.longitude}
+                locale={locale}
+              />
 
               {/* 4. UY QULAYLIKLARI (Amenities) */}
               {amenities.length > 0 ? (
@@ -467,13 +415,45 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </section>
               ) : null}
 
-              {/* 5. JOYLASHUV (Location & Map) */}
-              <section className="space-y-2.5 pt-1">
-                <h2 className="font-display text-sm font-extrabold text-slate-900 sm:text-base">
-                  {t.common.location}
+              {/* 5. BU UY HAQIDA (About this home - clean of duplicate location lines) */}
+              <section className="space-y-3 pt-2">
+                <h2 className="font-display text-base font-extrabold text-slate-900 sm:text-lg">
+                  {isRu ? "Об этом жилье" : "Bu uy haqida"}
                 </h2>
-                <div className="rounded-2xl border border-slate-100 overflow-hidden bg-slate-50/50 p-3 lg:panel lg:p-4">
-                  <LocationSection locale={locale} value={listing} />
+
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 space-y-3 text-xs sm:text-sm">
+                  {/* Structured Details */}
+                  <div className="space-y-1.5 font-medium text-slate-700">
+                    <p className="font-bold text-slate-900 text-sm">
+                      {getPropertyTypeLabel(listing.propertyType, locale)} · {listingIndicator}
+                    </p>
+                    <p className="text-slate-400 font-mono text-[11px]">
+                      ID: {listing.id.slice(0, 8).toUpperCase()}
+                    </p>
+                    <ul className="space-y-1.5 pt-1 text-slate-600">
+                      <li>• <span className="text-slate-500">{isRu ? "Комнат" : "Xona"}:</span> <span className="font-semibold text-slate-800">{listing.rooms}</span></li>
+                      {listing.floor ? (
+                        <li>• <span className="text-slate-500">{isRu ? "Этаж" : "Qavati"}:</span> <span className="font-semibold text-slate-800">{floorSpecValue}</span></li>
+                      ) : null}
+                      <li>• <span className="text-slate-500">{isRu ? "Площадь" : "Maydoni"}:</span> <span className="font-semibold text-slate-800">{listing.area} m²</span></li>
+                      <li className="font-bold text-slate-900 pt-1.5">
+                        <span className="text-slate-500 font-normal">{isRu ? "Цена" : "Narxi"}:</span>{" "}
+                        <span className="text-blue-600 text-sm font-extrabold">
+                          {formatPrice(listing.price, listing.currency, listing.listingType, listing.rentType, locale)}
+                        </span>
+                        {listing.negotiable ? (
+                          <span className="ml-1.5 text-[10px] font-bold text-emerald-600">({isRu ? "торг уместен" : "kami bor"})</span>
+                        ) : null}
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* User custom description if present */}
+                  {listing.description ? (
+                    <div className="border-t border-slate-200/60 pt-3">
+                      <CollapsibleDescription description={listing.description} locale={locale} />
+                    </div>
+                  ) : null}
                 </div>
               </section>
 
@@ -584,21 +564,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                       </svg>
                       <span>{t.common.telegramDirect}</span>
                     </a>
-                  ) : null}
-
-                  {canMessageOwner && session ? (
-                    <form action="/api/conversations" method="post">
-                      <input type="hidden" name="listingId" value={listing.id} />
-                      <button
-                        type="submit"
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
-                      >
-                        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                        </svg>
-                        <span>{t.common.messageOwner}</span>
-                      </button>
-                    </form>
                   ) : null}
 
                   <ScheduleViewingModal

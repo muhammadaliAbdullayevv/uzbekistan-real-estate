@@ -9,7 +9,6 @@ import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { SessionRefresher } from "@/components/session-refresher";
 import { TelegramWebAppInit } from "@/components/telegram-webapp-init";
-import { hasUnreadMessages } from "@/lib/conversations";
 import { hasGeminiConfig } from "@/lib/gemini";
 import {
   getLocale,
@@ -58,7 +57,6 @@ export default async function RootLayout({
   const locale = getLocale();
   const t = getTranslations(locale);
   const session = await getUserSession();
-  const hasUnread = session ? await hasUnreadMessages(session.userId) : false;
   // Set by middleware -- never the actual admin path string, just whether
   // this request is the admin page, so the real (possibly customized) path
   // never has to appear in a client bundle shipped on every page.
@@ -88,12 +86,6 @@ export default async function RootLayout({
           }
         ]
       : []),
-    {
-      href: "/chat",
-      label: t.nav.chat,
-      icon: "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z",
-      showDot: hasUnread
-    },
     {
       href: "/account",
       label: t.nav.account,

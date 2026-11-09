@@ -246,7 +246,7 @@ export function ProfileView({
         </div>
 
         {/* Quick Counters */}
-        <div className="mt-3 grid grid-cols-3 gap-2 border-t border-slate-100/60 pt-3 text-center">
+        <div className="mt-3 grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100/60 pt-3 text-center">
           <Link
             href="/my-listings"
             className="group rounded-xl py-1 transition hover:bg-slate-50"
@@ -260,30 +260,13 @@ export function ProfileView({
           </Link>
           <Link
             href="/saved"
-            className="group rounded-xl border-x border-slate-100 py-1 transition hover:bg-slate-50"
+            className="group rounded-xl py-1 transition hover:bg-slate-50"
           >
             <span className="block text-base font-black text-slate-900 group-hover:text-rose-600">
               {favoritesCount}
             </span>
             <span className="block text-[10px] font-bold text-slate-400">
-              Saqlangan
-            </span>
-          </Link>
-          <Link
-            href="/chat"
-            className="group rounded-xl py-1 transition hover:bg-slate-50"
-          >
-            <span
-              className={`block text-base font-black ${
-                unreadCount > 0 ? "text-blue-600" : "text-slate-900"
-              }`}
-            >
-              {unreadCount > 0
-                ? `${unreadCount} yangi`
-                : conversationsCount}
-            </span>
-            <span className="block text-[10px] font-bold text-slate-400">
-              Xabarlar
+              Saqlangan uylar
             </span>
           </Link>
         </div>
@@ -341,25 +324,6 @@ export function ProfileView({
             <span className="font-semibold text-slate-400">
               {favoritesCount} ta ›
             </span>
-          </Link>
-
-          <Link
-            href="/chat"
-            className="flex items-center justify-between rounded-xl p-3 transition hover:bg-slate-50"
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-                💬
-              </span>
-              <span>Xabarlar va chat</span>
-            </div>
-            {unreadCount > 0 ? (
-              <span className="inline-flex rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-extrabold text-white">
-                {unreadCount}
-              </span>
-            ) : (
-              <span className="font-semibold text-slate-400">Ko&apos;rish ›</span>
-            )}
           </Link>
 
           {isOwnerUser ? (
