@@ -1,9 +1,14 @@
-import Link from "next/link";
-
 export { privatePageMetadata as metadata } from "@/lib/site";
-import { EmptyState } from "@/components/empty-state";
-import { ListingCard } from "@/components/listing-card";
+import {
+  SavedListingsView,
+  type SavedListingItem
+} from "@/components/saved-listings-view";
 import { getVisitorId, getFavoriteListings } from "@/lib/favorites";
+import {
+  formatPrice,
+  formatPriceEquiv,
+  getTelegramLink
+} from "@/lib/format";
 import { getLocale, getTranslations } from "@/lib/i18n";
 import { getUserSession } from "@/lib/user-session";
 
@@ -12,41 +17,64 @@ export const dynamic = "force-dynamic";
 export default async function SavedPage() {
   const locale = getLocale();
   const t = getTranslations(locale);
+  const isRu = locale === "ru";
   const session = await getUserSession();
   const visitorId = getVisitorId();
 
   const favorites = await getFavoriteListings(visitorId, session?.userId ?? null);
 
-  return (
-    <div className="shell py-4 space-y-8 sm:py-6">
-      <section className="panel flex flex-col gap-5 p-6 sm:flex-row sm:items-end sm:justify-between sm:p-8">
-        <div>
-          <span className="pill border-accent/25 bg-accent/5 text-accent">
-            {t.savedPage.pill}
-          </span>
-          <h1 className="mt-4 font-display text-2xl font-semibold text-ink sm:text-3xl">
-            {t.savedPage.title}
-          </h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-ink/70">{t.savedPage.intro}</p>
-        </div>
-        <Link href="/" className="btn-secondary">
-          {t.savedPage.browseMore}
-        </Link>
-      </section>
+  const formattedItems: SavedListingItem[] = favorites.map((listing) => {
+    const floorLabel =
+      listing.propertyType === "house"
+        ? [
+            listing.plotArea ? `${listing.plotArea} ${isRu ? "сот." : "sotix"}` : null,
+            listing.totalFloors ? `${listing.totalFloors} ${isRu ? "эт." : "qavat"}` : null
+          ]
+            .filter(Boolean)
+            .join(" · ")
+        : listing.floor && listing.totalFloors
+          ? `${listing.floor}/${listing.totalFloors} ${isRu ? "эт." : "qavat"}`
+          : listing.floor
+            ? `${listing.floor}-${isRu ? "эт." : "qavat"}`
+            : null;
 
-      {favorites.length === 0 ? (
-        <EmptyState
-          eyebrow={t.common.noResults}
-          title={t.savedPage.emptyTitle}
-          description={t.savedPage.emptyDescription}
-        />
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {favorites.map((listing) => (
-            <ListingCard key={listing.id} locale={locale} listing={listing} isFavorited />
-          ))}
-        </div>
-      )}
+    const priceFormatted = `${formatPrice(
+      listing.price,
+      listing.currency,
+      listing.listingType,
+      listing.rentType,
+      locale
+    )}${listing.listingType === "rent" ? (isRu ? " /мес" : " /oy") : ""}`;
+
+    return {
+      id: listing.id,
+      title: listing.title,
+      priceFormatted,
+      priceEquivFormatted: formatPriceEquiv(listing.price, listing.currency, locale),
+      priceRaw: listing.price,
+      currency: listing.currency,
+      listingType: listing.listingType as "rent" | "sale",
+      rentType: listing.rentType as "monthly" | "daily" | null,
+      region: listing.region,
+      district: listing.district,
+      rooms: listing.rooms,
+      area: listing.area,
+      floorLabel,
+      phone: listing.phone,
+      contactHref: `tel:${listing.phone.replace(/[^\d+]/g, "")}`,
+      telegramHref: getTelegramLink(listing.telegramUsername),
+      images: listing.images.map((img) => ({ id: img.id, url: img.url })),
+      createdAt: listing.createdAt.toISOString()
+    };
+  });
+
+  return (
+    <div className="shell py-4 sm:py-6">
+      <SavedListingsView
+        initialListings={formattedItems}
+        locale={locale}
+        copy={t.savedPage}
+      />
     </div>
   );
 }

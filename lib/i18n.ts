@@ -145,14 +145,26 @@ const translations = {
         "Narx oralig'ini kengaytiring, xona sonini tozalang yoki boshqa ko'cha va mo'ljalni qidiring."
     },
     savedPage: {
-      pill: "Saqlanganlar",
+      pill: "Sevimli uylar",
       title: "Saqlangan e'lonlar",
       intro:
-        "Narxlar, reja va aloqa variantlarini taqqoslayotganingizda qisqa ro'yxatni shu yerda saqlang.",
-      browseMore: "Yana e'lonlarni ko'rish",
-      emptyTitle: "Hozircha saqlangan e'lon yo'q",
+        "Sizga ma'qul kelgan va taqqoslash uchun saqlab qo'yilgan uylar ro'yxati.",
+      browseMore: "Uylarni kashf qilish",
+      emptyTitle: "Sevimli uylaringiz ro'yxati bo'sh",
       emptyDescription:
-        "Qisqa ro'yxat tuzish uchun kartalar yoki batafsil sahifalarda Saqlash tugmasidan foydalaning."
+        "Qidiruvdagi yoki batafsil sahifadagi yurakcha belgisini bosib, sizga yoqqan uylarni bir joyda to'plang va taqqoslang.",
+      allTab: "Barchasi",
+      rentTab: "Ijara",
+      saleTab: "Sotuv",
+      clearAll: "Tozalash",
+      clearConfirm: "Barcha saqlangan e'lonlarni o'chirishni xohlaysizmi?",
+      call: "Qo'ng'iroq qilish",
+      callShort: "Qo'ng'iroq",
+      popularDistricts: "Tavsiya etilgan tumanlar:",
+      sortNewest: "Oxirgi qo'shilganlar",
+      sortPriceAsc: "Arzonroq narx",
+      sortPriceDesc: "Qimmatroq narx",
+      details: "Batafsil"
     },
     search: {
       searchLabel: "Qidiruv",
@@ -736,11 +748,23 @@ const translations = {
       pill: "Избранное",
       title: "Сохранённые объявления",
       intro:
-        "Держите здесь короткий список, пока сравниваете цены, планировки и способы связи.",
-      browseMore: "Смотреть ещё",
-      emptyTitle: "Пока нет сохранённых объявлений",
+        "Список понравившихся квартир и домов для удобного сравнения и быстрой связи.",
+      browseMore: "Найти жильё",
+      emptyTitle: "Список избранного пуст",
       emptyDescription:
-        "Открывайте карточки или страницы объявлений и используйте Сохранить, чтобы собрать свой список."
+        "Отмечайте понравившиеся дома сердечком при поиске, чтобы сравнивать их здесь.",
+      allTab: "Все",
+      rentTab: "Аренда",
+      saleTab: "Продажа",
+      clearAll: "Очистить всё",
+      clearConfirm: "Удалить все сохранённые объявления из списка?",
+      call: "Позвонить",
+      callShort: "Позвонить",
+      popularDistricts: "Популярные районы:",
+      sortNewest: "Сначала новые",
+      sortPriceAsc: "Сначала дешевле",
+      sortPriceDesc: "Сначала дороже",
+      details: "Подробнее"
     },
     search: {
       searchLabel: "Поиск",

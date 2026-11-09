@@ -152,6 +152,30 @@ export async function removeFavorite(input: {
   );
 }
 
+export async function clearAllFavorites(input: {
+  visitorId: string | null;
+  userId: string | null;
+}) {
+  const ownerConditions = [];
+  if (input.visitorId) {
+    ownerConditions.push(Prisma.sql`"visitorId" = ${input.visitorId}`);
+  }
+  if (input.userId) {
+    ownerConditions.push(Prisma.sql`"userId" = ${input.userId}`);
+  }
+
+  if (ownerConditions.length === 0) {
+    return;
+  }
+
+  await prisma.$executeRaw(
+    Prisma.sql`
+      DELETE FROM "FavoriteListing"
+      WHERE ${Prisma.join(ownerConditions, " OR ")}
+    `
+  );
+}
+
 /**
  * Called right after a visitor logs in (password login, register, Google
  * OAuth) so whatever they saved anonymously in this browser follows their
