@@ -621,7 +621,48 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         {/* ============================================================== */}
         {/* UNCLOSABLE STICKY BOTTOM CONTACT BAR                           */}
         {/* ============================================================== */}
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/90 bg-white/95 px-3 py-2.5 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur-xl lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/90 bg-white/95 px-4 pt-2.5 pb-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur-xl lg:hidden">
+          {/* Top Line: Price on Left, Phone Number with Modern Border on Right */}
+          <div className="flex items-center justify-between gap-3 mb-2.5">
+            <div className="min-w-0">
+              <div className="flex items-baseline gap-1">
+                <span className="font-display text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none">
+                  {formatPrice(
+                    listing.price,
+                    listing.currency,
+                    listing.listingType,
+                    listing.rentType,
+                    locale
+                  )}
+                </span>
+                <span className="text-xs font-bold text-slate-500">
+                  {listing.listingType === "rent" ? (isRu ? "/мес" : "/oy") : ""}
+                </span>
+                {listing.negotiable ? (
+                  <span className="ml-1 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-200/80 rounded px-1 py-0.5">
+                    {isRu ? "торг" : "kami bor"}
+                  </span>
+                ) : null}
+              </div>
+              <span className="text-[11px] font-semibold text-slate-400 block leading-tight mt-0.5 truncate">
+                {formatPriceEquiv(listing.price, listing.currency, locale)}
+              </span>
+            </div>
+
+            {/* Phone Number in Modern Style with Border */}
+            <a
+              href={contactHref}
+              aria-label={`Tel: ${displayPhone}`}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border-2 border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-mono font-black text-slate-800 shadow-2xs transition hover:border-blue-400 hover:bg-blue-50/50 active:scale-95"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+              <span>{displayPhone}</span>
+            </a>
+          </div>
+
+          {/* Bottom Line: Action Buttons */}
           <div className="flex items-center gap-2">
             {telegramHref ? (
               <a
@@ -629,7 +670,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Telegram"
-                className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl border-2 border-blue-200 bg-[#EFF6FF] text-blue-600 shadow-xs transition hover:bg-blue-100 active:scale-95"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-blue-200 bg-[#EFF6FF] text-blue-600 shadow-xs transition hover:bg-blue-100 active:scale-95"
               >
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" />
@@ -637,48 +678,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
               </a>
             ) : null}
 
-            {/* Modern Combined Contact Button showing Price + Phone Number with Border */}
             <a
               href={contactHref}
-              className="group flex flex-1 items-stretch overflow-hidden rounded-2xl border-2 border-blue-600 shadow-lg shadow-blue-600/20 transition active:scale-[0.98]"
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-blue-600 bg-blue-600 py-3 px-4 text-sm font-extrabold text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-500 active:scale-98"
             >
-              {/* Left Segment: Price with Border */}
-              <div className="flex flex-col justify-center border-r-2 border-blue-600 bg-blue-50/80 px-3 py-1.5 text-left min-w-[105px]">
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display text-base font-black text-slate-900 leading-tight">
-                    {formatPrice(
-                      listing.price,
-                      listing.currency,
-                      listing.listingType,
-                      listing.rentType,
-                      locale
-                    )}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-500">
-                    {listing.listingType === "rent" ? (isRu ? "/мес" : "/oy") : ""}
-                  </span>
-                </div>
-                <span className="text-[9px] font-bold text-slate-400 leading-none mt-0.5 truncate">
-                  {formatPriceEquiv(listing.price, listing.currency, locale)}
-                </span>
-              </div>
-
-              {/* Right Segment: Phone Number with Call Icon */}
-              <div className="flex flex-1 items-center justify-center gap-2 bg-blue-600 px-3 py-2.5 text-white transition group-hover:bg-blue-500">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/20">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="2.4">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
-                  </svg>
-                </div>
-                <div className="flex flex-col text-left leading-none">
-                  <span className="font-mono text-xs font-black tracking-tight text-white">
-                    {displayPhone}
-                  </span>
-                  <span className="text-[9px] font-extrabold text-blue-100 uppercase tracking-wider mt-0.5">
-                    {isRu ? "Позвонить" : "Qo'ng'iroq qilish"}
-                  </span>
-                </div>
-              </div>
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+              <span>{isRu ? "Позвонить" : "Qo'ng'iroq qilish"}</span>
             </a>
           </div>
         </div>
