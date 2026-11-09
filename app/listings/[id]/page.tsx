@@ -600,9 +600,6 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                     locale
                   )}
                 </span>
-                <span className="text-xs font-bold text-slate-500">
-                  {listing.listingType === "rent" ? (isRu ? "/мес" : "/oy") : ""}
-                </span>
                 {listing.negotiable ? (
                   <span className="ml-1 text-[10px] font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-200/80 rounded px-1 py-0.5">
                     {isRu ? "торг" : "kami bor"}
