@@ -38,13 +38,21 @@ export default async function SavedPage() {
             ? `${listing.floor}-${isRu ? "эт." : "qavat"}`
             : null;
 
-    const priceFormatted = `${formatPrice(
+    const priceFormatted = formatPrice(
       listing.price,
       listing.currency,
       listing.listingType,
       listing.rentType,
       locale
-    )}${listing.listingType === "rent" ? (isRu ? " /мес" : " /oy") : ""}`;
+    );
+
+    const cleanDigits = listing.phone.replace(/\D/g, "");
+    const phoneFormatted =
+      cleanDigits.length === 12 && cleanDigits.startsWith("998")
+        ? `+998 ${cleanDigits.slice(3, 5)} ${cleanDigits.slice(5, 8)} ${cleanDigits.slice(8, 10)} ${cleanDigits.slice(10, 12)}`
+        : cleanDigits.length === 9
+          ? `+998 ${cleanDigits.slice(0, 2)} ${cleanDigits.slice(2, 5)} ${cleanDigits.slice(5, 7)} ${cleanDigits.slice(7, 9)}`
+          : listing.phone;
 
     return {
       id: listing.id,
@@ -60,8 +68,8 @@ export default async function SavedPage() {
       rooms: listing.rooms,
       area: listing.area,
       floorLabel,
-      phone: listing.phone,
-      contactHref: `tel:${listing.phone.replace(/[^\d+]/g, "")}`,
+      phone: phoneFormatted,
+      contactHref: `tel:${cleanDigits ? `+${cleanDigits}` : listing.phone}`,
       telegramHref: getTelegramLink(listing.telegramUsername),
       images: listing.images.map((img) => ({ id: img.id, url: img.url })),
       createdAt: listing.createdAt.toISOString()
