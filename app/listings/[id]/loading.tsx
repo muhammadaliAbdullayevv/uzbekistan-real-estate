@@ -104,12 +104,8 @@ export default function ListingLoading() {
       </div>
 
       {/* 4. Unclosable Sticky Bottom Bar skeleton */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/90 bg-white/95 px-4 pt-3 pb-3 backdrop-blur-xl lg:hidden animate-pulse space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="h-6 w-24 rounded bg-slate-200" />
-          <div className="h-4 w-28 rounded bg-slate-100" />
-        </div>
-        <div className="h-11 w-full rounded-xl bg-slate-200" />
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/90 bg-white/95 px-3 py-2.5 backdrop-blur-xl lg:hidden animate-pulse">
+        <div className="h-[52px] w-full rounded-2xl border-2 border-slate-200 bg-slate-100" />
       </div>
     </div>
   );
