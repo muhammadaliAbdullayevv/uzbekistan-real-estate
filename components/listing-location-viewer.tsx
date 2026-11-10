@@ -220,45 +220,17 @@ export function ListingLocationViewer({
   return (
     <>
       <section className="rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 space-y-3 shadow-2xs">
-        {/* Section Header - Single title, NO duplicate button */}
+        {/* Section Header */}
         <div className="flex items-center justify-between">
           <h2 className="font-display text-sm font-extrabold text-slate-900 flex items-center gap-2">
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100 text-blue-600 text-xs font-black">
               📍
             </span>
-            <span>{isRu ? "Расположение и ориентир" : "Joylashuv va mo'ljal"}</span>
+            <span>{isRu ? "Карта" : "Joylashuv xaritasi"}</span>
           </h2>
         </div>
 
-        {/* Address & Landmark Information - Unified cohesive card */}
-        <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 text-xs">
-          <div className="flex items-start gap-2.5">
-            <span className="text-blue-600 font-bold shrink-0 mt-0.5">📍</span>
-            <div className="space-y-1 min-w-0 flex-1">
-              <p className="font-extrabold text-slate-900 text-sm leading-tight">
-                {district ? `${district}, ` : ""}{region}
-              </p>
-              {address || (street && street !== address) ? (
-                <div className="text-slate-600 font-medium text-xs leading-relaxed pt-0.5 space-y-0.5">
-                  {address ? (
-                    <p>
-                      <span className="text-slate-400 font-semibold">{isRu ? "Ориентир: " : "Mo'ljal: "}</span>
-                      <span className="text-slate-800 font-bold">{address}</span>
-                    </p>
-                  ) : null}
-                  {street && street !== address ? (
-                    <p className="text-slate-500 text-[11px]">
-                      <span className="text-slate-400 font-semibold">{isRu ? "Улица: " : "Ko'cha: "}</span>
-                      <span className="text-slate-700 font-medium">{street}</span>
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </div>
-
-        {/* Visual Map Preview Box - Single clean tap-to-enlarge element */}
+        {/* Pure Visual Map Box - Just map without any duplicate detail text */}
         <div
           onClick={() => setModalOpen(true)}
           role="button"
@@ -269,7 +241,7 @@ export function ListingLocationViewer({
               setModalOpen(true);
             }
           }}
-          className="relative h-44 sm:h-52 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-inner focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          className="relative h-48 sm:h-56 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-inner focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           aria-label={isRu ? "Открыть интерактивную карту" : "Xaritani ochish"}
         >
           <div ref={previewContainerRef} className="w-full h-full pointer-events-none" />

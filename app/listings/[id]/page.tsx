@@ -360,17 +360,70 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 ) : null}
               </div>
 
-              {/* 3. CONSOLIDATED LOCATION & IN-APP MAP (Single dedicated place below specs!) */}
-              <ListingLocationViewer
-                region={listing.region}
-                district={listing.district}
-                address={listing.address}
-                street={listing.street}
-                title={listing.title}
-                latitude={listing.latitude}
-                longitude={listing.longitude}
-                locale={locale}
-              />
+              {/* 3. BU UY HAQIDA (About this home - located directly under area, floor, jihoz specs!) */}
+              <section className="space-y-3 pt-1">
+                <h2 className="font-display text-base font-extrabold text-slate-900 sm:text-lg">
+                  {isRu ? "Об этом жилье" : "Bu uy haqida"}
+                </h2>
+
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 space-y-3 text-xs sm:text-sm">
+                  {/* Structured Details */}
+                  <div className="space-y-2.5 font-medium text-slate-700">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
+                      <p className="font-bold text-slate-900 text-sm">
+                        {getPropertyTypeLabel(listing.propertyType, locale)} · {listingIndicator}
+                      </p>
+                      <p className="text-slate-400 font-mono text-[11px]">
+                        ID: {listing.id.slice(0, 8).toUpperCase()}
+                      </p>
+                    </div>
+
+                    {/* Integrated Location details in 'Bu uy haqida' */}
+                    <div className="space-y-1.5 py-1 text-slate-700">
+                      <p className="flex items-start gap-1.5 font-bold text-slate-900">
+                        <span className="text-blue-600 shrink-0">📍</span>
+                        <span>{listing.district ? `${listing.district}, ` : ""}{listing.region}</span>
+                      </p>
+                      {listing.address ? (
+                        <p className="flex items-start gap-1.5 text-slate-600 pl-4 text-xs">
+                          <span className="text-slate-400 font-semibold">{isRu ? "Ориентир:" : "Mo'ljal:"}</span>
+                          <span className="text-slate-800 font-bold">{listing.address}</span>
+                        </p>
+                      ) : null}
+                      {listing.street && listing.street !== listing.address ? (
+                        <p className="flex items-start gap-1.5 text-slate-500 pl-4 text-[11px]">
+                          <span className="text-slate-400 font-semibold">{isRu ? "Улица:" : "Ko'cha:"}</span>
+                          <span className="text-slate-700 font-medium">{listing.street}</span>
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <ul className="space-y-1.5 pt-2 border-t border-slate-200/60 text-slate-600">
+                      <li>• <span className="text-slate-500">{isRu ? "Комнат" : "Xona"}:</span> <span className="font-semibold text-slate-800">{listing.rooms}</span></li>
+                      {listing.floor ? (
+                        <li>• <span className="text-slate-500">{isRu ? "Этаж" : "Qavati"}:</span> <span className="font-semibold text-slate-800">{floorSpecValue}</span></li>
+                      ) : null}
+                      <li>• <span className="text-slate-500">{isRu ? "Площадь" : "Maydoni"}:</span> <span className="font-semibold text-slate-800">{listing.area} m²</span></li>
+                      <li className="font-bold text-slate-900 pt-1">
+                        <span className="text-slate-500 font-normal">{isRu ? "Цена" : "Narxi"}:</span>{" "}
+                        <span className="text-blue-600 text-sm font-extrabold">
+                          {formatPrice(listing.price, listing.currency, listing.listingType, listing.rentType, locale)}
+                        </span>
+                        {listing.negotiable ? (
+                          <span className="ml-1.5 text-[10px] font-bold text-emerald-600">({isRu ? "торг уместен" : "kami bor"})</span>
+                        ) : null}
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* User custom description if present */}
+                  {listing.description ? (
+                    <div className="border-t border-slate-200/60 pt-3">
+                      <CollapsibleDescription description={listing.description} locale={locale} />
+                    </div>
+                  ) : null}
+                </div>
+              </section>
 
               {/* 4. UY QULAYLIKLARI (Amenities) */}
               {amenities.length > 0 ? (
@@ -412,47 +465,17 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </section>
               ) : null}
 
-              {/* 5. BU UY HAQIDA (About this home - clean of duplicate location lines) */}
-              <section className="space-y-3 pt-2">
-                <h2 className="font-display text-base font-extrabold text-slate-900 sm:text-lg">
-                  {isRu ? "Об этом жилье" : "Bu uy haqida"}
-                </h2>
-
-                <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 space-y-3 text-xs sm:text-sm">
-                  {/* Structured Details */}
-                  <div className="space-y-1.5 font-medium text-slate-700">
-                    <p className="font-bold text-slate-900 text-sm">
-                      {getPropertyTypeLabel(listing.propertyType, locale)} · {listingIndicator}
-                    </p>
-                    <p className="text-slate-400 font-mono text-[11px]">
-                      ID: {listing.id.slice(0, 8).toUpperCase()}
-                    </p>
-                    <ul className="space-y-1.5 pt-1 text-slate-600">
-                      <li>• <span className="text-slate-500">{isRu ? "Комнат" : "Xona"}:</span> <span className="font-semibold text-slate-800">{listing.rooms}</span></li>
-                      {listing.floor ? (
-                        <li>• <span className="text-slate-500">{isRu ? "Этаж" : "Qavati"}:</span> <span className="font-semibold text-slate-800">{floorSpecValue}</span></li>
-                      ) : null}
-                      <li>• <span className="text-slate-500">{isRu ? "Площадь" : "Maydoni"}:</span> <span className="font-semibold text-slate-800">{listing.area} m²</span></li>
-                      <li className="font-bold text-slate-900 pt-1.5">
-                        <span className="text-slate-500 font-normal">{isRu ? "Цена" : "Narxi"}:</span>{" "}
-                        <span className="text-blue-600 text-sm font-extrabold">
-                          {formatPrice(listing.price, listing.currency, listing.listingType, listing.rentType, locale)}
-                        </span>
-                        {listing.negotiable ? (
-                          <span className="ml-1.5 text-[10px] font-bold text-emerald-600">({isRu ? "торг уместен" : "kami bor"})</span>
-                        ) : null}
-                      </li>
-                    </ul>
-                  </div>
-
-                  {/* User custom description if present */}
-                  {listing.description ? (
-                    <div className="border-t border-slate-200/60 pt-3">
-                      <CollapsibleDescription description={listing.description} locale={locale} />
-                    </div>
-                  ) : null}
-                </div>
-              </section>
+              {/* 5. JOYLASHUV XARITASI (Pure Map - without any duplicate details!) */}
+              <ListingLocationViewer
+                region={listing.region}
+                district={listing.district}
+                address={listing.address}
+                street={listing.street}
+                title={listing.title}
+                latitude={listing.latitude}
+                longitude={listing.longitude}
+                locale={locale}
+              />
 
               {/* 6. O'XSHASH UYLAR (Similar Listings) */}
               {similarListings.length > 0 ? (
