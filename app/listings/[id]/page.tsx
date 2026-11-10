@@ -13,7 +13,8 @@ import { SmartBackLink } from "@/components/smart-back-link";
 import { TrackListingView } from "@/components/track-listing-view";
 import {
   getAmenityLabel,
-  getIncludedInPriceLabel
+  getIncludedInPriceLabel,
+  getTenantPreferenceLabel
 } from "@/lib/amenity-labels";
 import { prisma } from "@/lib/db";
 import { getFavoriteListingIds, getVisitorId } from "@/lib/favorites";
@@ -412,7 +413,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                             key={pref}
                             className="inline-flex items-center rounded-lg bg-white border border-slate-200 px-2 py-0.5 font-bold text-slate-700 text-[11px]"
                           >
-                            {pref}
+                            {getTenantPreferenceLabel(pref, locale)}
                           </span>
                         ))}
                       </div>
