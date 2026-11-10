@@ -35,10 +35,11 @@ export function OpenMapButton({
           window.dispatchEvent(new CustomEvent("open-listing-map"));
         }
       }}
-      className={`inline-flex items-center gap-1 text-blue-600 font-extrabold hover:text-blue-700 active:scale-95 transition underline underline-offset-2 shrink-0 ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg bg-blue-50/80 hover:bg-blue-100 border border-blue-200/90 px-2.5 py-1 text-xs font-extrabold text-blue-700 active:scale-95 transition shrink-0 ${className}`}
     >
+      <span>📍</span>
       <span>{label}</span>
-      <span className="text-[11px]">↗</span>
+      <span className="text-[11px] font-black">↗</span>
     </button>
   );
 }
@@ -183,7 +184,7 @@ export function ListingLocationViewer({
       }).addTo(map);
 
       const marker = L.marker([targetPos.lat, targetPos.lng]).addTo(map);
-      marker.bindPopup(`<b>${title}</b><br>${address || district || region}`).openPopup();
+      marker.bindPopup(`<b>${address || district || region}</b>`);
 
       modalMapRef.current = map;
 
@@ -277,7 +278,7 @@ export function ListingLocationViewer({
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/35 via-transparent to-transparent flex items-end justify-center p-3 pointer-events-none">
             <div className="pointer-events-auto bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-xl px-4 py-2 text-xs font-black text-blue-700 shadow-md flex items-center gap-1.5 transition group-hover:scale-105 active:scale-95">
               <span>🗺</span>
-              <span>{isRu ? "Открыть на карте" : "Xaritada ochish"}</span>
+              <span>{isRu ? "Открыть на весь экран" : "To'liq ekranda ochish"}</span>
               <span className="text-[11px]">↗</span>
             </div>
           </div>

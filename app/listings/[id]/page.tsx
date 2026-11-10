@@ -288,16 +288,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   {listing.title}
                 </h1>
 
-                {/* Single clean subtitle: location text + see on map button + view count */}
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-500 pt-0.5 gap-2">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-slate-400 shrink-0">📍</span>
-                    <span className="truncate text-slate-700 font-bold">
-                      {listing.district ? `${listing.district}, ${listing.region}` : listing.region}
-                    </span>
-                    <span className="text-slate-300 shrink-0">·</span>
-                    <OpenMapButton label={isRu ? "На карте" : "Xaritada ko'rish"} />
-                  </div>
+                {/* Under title: single see on map action + view count */}
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-500 pt-0.5">
+                  <OpenMapButton label={isRu ? "Посмотреть на карте" : "Xaritada ko'rish"} />
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 shrink-0">
                     <span>👁</span>
                     <span>{viewCount}</span>
