@@ -3,7 +3,7 @@
 import "leaflet/dist/leaflet.css";
 
 import { useEffect, useRef, useState } from "react";
-import type { Map as LeafletMap, Marker } from "leaflet";
+import type { Map as LeafletMap } from "leaflet";
 
 import { getDistrictCentroid } from "@/lib/district-coordinates";
 
@@ -19,6 +19,29 @@ type ListingLocationViewerProps = {
   longitude: number | null;
   locale: "uz" | "ru";
 };
+
+export function OpenMapButton({
+  label = "Xaritada ko'rish",
+  className = ""
+}: {
+  label?: string;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("open-listing-map"));
+        }
+      }}
+      className={`inline-flex items-center gap-1 text-blue-600 font-extrabold hover:text-blue-700 active:scale-95 transition underline underline-offset-2 shrink-0 ${className}`}
+    >
+      <span>{label}</span>
+      <span className="text-[11px]">↗</span>
+    </button>
+  );
+}
 
 export function ListingLocationViewer({
   region,
@@ -43,6 +66,15 @@ export function ListingLocationViewer({
 
   const fallback = getDistrictCentroid(region, district) ?? FALLBACK_MAP_CENTER;
   const targetPos = hasCoordinates ? { lat: latitude!, lng: longitude! } : fallback;
+
+  // Listen for global open event from header / subtitle button
+  useEffect(() => {
+    function handleOpenEvent() {
+      setModalOpen(true);
+    }
+    window.addEventListener("open-listing-map", handleOpenEvent);
+    return () => window.removeEventListener("open-listing-map", handleOpenEvent);
+  }, []);
 
   // Refs for preview map
   const previewContainerRef = useRef<HTMLDivElement>(null);
@@ -76,6 +108,12 @@ export function ListingLocationViewer({
         shadowUrl: markerShadow.default.src ?? markerShadow.default
       });
 
+      // Clear any prior leaflet artifacts from container
+      if ((previewContainerRef.current as unknown as { _leaflet_id?: number | null })._leaflet_id) {
+        (previewContainerRef.current as unknown as { _leaflet_id?: number | null })._leaflet_id = null;
+      }
+      previewContainerRef.current.innerHTML = "";
+
       const map = L.map(previewContainerRef.current, {
         center: [targetPos.lat, targetPos.lng],
         zoom: hasCoordinates ? 15 : 13,
@@ -87,7 +125,11 @@ export function ListingLocationViewer({
         scrollWheelZoom: false
       });
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        noWrap: true,
+        maxZoom: 19
+      }).addTo(map);
+
       L.marker([targetPos.lat, targetPos.lng]).addTo(map);
 
       previewMapRef.current = map;
@@ -100,6 +142,10 @@ export function ListingLocationViewer({
       if (previewMapRef.current) {
         previewMapRef.current.remove();
         previewMapRef.current = null;
+      }
+      if (previewContainerRef.current) {
+        (previewContainerRef.current as unknown as { _leaflet_id?: number | null })._leaflet_id = null;
+        previewContainerRef.current.innerHTML = "";
       }
     };
   }, [targetPos.lat, targetPos.lng, hasCoordinates]);
@@ -120,13 +166,20 @@ export function ListingLocationViewer({
         return;
       }
 
+      if ((modalContainerRef.current as unknown as { _leaflet_id?: number | null })._leaflet_id) {
+        (modalContainerRef.current as unknown as { _leaflet_id?: number | null })._leaflet_id = null;
+      }
+      modalContainerRef.current.innerHTML = "";
+
       const map = L.map(modalContainerRef.current).setView(
         [targetPos.lat, targetPos.lng],
         hasCoordinates ? 16 : 14
       );
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap"
+        attribution: "© OpenStreetMap",
+        noWrap: true,
+        maxZoom: 19
       }).addTo(map);
 
       const marker = L.marker([targetPos.lat, targetPos.lng]).addTo(map);
@@ -156,13 +209,17 @@ export function ListingLocationViewer({
         modalMapRef.current.remove();
         modalMapRef.current = null;
       }
+      if (modalContainerRef.current) {
+        (modalContainerRef.current as unknown as { _leaflet_id?: number | null })._leaflet_id = null;
+        modalContainerRef.current.innerHTML = "";
+      }
     };
   }, [modalOpen, targetPos.lat, targetPos.lng, hasCoordinates, title, address, district, region]);
 
   return (
     <>
       <section className="rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-4 space-y-3 shadow-2xs">
-        {/* Header */}
+        {/* Section Header - Single title, NO duplicate button */}
         <div className="flex items-center justify-between">
           <h2 className="font-display text-sm font-extrabold text-slate-900 flex items-center gap-2">
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-100 text-blue-600 text-xs font-black">
@@ -170,66 +227,71 @@ export function ListingLocationViewer({
             </span>
             <span>{isRu ? "Расположение и ориентир" : "Joylashuv va mo'ljal"}</span>
           </h2>
-
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="text-xs font-black text-blue-600 hover:text-blue-700 flex items-center gap-1 active:scale-95 transition"
-          >
-            <span>{isRu ? "Открыть на карте" : "Xaritada ochish"}</span>
-            <span>↗</span>
-          </button>
         </div>
 
-        {/* Address & Landmark Information */}
-        <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-3 text-xs">
-          <div className="flex items-start gap-2">
+        {/* Address & Landmark Information - Unified cohesive card */}
+        <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 text-xs">
+          <div className="flex items-start gap-2.5">
             <span className="text-blue-600 font-bold shrink-0 mt-0.5">📍</span>
             <div className="space-y-1 min-w-0 flex-1">
               <p className="font-extrabold text-slate-900 text-sm leading-tight">
                 {district ? `${district}, ` : ""}{region}
               </p>
-              {address ? (
-                <p className="text-slate-600 font-medium">
-                  <span className="text-slate-400 font-semibold">{isRu ? "Ориентир:" : "Mo'ljal:"} </span>
-                  <span className="text-slate-800 font-semibold">{address}</span>
-                </p>
-              ) : null}
-              {street && street !== address ? (
-                <p className="text-slate-500 font-medium text-[11px]">
-                  <span className="text-slate-400 font-semibold">{isRu ? "Улица:" : "Ko'cha:"} </span>
-                  <span>{street}</span>
-                </p>
+              {address || (street && street !== address) ? (
+                <div className="text-slate-600 font-medium text-xs leading-relaxed pt-0.5 space-y-0.5">
+                  {address ? (
+                    <p>
+                      <span className="text-slate-400 font-semibold">{isRu ? "Ориентир: " : "Mo'ljal: "}</span>
+                      <span className="text-slate-800 font-bold">{address}</span>
+                    </p>
+                  ) : null}
+                  {street && street !== address ? (
+                    <p className="text-slate-500 text-[11px]">
+                      <span className="text-slate-400 font-semibold">{isRu ? "Улица: " : "Ko'cha: "}</span>
+                      <span className="text-slate-700 font-medium">{street}</span>
+                    </p>
+                  ) : null}
+                </div>
               ) : null}
             </div>
           </div>
         </div>
 
-        {/* Visual Map Preview Box (Clickable) */}
+        {/* Visual Map Preview Box - Single clean tap-to-enlarge element */}
         <div
           onClick={() => setModalOpen(true)}
-          className="relative h-44 sm:h-52 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-inner"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setModalOpen(true);
+            }
+          }}
+          className="relative h-44 sm:h-52 rounded-xl border border-slate-200 overflow-hidden cursor-pointer group shadow-inner focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+          aria-label={isRu ? "Открыть интерактивную карту" : "Xaritani ochish"}
         >
           <div ref={previewContainerRef} className="w-full h-full pointer-events-none" />
 
           {/* Click to expand overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent flex items-end justify-center p-3 pointer-events-none">
-            <div className="pointer-events-auto bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-xl px-4 py-2 text-xs font-black text-blue-700 shadow-lg flex items-center gap-1.5 transition group-hover:scale-105 active:scale-95">
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/35 via-transparent to-transparent flex items-end justify-center p-3 pointer-events-none">
+            <div className="pointer-events-auto bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-xl px-4 py-2 text-xs font-black text-blue-700 shadow-md flex items-center gap-1.5 transition group-hover:scale-105 active:scale-95">
               <span>🗺</span>
-              <span>{isRu ? "Открыть карту" : "Xaritani kattalashtirish"}</span>
+              <span>{isRu ? "Открыть на карте" : "Xaritada ochish"}</span>
+              <span className="text-[11px]">↗</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Full-Screen / Large In-App Map Modal */}
+      {/* In-App Map Modal - Larger responsive window with close icon [ ✕ ] */}
       {modalOpen ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 sm:p-6"
           onClick={() => setModalOpen(false)}
         >
           <div
-            className="w-full max-w-xl rounded-3xl bg-white shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150"
+            className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -260,8 +322,8 @@ export function ListingLocationViewer({
             </div>
 
             {/* Interactive Leaflet Map */}
-            <div className="relative flex-1 min-h-[380px] sm:min-h-[440px] bg-slate-100">
-              <div ref={modalContainerRef} className="w-full h-full min-h-[380px] sm:min-h-[440px]" />
+            <div className="relative flex-1 min-h-[380px] sm:min-h-[460px] bg-slate-100">
+              <div ref={modalContainerRef} className="w-full h-full min-h-[380px] sm:min-h-[460px]" />
 
               {/* Bottom Address Bar */}
               <div className="absolute bottom-4 inset-x-4 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-slate-200/90 shadow-xl flex items-center justify-between z-[1000] gap-2">

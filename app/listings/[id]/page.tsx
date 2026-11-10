@@ -6,7 +6,7 @@ import { CollapsibleDescription } from "@/components/collapsible-description";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ListingCard } from "@/components/listing-card";
 import { ListingGallery } from "@/components/listing-gallery";
-import { ListingLocationViewer } from "@/components/listing-location-viewer";
+import { ListingLocationViewer, OpenMapButton } from "@/components/listing-location-viewer";
 import { ScheduleViewingModal } from "@/components/schedule-viewing-modal";
 import { ShareButton } from "@/components/share-button";
 import { SmartBackLink } from "@/components/smart-back-link";
@@ -288,12 +288,16 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                   {listing.title}
                 </h1>
 
-                {/* Single clean subtitle: location text + view count */}
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-500 pt-0.5">
-                  <p className="flex items-center gap-1.5 truncate">
-                    <span className="text-slate-400">📍</span>
-                    <span className="truncate">{listing.district ? `${listing.district}, ${listing.region}` : listing.region}</span>
-                  </p>
+                {/* Single clean subtitle: location text + see on map button + view count */}
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-500 pt-0.5 gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-slate-400 shrink-0">📍</span>
+                    <span className="truncate text-slate-700 font-bold">
+                      {listing.district ? `${listing.district}, ${listing.region}` : listing.region}
+                    </span>
+                    <span className="text-slate-300 shrink-0">·</span>
+                    <OpenMapButton label={isRu ? "На карте" : "Xaritada ko'rish"} />
+                  </div>
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 shrink-0">
                     <span>👁</span>
                     <span>{viewCount}</span>
